@@ -1,7 +1,7 @@
 # MaGIC 2.0
 
-This software generates classifiers and predictions for monoallelic or biallelic expression by gene using
-a set of epigenetic marks as features. Primarily based on the work of the [Gimelbrant lab](http://research4.dfci.harvard.edu/gimelbrantlab/Main.html). 
+This software generates predictions or classifiers for gene expression patterns (MAE or BAE) from
+a set of chromatin marks. Primarily based on the work of the [Gimelbrant lab](http://research4.dfci.harvard.edu/gimelbrantlab/Main.html). 
 
 ## Requirements
 
@@ -16,7 +16,7 @@ and it spits out an output folder.
 
 *Input folder*: contains mark and control files in the bigWig file format (.bigWig or .bw). Mark
 files contain chromatin mark enrichment data across an organism's genome, generally ChIP-Seq,
-and control files contain baseline data (without mark antibody) for the same experiment. For a given mark name, mark 
+and control files contain baseline data for the same experiment. For a given mark name, mark 
 files must be named as [mark name]_mark.bigWig or [mark name]_mark.bw, and that mark's 
 corresponding control file must be named [mark name]_control.bigWig or [mark_name]_control.bw.
 
@@ -58,7 +58,7 @@ All arguments are also described via "Rscript predict_mae.R --help"
     length of promoter region, disables promoter region separation if set to 0 [default 5000]
     
 *-d, --drop_percent*: 
-    bottom baseline enrichment percentile of genes to drop, as a decimal [default 0.05]
+    bottom baseline enrichment percentile of genes to drop, as a decimal [default 0.01]
     
 *-c, --no_clean_intermediate*: 
     disable automatic removal of intermediate output files
@@ -69,9 +69,13 @@ All arguments are also described via "Rscript predict_mae.R --help"
 *-t, --training_genes_file*: 
     if generating classifiers, specify either "mouse" or "human"
 
+*-q, --quiet*: 
+    disables console output, do not flag if required packages missing [default FALSE]
+
 
 ## Contact us
 
 Questions, comments and concerns can be directed to [Alexander Gimelbrant](alexander_gimelbrant%40dfci.harvard.edu)
 and [Sebastien Vigneau](sebastien.vigneau@gmail.com). Inquiries about how the program works can
 be directed to [Henry Ward](henry.neil.ward@gmail.com) and [Sachit Saksena](sachitdsaksena@utexas.edu).
+Script written by Henry Ward. Data processing tools written by Sachit Saksena.

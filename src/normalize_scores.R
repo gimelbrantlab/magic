@@ -1,14 +1,10 @@
-#!/usr/bin/env Rscript
-
-#################
-# MAIN FUNCTIONS
-#################
 
 
 # Normalizes the scores output from bigwig_to_scores based on
 # either a control bigwig file or the length of each interval.
-normalize_scores <- function(scores_file, output_file, 
-                             control_file = NA, drop_percent = 0.05) {
+normalize_scores <- function(scores_file, output_file, dropped_file,
+                             mark, gene_region, control_file = NA, 
+                             drop_percent = 0.05) {
   
   # Opens scores file and converts NA values to 0
   scores <- read.csv(scores_file, sep = "\t", header = TRUE)
@@ -22,10 +18,16 @@ normalize_scores <- function(scores_file, output_file,
     control[is.na(control)] <- 0
     control <- control %>% mutate(percentile = rank(sum) / length(sum))
     
-    # Removes indices in bottom 5th percentile from both data frames
-    indices_to_keep <- which(control$percentile > drop_percent)
-    control <- control[indices_to_keep,]
-    scores <- scores[indices_to_keep,]
+    # Removes indices in the given bottom percentile from both data frames
+    genes_to_keep <- control$name[control$percentile > drop_percent]
+    genes_to_remove <- control$name[control$percentile <= drop_percent]
+    control <- control[control$name %in% genes_to_keep,]
+    scores <- scores[scores$name %in% genes_to_keep,]
+    
+    # Writes list of dropped genes to file
+    for (gene in genes_to_remove) {
+      cat_f(paste(gene, "\t", mark, "_", gene_region, sep = ""), dropped_file)
+    }
     
     # Divides scores sum by control sum
     scores$norm_sum <- scores$sum / control$sum

@@ -1,4 +1,5 @@
 
+
 # Loads training genes and attaches them to normalized scores
 attach_training_genes <- function(df, training_genes_file) {
   
@@ -12,6 +13,10 @@ attach_training_genes <- function(df, training_genes_file) {
   ids_to_keep <- intersect(training_genes$id, df$id)
   df <- df[df$id %in% ids_to_keep, ]
   training_genes <- training_genes[training_genes$id %in% ids_to_keep, ]
+  
+  # print(length(training_genes$id))
+  # print(length(df$id))
+  # print(length(ids_to_keep))
   
   # Appends training genes to modified df
   df <- df[order(df$id),]

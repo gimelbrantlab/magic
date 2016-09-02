@@ -114,8 +114,9 @@ generate_model <- function(training, classifier, target_feature, log_file,
 
 # Wrapper for generate_model to generate a single classifer, save it as an Rdata
 # file and print a summary of it to a text file
-generate_classifier <- function(training, testing, classifier, target_feature,
-                                output_folder, log_file, selection_rule) {
+generate_classifier <- function(training, testing, testing_gene_names, classifier, 
+                                target_feature, output_folder, log_file, 
+                                selection_rule) {
   
   # Generates model and logs stats to file
   model <- generate_model(training, classifier, target_feature, log_file,
@@ -142,7 +143,8 @@ generate_classifier <- function(training, testing, classifier, target_feature,
   }
   
   # Writes predictions to file
-  testing$predictions <- predictions
+  testing$prediction <- predictions
+  testing$name <- testing_gene_names
   testing_file <- file.path(output_folder, paste(classifier, "_testing.tsv", sep = ""))
   write.table(testing, file = testing_file, sep = "\t", 
               quote = FALSE, row.names = FALSE, col.names = TRUE)
@@ -166,18 +168,23 @@ scores_ml <- function(scores_file, target_feature, classifier, output_folder,
   
   # Loads scores file into a data frame and removes unnecesary cols
   df <- read.csv(scores_file, sep = "\t")
-  df <- df[, !(names(df) %in% c("start", "end", "chrom", "name"))]
   
   # Splits data into training and testing sets
   partition <- createDataPartition(df$status, times = 1, p = 0.8, list = FALSE)
   training <- df[partition,]
   testing <- df[-partition,]
   
+  # Removes unnecessary cols from both sets, saving testing gene names
+  testing_gene_names <- testing$name
+  training <- training[, !(names(training) %in% c("start", "end", "chrom", "name"))]
+  testing <- testing[, !(names(testing) %in% c("start", "end", "chrom", "name"))]
+  
   # Writes training and testing dataframes to output folder
   write.table(testing, file = file.path(output_folder, "testing_set.csv"),
               sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
   
   # Generates model and saves it to output folder
-  generate_classifier(training, testing, classifier, target_feature, 
-                      output_folder, summary_file, selection_rule)
+  generate_classifier(training, testing, testing_gene_names, classifier, 
+                      target_feature, output_folder, summary_file, 
+                      selection_rule)
 }

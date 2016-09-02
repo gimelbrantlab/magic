@@ -23,6 +23,8 @@ load_libraries <- function() {
 
 # Loads or installs all required packages for machine learning
 load_ml_libraries <- function() {
+  get_package("scales", dependencies = TRUE)
+  get_package("ggplot2", dependencies = TRUE)
   get_package("caret", dependencies = TRUE)
   get_package("doMC", repos = "http://R-Forge.R-project.org")
   get_package("pROC")
@@ -49,6 +51,7 @@ load_scripts <- function(src_folder) {
   source(file.path(src_folder, "normalize_scores.R"))
   source(file.path(src_folder, "join_input.R"))
   source(file.path(src_folder, "scores_ml.R"))
+  source(file.path(src_folder, "compare_ml.R"))
 }
 
 ######
@@ -69,6 +72,11 @@ get_package <- function(package_name, repos = "", dependencies = FALSE) {
   if(!suppressMessages(require(package_name, character.only = TRUE))) {
     stop(paste("Cannot load package", package_name))
   }
+}
+
+# Wrapper for cat to write to output file
+cat_f <- function(s, file, append = TRUE) {
+  cat(s, file = file, sep = "\n", append = append)
 }
 
 ######
@@ -158,8 +166,9 @@ create_input_df <- function(input_folder, output_folder) {
 # and normalize_scores.R. Outputs processed text files in output_folder
 process_input <- function(x, input_folder, refseq_file, imprinted_file, 
                           bwtool_folder, output_folder,
-                          filter_input, promoter_length,
-                          drop_percent, overlap) {
+                          dropped_file, filter_input, 
+                          promoter_length, drop_percent, 
+                          overlap) {
   
   # Gets mark and files from row in data frame
   mark <- x[[1]]
@@ -177,25 +186,29 @@ process_input <- function(x, input_folder, refseq_file, imprinted_file,
   # Runs bigwig_to_scores.R on both mark and control files
   bigwig_to_scores(refseq_file, mark_file, imprinted_file,
                    bwtool_folder, output_mark_body_file,
-                   output_mark_promoter_file, filter_input, 
+                   output_mark_promoter_file, filter_input,
                    overlap, promoter_length)
   if (!is.na(x[[3]])) {
     bigwig_to_scores(refseq_file, control_file, imprinted_file,
                      bwtool_folder, output_control_body_file,
-                     output_control_promoter_file, filter_input, 
+                     output_control_promoter_file, filter_input,
                      overlap, promoter_length)
   }
   
   # Runs normalize_scores.R
   if (!is.na(x[[3]])) {
     normalize_scores(output_mark_body_file, output_mark_body_norm_file, 
+                     dropped_file, mark, "body",
                      output_control_body_file, drop_percent)
     normalize_scores(output_mark_promoter_file, output_mark_promoter_norm_file, 
+                     dropped_file, mark, "promoter",
                      output_control_promoter_file, drop_percent) 
   } else {
     normalize_scores(output_mark_body_file, output_mark_body_norm_file, 
+                     dropped_file, mark, "body",
                      NA, drop_percent)
     normalize_scores(output_mark_promoter_file, output_mark_promoter_norm_file, 
+                     dropped_file, mark, "promoter",
                      NA, drop_percent)
   }
 }
@@ -262,11 +275,18 @@ predict_mae_main <- function(current_folder, input_folder, output_folder,
   # Parses input folder into dataframe with marks and files
   input_df <- create_input_df(input_folder, output_folder)
   
-  # Gets reference files and scripts based on position in program directory
+  # Gets reference, output files and scripts based on position in program directory
   reference_folder <- file.path(dirname(current_folder), "reference")
   bin_folder <- file.path(dirname(current_folder), "bin")
   imprinted_file <- file.path(reference_folder, "imprinted_genes.tsv")
   bwtool_folder <- file.path(bin_folder, "bwtool")
+  dropped_file <- file.path(output_folder, "dropped_genes.tsv")
+  
+  # Resets dropped genes file
+  header <- paste("Genes dropped due to baseline enrichment beneath the ",
+                 drop_percent, " percentile", sep = "")
+  cat_f(header, dropped_file, FALSE)
+  cat_f("gene_name\tlow_baseline_mark", dropped_file)
   
   # Gets correct training genes file depending on species
   if (training_genes_file == "mouse") {
@@ -292,12 +312,12 @@ predict_mae_main <- function(current_folder, input_folder, output_folder,
   }
   
   # Applies first two steps of pipeline to each row of input_df
-  # apply(input_df, 1, process_input,
-  #       input_folder = input_folder, refseq_file = refseq_file,
-  #       imprinted_file = imprinted_file, bwtool_folder = bwtool_folder,
-  #       output_folder = output_folder, filter_input = filter_input,
-  #       promoter_length = promoter_length, drop_percent = drop_percent,
-  #       overlap = overlap)
+  apply(input_df, 1, process_input,
+        input_folder = input_folder, refseq_file = refseq_file,
+        imprinted_file = imprinted_file, bwtool_folder = bwtool_folder,
+        output_folder = output_folder, dropped_file = dropped_file,
+        filter_input = filter_input, promoter_length = promoter_length,
+        drop_percent = drop_percent, overlap = overlap)
 
   # Joins all files into two tables with percentile scores or normalized sum
   norm_output_file <- file.path(output_folder, "joined_scores_norm.txt")
@@ -311,20 +331,34 @@ predict_mae_main <- function(current_folder, input_folder, output_folder,
     clean_intermediate(output_folder, input_df, promoter_length)
   }
   
+  cat("Data processing complete. Generating models...\n")
+  
   # Loads machine learning packages
   load_ml_libraries()
   
-  # Creates machine learning output folder if they don't exist
-  percentile_output_folder <- file.path(output_folder, "percentile_classifiers")
-  norm_output_folder <- file.path(output_folder, "normalized_classifiers")
-  if (!dir.exists(percentile_output_folder)) { dir.create(percentile_output_folder) }
-  if (!dir.exists(norm_output_folder)) { dir.create(norm_output_folder) }
+  # Creates machine learning output folders if they don't exist
+  percentile_model_folder <- file.path(output_folder, "percentile_classifiers")
+  norm_model_folder <- file.path(output_folder, "normalized_classifiers")
+  if (!dir.exists(percentile_model_folder)) { dir.create(percentile_model_folder) }
+  if (!dir.exists(norm_model_folder)) { dir.create(norm_model_folder) }
   
   # Generates classifiers for both percentiles and normalized scores
-  generate_classifiers(percentile_output_file, percentile_output_folder)
-  generate_classifiers(norm_output_file, norm_output_folder)
+  generate_classifiers(percentile_output_file, percentile_model_folder)
+  generate_classifiers(norm_output_file, norm_model_folder)
   
-  cat("Job's done\n")
+  cat("Models generated. Generating model comparisons on resampled training data...\n")
+  
+  # Creates model comparison output folders if they don't exist
+  percentile_comparison_folder <- file.path(percentile_model_folder, "comparisons")
+  norm_comparison_folder <- file.path(norm_model_folder, "comparisons")
+  if (!dir.exists(percentile_comparison_folder)) { dir.create(percentile_comparison_folder) }
+  if (!dir.exists(norm_comparison_folder)) { dir.create(norm_comparison_folder) }
+  
+  # Compares models using resampled training data
+  compare_ml(percentile_model_folder, percentile_comparison_folder)
+  compare_ml(norm_model_folder, norm_comparison_folder)
+
+  cat("Finished\n")
 }
 
 ##################
@@ -350,7 +384,7 @@ options = list(
               help="disable sex, extra chrom and gene filtering [default= %default]"),
   make_option(c("-p", "--promoter_length"), type="integer", default=5000, 
               help="upstream promoter region length [default= %default]"),
-  make_option(c("-d", "--drop_percent"), type="double", default=0.05, 
+  make_option(c("-d", "--drop_percent"), type="double", default=0.01, 
               help="bottom enrichment percentile of genes to drop [default= %default]"),
   make_option(c("-c", "--no_clean_intermediate"), action="store_false", default=TRUE, 
               help="leave intermediate files [default= %default]"),
@@ -359,7 +393,9 @@ options = list(
   make_option(c("-r", "--refseq_file"), type="character", default=NULL, 
               help="refseq file, see readme for description"),
   make_option(c("-t", "--training_genes_file"), type="character", default="mouse", 
-              help="'mouse' or 'human' for training genes set to use [default= %default]")
+              help="'mouse' or 'human' for training genes set to use [default= %default]"),
+  make_option(c("-q", "--quiet"), action="store_true", default=FALSE, 
+              help="disables console output [default= %default]")
 )
 
 # Gets options and checks arguments
@@ -377,9 +413,17 @@ clean <- opt$no_clean_intermediate
 overlap <- opt$no_overlap
 refseq_file <- opt$refseq_file
 training_genes_file <- tolower(opt$training_genes_file)
+quiet <- opt$quiet
 
-# Calls main function
-predict_mae_main(current_folder, input_folder, output_folder,
-                 filter_input, promoter_length, drop_percent,
-                 clean, overlap, refseq_file, 
-                 training_genes_file)
+# Calls main function, disabling output if running in quiet mode
+if (!quiet) {
+  invisible(predict_mae_main(current_folder, input_folder, output_folder,
+                             filter_input, promoter_length, drop_percent,
+                             clean, overlap, refseq_file, 
+                             training_genes_file))
+} else {
+  predict_mae_main(current_folder, input_folder, output_folder,
+                   filter_input, promoter_length, drop_percent,
+                   clean, overlap, refseq_file, 
+                   training_genes_file)
+}

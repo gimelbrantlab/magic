@@ -1,8 +1,3 @@
-#!/usr/bin/env Rscript
-
-#################
-# MAIN FUNCTIONS
-#################
 
 
 # Appends gene names to regions in the counts file, and removes sex-linked 
