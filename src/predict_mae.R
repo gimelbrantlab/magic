@@ -251,22 +251,29 @@ clean_intermediate <- function(output_folder, input_df, promoter_length) {
 }
 
 # Generates seven different classifiers via scores_ml.R on given scores file
-generate_classifiers <- function(scores_file, output_folder) {
+generate_classifiers <- function(scores_file, output_folder, sampling_method) {
   target_feature <- "status"
-  scores_ml(scores_file, target_feature, "glmStepAIC", output_folder, "best")
-  scores_ml(scores_file, target_feature, "rf", output_folder, "best")
-  scores_ml(scores_file, target_feature, "nnet", output_folder, "best")
-  scores_ml(scores_file, target_feature, "rpart", output_folder, "best")
-  scores_ml(scores_file, target_feature, "svmPoly", output_folder, "best")
-  scores_ml(scores_file, target_feature, "evtree", output_folder, "best")
-  scores_ml(scores_file, target_feature, "knn", output_folder, "best")
+  scores_ml(scores_file, target_feature, "glmStepAIC", output_folder,
+            "best", sampling_method)
+  scores_ml(scores_file, target_feature, "rf", output_folder, 
+            "best", sampling_method)
+  scores_ml(scores_file, target_feature, "nnet", output_folder, 
+            "best", sampling_method)
+  scores_ml(scores_file, target_feature, "rpart", output_folder, 
+            "best", sampling_method)
+  scores_ml(scores_file, target_feature, "svmPoly", output_folder, 
+            "best", sampling_method)
+  scores_ml(scores_file, target_feature, "evtree", output_folder, 
+            "best", sampling_method)
+  scores_ml(scores_file, target_feature, "knn", output_folder, 
+            "best", sampling_method)
 }
 
 # Runs pipeline on input folder
 predict_mae_main <- function(current_folder, input_folder, output_folder,
                              filter_input, promoter_length, drop_percent,
                              clean, overlap, refseq_file, 
-                             training_genes_file) {
+                             training_genes_file, sampling_method) {
   
   # Loads required scripts and libraries
   load_libraries()
@@ -343,8 +350,10 @@ predict_mae_main <- function(current_folder, input_folder, output_folder,
   if (!dir.exists(norm_model_folder)) { dir.create(norm_model_folder) }
   
   # Generates classifiers for both percentiles and normalized scores
-  generate_classifiers(percentile_output_file, percentile_model_folder)
-  generate_classifiers(norm_output_file, norm_model_folder)
+  generate_classifiers(percentile_output_file, percentile_model_folder,
+                       sampling_method)
+  generate_classifiers(norm_output_file, norm_model_folder,
+                       sampling_method)
   
   cat("Models generated. Generating model comparisons on resampled training data...\n")
   
@@ -388,6 +397,8 @@ options = list(
               help="bottom enrichment percentile of genes to drop [default= %default]"),
   make_option(c("-c", "--no_clean_intermediate"), action="store_false", default=TRUE, 
               help="leave intermediate files [default= %default]"),
+  make_option(c("-s", "--sampling_method"), type="character", default="none",
+              help="resampling method used to train classifiers [default= %default]"),
   make_option(c("-l", "--no_overlap"), action="store_false", default=TRUE, 
               help="remove promoter overlap with gene body, see readme for description [default= %default]"),
   make_option(c("-r", "--refseq_file"), type="character", default=NULL, 
@@ -414,16 +425,17 @@ overlap <- opt$no_overlap
 refseq_file <- opt$refseq_file
 training_genes_file <- tolower(opt$training_genes_file)
 quiet <- opt$quiet
+sampling_method <- opt$sampling_method
 
 # Calls main function, disabling output if running in quiet mode
 if (!quiet) {
   invisible(predict_mae_main(current_folder, input_folder, output_folder,
                              filter_input, promoter_length, drop_percent,
                              clean, overlap, refseq_file, 
-                             training_genes_file))
+                             training_genes_file, sampling_method))
 } else {
   predict_mae_main(current_folder, input_folder, output_folder,
                    filter_input, promoter_length, drop_percent,
                    clean, overlap, refseq_file, 
-                   training_genes_file)
+                   training_genes_file, sampling_method)
 }

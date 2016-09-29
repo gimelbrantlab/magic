@@ -17,8 +17,8 @@ and it spits out an output folder.
 *Input folder*: contains mark and control files in the bigWig file format (.bigWig or .bw). Mark
 files contain chromatin mark enrichment data across an organism's genome, generally ChIP-Seq,
 and control files contain baseline data for the same experiment. For a given mark name, mark 
-files must be named as [mark name]_mark.bigWig or [mark name]_mark.bw, and that mark's 
-corresponding control file must be named [mark name]_control.bigWig or [mark_name]_control.bw.
+files must be named as [mark name]\_mark.bigWig or [mark name]\_mark.bw, and that mark's 
+corresponding control file must be named [mark name]\_control.bigWig or [mark name]\_control.bw.
 
 *Output folder*: contains two tables for normalized scores and percentile ranks of predicted or 
 reference genes. Scores are normalized to either the length of the gene or the baseline enrichment
@@ -62,6 +62,10 @@ All arguments are also described via "Rscript predict_mae.R --help"
     
 *-c, --no_clean_intermediate*: 
     disable automatic removal of intermediate output files
+    
+*-s, --sampling_method*: 
+    resampling method to use when training classifiers, one of "none", "down", or "up"
+[default "none"]
 
 *-l, --no_overlap*: 
     disables default option of summing enrichment for *promoter_length* base pairs on either side of the TSS for a promoter region

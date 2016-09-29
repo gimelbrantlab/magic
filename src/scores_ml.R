@@ -42,7 +42,7 @@ generate_sets <- function(df, target_feature, seed = 50, split = 0.8) {
 
 # Runs machine learning analysis on training data using the specified method
 generate_model <- function(training, classifier, target_feature, log_file,
-                           selection_rule, seed = 50) {
+                           selection_rule, sampling_method, seed = 50) {
   
   # Sets seed to make this reproducible and gets begin time
   set.seed(seed)
@@ -85,6 +85,7 @@ generate_model <- function(training, classifier, target_feature, log_file,
                                   number = 5,
                                   summaryFunction = twoClassSummary,
                                   selectionFunction = selection_rule,
+                                  sampling = sampling_method,
                                   classProbs = TRUE,
                                   savePredictions = TRUE)
     capture.output(model <- train(train_formula,
@@ -116,11 +117,11 @@ generate_model <- function(training, classifier, target_feature, log_file,
 # file and print a summary of it to a text file
 generate_classifier <- function(training, testing, testing_gene_names, classifier, 
                                 target_feature, output_folder, log_file, 
-                                selection_rule) {
+                                selection_rule, sampling_method) {
   
   # Generates model and logs stats to file
   model <- generate_model(training, classifier, target_feature, log_file,
-                          selection_rule)
+                          selection_rule, sampling_method)
   sink_f(model, log_file)
   
   # Saves model to file
@@ -133,11 +134,12 @@ generate_classifier <- function(training, testing, testing_gene_names, classifie
   cat_f("\n", log_file)
   sink_f(postResample(predictions, testing[[target_feature]]), log_file)
   if (nlevels(training[[target_feature]]) == 2) {
-    sens <- sensitivity(predictions, testing[[target_feature]])
-    spec <- specificity(predictions, testing[[target_feature]])
+    sens <- sensitivity(predictions, testing[[target_feature]], positive = "rMAE")
+    spec <- specificity(predictions, testing[[target_feature]], positive = "rMAE")
     cat_f(paste("sensitivity:", sens, "\n"), log_file)
     cat_f(paste("specificity:", spec, "\n"), log_file)
-    cMat <- as.table(confusionMatrix(predictions, testing[[target_feature]]))
+    cMat <- as.table(confusionMatrix(predictions, testing[[target_feature]]),
+                     positive = "rMAE")
     matrix_file <- file.path(output_folder, paste(classifier, "matrix", sep = "_"))
     write.table(cMat, file = matrix_file, quote = FALSE)
   }
@@ -152,7 +154,7 @@ generate_classifier <- function(training, testing, testing_gene_names, classifie
 
 # Runs machine learning analyses on data
 scores_ml <- function(scores_file, target_feature, classifier, output_folder,
-                      selection_rule, cores = 4) {
+                      selection_rule, sampling_method = "none", cores = 4) {
   
   # Checks that input file exists and creates output folder if it doesn't exist
   if (!file.exists(scores_file)) { stop("scores do not exist") }
@@ -186,5 +188,5 @@ scores_ml <- function(scores_file, target_feature, classifier, output_folder,
   # Generates model and saves it to output folder
   generate_classifier(training, testing, testing_gene_names, classifier, 
                       target_feature, output_folder, summary_file, 
-                      selection_rule)
+                      selection_rule, sampling_method)
 }
