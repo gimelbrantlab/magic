@@ -81,13 +81,23 @@ generate_model <- function(training, classifier, target_feature, log_file,
   train_control <- NULL
   model <- NULL
   if (nlevels(training[[target_feature]]) == 2) {
-    train_control <- trainControl(method = "cv",
-                                  number = 5,
-                                  summaryFunction = twoClassSummary,
-                                  selectionFunction = selection_rule,
-                                  sampling = sampling_method,
-                                  classProbs = TRUE,
-                                  savePredictions = TRUE)
+    # Caret doesn't like passing in "none" as the sampling param
+    if (sampling_method != "none") {
+      train_control <- trainControl(method = "cv",
+                                    number = 5,
+                                    summaryFunction = twoClassSummary,
+                                    selectionFunction = selection_rule,
+                                    sampling = sampling_method,
+                                    classProbs = TRUE,
+                                    savePredictions = TRUE)
+    } else {
+      train_control <- trainControl(method = "cv",
+                                    number = 5,
+                                    summaryFunction = twoClassSummary,
+                                    selectionFunction = selection_rule,
+                                    classProbs = TRUE,
+                                    savePredictions = TRUE)
+    }
     capture.output(model <- train(train_formula,
                                   data = training,
                                   method = classifier,
@@ -144,7 +154,7 @@ generate_classifier <- function(training, testing, testing_gene_names, classifie
     write.table(cMat, file = matrix_file, quote = FALSE)
   }
   
-  # Writes predictions to file
+  # Writes predictions appended to testing set to file
   testing$prediction <- predictions
   testing$name <- testing_gene_names
   testing_file <- file.path(output_folder, paste(classifier, "_testing.tsv", sep = ""))
@@ -180,10 +190,6 @@ scores_ml <- function(scores_file, target_feature, classifier, output_folder,
   testing_gene_names <- testing$name
   training <- training[, !(names(training) %in% c("start", "end", "chrom", "name"))]
   testing <- testing[, !(names(testing) %in% c("start", "end", "chrom", "name"))]
-  
-  # Writes training and testing dataframes to output folder
-  write.table(testing, file = file.path(output_folder, "testing_set.csv"),
-              sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
   
   # Generates model and saves it to output folder
   generate_classifier(training, testing, testing_gene_names, classifier, 

@@ -17,7 +17,7 @@ attach_training_genes <- function(df, training_genes_file) {
   # print(length(training_genes$id))
   # print(length(df$id))
   # print(length(ids_to_keep))
-  
+
   # Appends training genes to modified df
   df <- df[order(df$id),]
   training_genes <- training_genes[order(training_genes$id),]

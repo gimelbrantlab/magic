@@ -12,9 +12,8 @@
 
 # Loads or installs all required packages
 load_libraries <- function() {
+  get_package("plyr")
   get_package("dplyr")
-  get_package("randomForest")
-  get_package("neuralnet")
   get_package("kernlab")
   get_package("caret", dependencies = TRUE)
   get_package("lattice")
@@ -29,15 +28,17 @@ load_ml_libraries <- function() {
   get_package("doMC", repos = "http://R-Forge.R-project.org")
   get_package("pROC")
   get_package("ada")
+  get_package("fastAdaboost")
   get_package("mboost")
   get_package("randomForest")
-  get_package("neuralnet")
+  get_package("RSNNS")
   get_package("nnet")
   get_package("kernlab")
   get_package("lattice")
   get_package("optparse")
   get_package("dplyr")
   get_package("evtree")
+  get_package("MASS")
 }
 
 # Loads or installs all required packages for argument parsing
@@ -184,16 +185,16 @@ process_input <- function(x, input_folder, refseq_file, imprinted_file,
   output_mark_promoter_norm_file <- file.path(output_folder, paste(mark, "_norm_promoter.txt", sep = ""))
   
   # Runs bigwig_to_scores.R on both mark and control files
-  bigwig_to_scores(refseq_file, mark_file, imprinted_file,
-                   bwtool_folder, output_mark_body_file,
-                   output_mark_promoter_file, filter_input,
-                   overlap, promoter_length)
-  if (!is.na(x[[3]])) {
-    bigwig_to_scores(refseq_file, control_file, imprinted_file,
-                     bwtool_folder, output_control_body_file,
-                     output_control_promoter_file, filter_input,
-                     overlap, promoter_length)
-  }
+  # bigwig_to_scores(refseq_file, mark_file, imprinted_file,
+  #                  bwtool_folder, output_mark_body_file,
+  #                  output_mark_promoter_file, filter_input,
+  #                  overlap, promoter_length)
+  # if (!is.na(x[[3]])) {
+  #   bigwig_to_scores(refseq_file, control_file, imprinted_file,
+  #                    bwtool_folder, output_control_body_file,
+  #                    output_control_promoter_file, filter_input,
+  #                    overlap, promoter_length)
+  # }
   
   # Runs normalize_scores.R
   if (!is.na(x[[3]])) {
@@ -267,6 +268,10 @@ generate_classifiers <- function(scores_file, output_folder, sampling_method) {
             "best", sampling_method)
   scores_ml(scores_file, target_feature, "knn", output_folder, 
             "best", sampling_method)
+  scores_ml(scores_file, target_feature, "ada", output_folder,
+            "best", sampling_method)
+  scores_ml(scores_file, target_feature, "mlpML", output_folder,
+            "best", sampling_method)
 }
 
 # Runs pipeline on input folder
@@ -301,7 +306,10 @@ predict_mae_main <- function(current_folder, input_folder, output_folder,
   } else if (training_genes_file == "human") {
     training_genes_file <- file.path(reference_folder, "training_genes_human.tsv")
   } else {
-    stop("training genes file does not exist (use 'mouse' or 'human')")
+    training_genes_file <- file.path(reference_folder, training_genes_file)
+    if (!file.exists(training_genes_file)) {
+      stop("training genes file does not exist (use 'mouse' or 'human')")
+    }
   }
   
   # Gets refseq file from either references folder or user input
