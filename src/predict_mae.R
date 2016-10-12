@@ -185,16 +185,16 @@ process_input <- function(x, input_folder, refseq_file, imprinted_file,
   output_mark_promoter_norm_file <- file.path(output_folder, paste(mark, "_norm_promoter.txt", sep = ""))
   
   # Runs bigwig_to_scores.R on both mark and control files
-  # bigwig_to_scores(refseq_file, mark_file, imprinted_file,
-  #                  bwtool_folder, output_mark_body_file,
-  #                  output_mark_promoter_file, filter_input,
-  #                  overlap, promoter_length)
-  # if (!is.na(x[[3]])) {
-  #   bigwig_to_scores(refseq_file, control_file, imprinted_file,
-  #                    bwtool_folder, output_control_body_file,
-  #                    output_control_promoter_file, filter_input,
-  #                    overlap, promoter_length)
-  # }
+  bigwig_to_scores(refseq_file, mark_file, imprinted_file,
+                   bwtool_folder, output_mark_body_file,
+                   output_mark_promoter_file, filter_input,
+                   overlap, promoter_length)
+  if (!is.na(x[[3]])) {
+    bigwig_to_scores(refseq_file, control_file, imprinted_file,
+                     bwtool_folder, output_control_body_file,
+                     output_control_promoter_file, filter_input,
+                     overlap, promoter_length)
+  }
   
   # Runs normalize_scores.R
   if (!is.na(x[[3]])) {
