@@ -167,7 +167,7 @@ scores_ml <- function(scores_file, target_feature, classifier, output_folder,
                       selection_rule, sampling_method = "none", cores = 4) {
   
   # Checks that input file exists and creates output folder if it doesn't exist
-  if (!file.exists(scores_file)) { stop("scores do not exist") }
+  if (!file.exists(scores_file)) { stop("scores file does not exist") }
   if (!dir.exists(output_folder)) { dir.create(output_folder) }
   
   # Creates summary file with header

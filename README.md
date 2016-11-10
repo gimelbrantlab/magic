@@ -52,7 +52,7 @@ All arguments are also described via "Rscript predict_mae.R --help"
     from the [UCSC table browser](https://genome.ucsc.edu/cgi-bin/hgTables). IMPORTANT: must *not* contain exonStarts and exonEnds columns
     
 *-f, --no_filter*: 
-    disable sex, extra chrom and gene filtering
+    disable sex, extra chrom and olfactory gene filtering
     
 *-p, --promoter_length*: 
     length of promoter region, disables promoter region separation if set to 0 [default 5000]

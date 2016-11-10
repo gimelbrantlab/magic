@@ -10,6 +10,7 @@
 # LIBRARIES AND SCRIPTS
 ######
 
+
 # Loads or installs all required packages
 load_libraries <- function() {
   get_package("plyr")
@@ -326,20 +327,20 @@ predict_mae_main <- function(current_folder, input_folder, output_folder,
     }
   }
   
-  # Applies first two steps of pipeline to each row of input_df
-  apply(input_df, 1, process_input,
-        input_folder = input_folder, refseq_file = refseq_file,
-        imprinted_file = imprinted_file, bwtool_folder = bwtool_folder,
-        output_folder = output_folder, dropped_file = dropped_file,
-        filter_input = filter_input, promoter_length = promoter_length,
-        drop_percent = drop_percent, overlap = overlap)
-
-  # Joins all files into two tables with percentile scores or normalized sum
-  norm_output_file <- file.path(output_folder, "joined_scores_norm.txt")
+  # # Applies first two steps of pipeline to each row of input_df
+  # apply(input_df, 1, process_input,
+  #       input_folder = input_folder, refseq_file = refseq_file,
+  #       imprinted_file = imprinted_file, bwtool_folder = bwtool_folder,
+  #       output_folder = output_folder, dropped_file = dropped_file,
+  #       filter_input = filter_input, promoter_length = promoter_length,
+  #       drop_percent = drop_percent, overlap = overlap)
+  # 
+  # # Joins all files into two tables with percentile scores or normalized sum
+  # norm_output_file <- file.path(output_folder, "joined_scores_norm.txt")
   percentile_output_file <- file.path(output_folder, "joined_scores_percentile.txt")
-  join_input_main(input_df$processed_body, input_df$processed_promoter, input_df$mark,
-                  training_genes_file, percentile_output_file, norm_output_file,
-                  promoter_length)
+  # join_input_main(input_df$processed_body, input_df$processed_promoter, input_df$mark,
+  #                 training_genes_file, percentile_output_file, norm_output_file,
+  #                 promoter_length)
 
   # Removes intermediate files from output folder if specified
   if (clean) {
@@ -353,27 +354,27 @@ predict_mae_main <- function(current_folder, input_folder, output_folder,
   
   # Creates machine learning output folders if they don't exist
   percentile_model_folder <- file.path(output_folder, "percentile_classifiers")
-  norm_model_folder <- file.path(output_folder, "normalized_classifiers")
+  # norm_model_folder <- file.path(output_folder, "normalized_classifiers")
   if (!dir.exists(percentile_model_folder)) { dir.create(percentile_model_folder) }
-  if (!dir.exists(norm_model_folder)) { dir.create(norm_model_folder) }
+  # if (!dir.exists(norm_model_folder)) { dir.create(norm_model_folder) }
   
   # Generates classifiers for both percentiles and normalized scores
   generate_classifiers(percentile_output_file, percentile_model_folder,
                        sampling_method)
-  generate_classifiers(norm_output_file, norm_model_folder,
-                       sampling_method)
+  # generate_classifiers(norm_output_file, norm_model_folder,
+  #                      sampling_method)
   
   cat("Models generated. Generating model comparisons on resampled training data...\n")
   
   # Creates model comparison output folders if they don't exist
   percentile_comparison_folder <- file.path(percentile_model_folder, "comparisons")
-  norm_comparison_folder <- file.path(norm_model_folder, "comparisons")
+  # norm_comparison_folder <- file.path(norm_model_folder, "comparisons")
   if (!dir.exists(percentile_comparison_folder)) { dir.create(percentile_comparison_folder) }
-  if (!dir.exists(norm_comparison_folder)) { dir.create(norm_comparison_folder) }
+  # if (!dir.exists(norm_comparison_folder)) { dir.create(norm_comparison_folder) }
   
   # Compares models using resampled training data
   compare_ml(percentile_model_folder, percentile_comparison_folder)
-  compare_ml(norm_model_folder, norm_comparison_folder)
+  # compare_ml(norm_model_folder, norm_comparison_folder)
 
   cat("Finished\n")
 }
