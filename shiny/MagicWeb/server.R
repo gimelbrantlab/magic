@@ -5,14 +5,17 @@
 
 
 library(shiny)
-source(file.path("..", "..", "src", "process.R"))
-source(file.path("..", "..", "src", "generate.R"))
-source(file.path("..", "..", "src", "analyze.R"))
+
 
 ######
 ### SERVER GLOBALS
 ######
 
+
+src_folder <- file.path("..", "..", "src")
+process_file <- file.path(src_folder, "process.R")
+generate_file <- file.path(src_folder, "generate.R")
+analyze_file <- file.path(src_folder, "analyze.R")
 
 ######
 ### SERVER
@@ -23,7 +26,6 @@ shinyServer(function(input, output, session) {
   
   # Session variables
   process_dir <- NULL
-  cat(file=stderr(), "process_dir")
   
   ### DATA PROCESSING 
   
@@ -31,14 +33,13 @@ shinyServer(function(input, output, session) {
   observeEvent(
     ignoreNULL = TRUE,
     eventExpr = {
-      input$processingDirButton
+      input$processingDir
     },
     handlerExpr = {
-      if (input$processingDirButton > 0) {
-        print("getting dir...")
+      if (input$processingDir > 0) {
         process_dir = 
-          choose.dir(default = readDirectoryInput(session, 'processingDirButton'))
-        updateDirectoryInput(session, 'processingDirButton', value = process_dir)
+          choose.dir(default = readDirectoryInput(session, 'processingDir'))
+        updateDirectoryInput(session, 'processingDir', value = process_dir)
       }
     }
   )

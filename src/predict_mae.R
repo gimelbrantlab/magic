@@ -11,8 +11,8 @@
 ######
 
 
-# Loads or installs all required packages
-load_libraries <- function() {
+# Loads or installs all required packages for processing
+load_process_libraries <- function() {
   get_package("plyr")
   get_package("dplyr")
   get_package("kernlab")
@@ -22,7 +22,7 @@ load_libraries <- function() {
 }
 
 # Loads or installs all required packages for machine learning
-load_ml_libraries <- function() {
+load_generate_libraries <- function() {
   get_package("scales", dependencies = TRUE)
   get_package("ggplot2", dependencies = TRUE)
   get_package("caret", dependencies = TRUE)
@@ -82,7 +82,7 @@ cat_f <- function(s, file, append = TRUE) {
 }
 
 ######
-### MAIN FUNCTIONS
+# MAIN FUNCTIONS
 ######
 
 
@@ -282,7 +282,7 @@ predict_mae_main <- function(current_folder, input_folder, output_folder,
                              training_genes_file, sampling_method) {
   
   # Loads required scripts and libraries
-  load_libraries()
+  load_process_libraries()
   load_scripts(current_folder)
   
   # Parses input folder into dataframe with marks and files
@@ -350,7 +350,7 @@ predict_mae_main <- function(current_folder, input_folder, output_folder,
   cat("Data processing complete. Generating models...\n")
   
   # Loads machine learning packages
-  load_ml_libraries()
+  load_generate_libraries()
   
   # Creates machine learning output folders if they don't exist
   percentile_model_folder <- file.path(output_folder, "percentile_classifiers")
