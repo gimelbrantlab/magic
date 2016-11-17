@@ -202,9 +202,9 @@ process_main <- function(current_folder, input_folder, output_folder,
   
   # Gets correct training genes file depending on species
   if (training_genes_file == "mouse") {
-    training_genes_file <- file.path(reference_folder, "training_genes_mouse.tsv")
+    training_genes_file <- file.path(reference_folder, "mouse_tg.tsv")
   } else if (training_genes_file == "human") {
-    training_genes_file <- file.path(reference_folder, "training_genes_human.tsv")
+    training_genes_file <- file.path(reference_folder, "human_tg.tsv")
   } else {
     training_genes_file <- file.path(reference_folder, training_genes_file)
     if (!file.exists(training_genes_file)) {

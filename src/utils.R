@@ -102,3 +102,14 @@ cat_f <- function(s, file, append = TRUE) {
 load_initial_libraries <- function() {
   get_package("optparse")
 }
+
+# Loads all file names matching a given pattern, with a name
+# and a separator, into a list
+get_names <- function(input_folder, pattern, sep = "_") {
+  output <- list()
+  files <- list.files(input_folder, pattern = pattern, recursive = FALSE)
+  for (f in files) {
+    output <- c(output, strsplit(f, sep)[[1]][1])
+  }
+  return(output)
+}

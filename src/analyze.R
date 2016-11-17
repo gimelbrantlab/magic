@@ -133,7 +133,7 @@ options = list(
   make_option(c("-i", "--input_file"), type="character", default=NULL, 
               help="file output from process.R, see readme for description"),
   make_option(c("-m", "--models_folder"), type="character", default=models_folder, 
-              help="output folder from generate.R"),
+              help="contains models output from generate.R"),
   make_option(c("-o", "--output_folder"), type="character", default="analyze_output", 
               help="output folder [default= %default]"),
   make_option(c("-ex", "--excluded_models"), type="character", default="",
