@@ -41,6 +41,14 @@ shinyServer(function(input, output, session) {
   sampling_method <- NULL
   selection_rule <- NULL
   
+  # Session variables for program output
+  process_output <- NULL
+  process_running <- FALSE
+  analyze_output <- NULL
+  analyze_running <- FALSE
+  generate_output <- NULL
+  generate_running <- FALSE
+  
   ### VARIABLE UPDATING
   
   var_update <- reactive({
@@ -80,6 +88,8 @@ shinyServer(function(input, output, session) {
     
     # Builds command to run process.R and executes it
     if (!is.null(process_dir)) {
+      process_output <- NULL
+      process_running <- TRUE
       process_cmd <- paste("Rscript", process_dir)
       args <- paste("-i", process_dir,
                     "-o", output_folder,
@@ -89,9 +99,31 @@ shinyServer(function(input, output, session) {
                     "-l", no_overlap,
                     "-r", refseq_name,
                     "-tr", training_genes)
-      try(system2(process_cmd, args))
+      process_output <- capture.output(tryCatch(
+        system2(process_cmd, args), error = function(e) e))
     }
   })
+  
+  # Sets reactive processing output text
+  output$processText <- renderText({
+    
+    if(process_running) { paste("Processing data...") }
+    
+    if(!is.null(process_output)) {
+      process_running <- FALSE
+      paste(process_output)
+    }
+  })
+  
+  # Handler for processed data download
+  output$downloadProcessButton <- downloadHandler(
+    filename = function() { paste("processedData.txt") } ,
+    content <- function(file) {
+      df <- read.csv(file.path(output_folder, "joined_scores_percentile.txt"),
+                     sep = "\t")
+      write.table(df, file, sep = "\t", row.names = FALSE, quote = FALSE)
+    }
+  )
   
   ### DATA ANALYSIS
   
@@ -109,15 +141,39 @@ shinyServer(function(input, output, session) {
     if ((!is.null(analysis_file_path)) &&
         (!is.null(models)) && 
         (!is.null(positive_class))) {
+      analyze_output <- NULL
+      analyze_running <- TRUE
       analyze_cmd <- paste("Rscript", analyze_file)
       args <- paste("-i", analysis_file_path,
                     "-m", models_folder,
                     "-o", output_folder,
                     "-ex", excluded_models,
                     "-po", positive_class)
-      try(system2(analyze_cmd, args))
+      analyze_output <- capture.output(tryCatch(
+        system2(analyze_cmd, args), error = function(e) e))
     }
   })
+  
+  # Sets reactive analysis output text
+  output$analysisText <- renderText({
+    
+    if(analyze_running) { paste("Analyzing data...") }
+    
+    if(!is.null(analyze_output)) {
+      analyze_running <- FALSE
+      paste(analyze_output)
+    }
+  })
+  
+  # Handler for analyzed data download
+  output$downloadAnalyzeButton <- downloadHandler(
+    filename = function() { paste("analyzedData.txt") } ,
+    content <- function(file) {
+      df <- read.csv(file.path(output_folder, "all_predictions.tsv"),
+                     sep = "\t")
+      write.table(df, file, sep = "\t", row.names = FALSE, quote = FALSE)
+    }
+  )
   
   ### MODEL GENERATION 
   
@@ -134,13 +190,27 @@ shinyServer(function(input, output, session) {
     # Builds command to run generate.R and executes it
     if ((!is.null(training_file_path)) &&
         (!is.null(target_feature))) {
+      generate_output <- NULL
+      generate_running <- TRUE
       generate_cmd <- paste("Rscript", generate_file)
       args <- paste("-i", training_file_path,
                     "-o", output_folder,
                     "-sa", sampling_method,
                     "-se", selection_rule,
                     "-ta", target_feature)
-      try(system2(generate_cmd, args))
+      generate_output <- capture.output(tryCatch(
+        system2(generate_cmd, args), error = function(e) e))
+    }
+  })
+  
+  # Sets reactive generation output text
+  output$generateText <- renderText({
+    
+    if(generate_running) { paste("Generating models...") }
+    
+    if(!is.null(generate_output)) {
+      generate_running <- FALSE
+      paste(generate_output)
     }
   })
 })

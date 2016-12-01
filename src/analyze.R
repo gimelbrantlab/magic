@@ -107,6 +107,10 @@ analyze_main <- function(current_folder, input_file, models_folder,
   # Generates predictions and appends them to df
   df <- ml_predict(df, models_folder, output_folder, 
                    excluded_models, positive_class)
+  
+  # Writes predictions to file
+  write.table(df, file.path(output_folder, "all_predictions.tsv"), sep = "\t",
+              row.names = FALSE, quote = FALSE)
 }
 
 ######
