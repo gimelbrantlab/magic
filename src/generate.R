@@ -37,7 +37,7 @@ generate_main <- function(current_folder, input_file, output_folder,
   if (!dir.exists(comparison_folder)) { dir.create(comparison_folder) }
   compare_ml(output_folder, comparison_folder)
   
-  cat("Finished\n")
+  cat("Model generation complete\n")
 }
 
 ######
@@ -50,10 +50,9 @@ generate_main <- function(current_folder, input_file, output_folder,
 args <- commandArgs()
 current_folder <- dirname(sub("--file=", "", args[grep("--file=", args)]))
 
-# Sets working directory to src folder, gets path to models folder
-# and loads utility functions
-setwd(file.path("..", current_folder))
-source("utils.R")
+# Loads utility functions
+models_folder <- file.path(current_folder, "..", "models")
+source(file.path(current_folder, "utils.R"))
 
 # Loads optparse
 load_initial_libraries()
@@ -64,11 +63,11 @@ options = list(
               help="tsv file output by process.R, see readme for description"),
   make_option(c("-o", "--output_folder"), type="character", default="output", 
               help="output folder [default= %default]"),
-  make_option(c("-sa", "--sampling_method"), type="character", default="none",
+  make_option(c("-m", "--sampling_method"), type="character", default="none",
               help="resampling method used to train classifiers [default= %default]"),
-  make_option(c("-se", "--selection_rule"), type="character", default="best",
+  make_option(c("-r", "--selection_rule"), type="character", default="best",
               help="caret rule used to select the best model [default= %default]"),
-  make_option(c("-ta", "--target_feature"), type="character", default="status",
+  make_option(c("-t", "--target_feature"), type="character", default="status",
               help="name of column in dataset with feature to classify by [default= %default]"),
   make_option(c("-q", "--quiet"), action="store_true", default=FALSE, 
               help="disables console output [default= %default]")

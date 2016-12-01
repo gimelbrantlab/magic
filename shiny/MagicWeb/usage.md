@@ -71,8 +71,8 @@ All arguments are also described via "Rscript process.R --help"
 
 All arguments are also described via "Rscript generate.R --help"
 
-*-i, --input_folder*:
-    Path to input folder, described in general usage
+*-i, --input_file*:
+    Path to input file, described in general usage
     
 *-o, --output_folder*:
     Path to output folder, described in general usage [default output]
@@ -83,7 +83,7 @@ All arguments are also described via "Rscript generate.R --help"
 *-ex, --excluded_models*: 
     list of models to exclude from folder, separated by commas
 
-*-po, --positive_class*:
+*-p, --positive_class*:
     name of target feature's positive clas [default "MAE"]
     
 *-q, --quiet*: 
@@ -98,7 +98,7 @@ All arguments are also described via "Rscript generate.R --help"
 ### Example command line usage
 
 *Minimum*:
-    Rscript generate.R -i "input_file.tsv" -ta "status"
+    Rscript generate.R -i "input_file.tsv"
     
 *With many options*:
     Rscript generate.R -i "input_file.tsv" -o output -ta "status" -sa "down" -se "oneSE"
@@ -113,14 +113,14 @@ All arguments are also described via "Rscript generate.R --help"
 *-o, --output_folder*:
     Path to output folder, described in general usage [default output]
 
-*-ta, --target_feature*:
+*-t, --target_feature*:
     name of column in dataset with feature to classify by [default "status"]
 
-*-sa, --sampling_method*: 
+*-m, --sampling_method*: 
     resampling method to use when training classifiers, one of "none", "down", or "up"
 [default "none"]
 
-*-se, --selection_rule*:
+*-r, --selection_rule*:
     caret rule used to select the best model [default "best"]
     
 *-q, --quiet*: 

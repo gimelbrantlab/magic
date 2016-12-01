@@ -246,7 +246,7 @@ process_main <- function(current_folder, input_folder, output_folder,
     clean_intermediate(output_folder, input_df, promoter_length)
   }
   
-  cat("Data processing complete.")
+  cat("Data processing complete.\n")
 }
 
 ######
@@ -254,13 +254,17 @@ process_main <- function(current_folder, input_folder, output_folder,
 ######
 
 
-# Loads optparse
-load_initial_libraries()
-
 # Suppressingfire's SO solution to get executing script.
 # Found at http://stackoverflow.com/questions/30468412/dplyr-join-warning-joining-factors-with-different-levels
 args <- commandArgs()
 current_folder <- dirname(sub("--file=", "", args[grep("--file=", args)]))
+
+# Gets path to models folder and loads utility functions
+models_folder <- file.path(current_folder, "..", "models")
+source(file.path(current_folder, "utils.R"))
+
+# Loads optparse
+load_initial_libraries()
 
 # Builds option list using optparse
 options = list(
@@ -280,7 +284,7 @@ options = list(
               help="remove promoter overlap with gene body, see readme for description [default= %default]"),
   make_option(c("-r", "--refseq_file"), type="character", default=NULL, 
               help="refseq file, see readme for description"),
-  make_option(c("-tr", "--training_genes_file"), type="character", default="mouse", 
+  make_option(c("-t", "--training_genes_file"), type="character", default="mouse", 
               help="'mouse' or 'human' for training genes set to use [default= %default]"),
   make_option(c("-q", "--quiet"), action="store_true", default=FALSE, 
               help="disables console output [default= %default]")

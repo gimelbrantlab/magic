@@ -98,7 +98,7 @@ shinyServer(function(input, output, session) {
                     "-d", drop_percent,
                     "-l", no_overlap,
                     "-r", refseq_name,
-                    "-tr", training_genes)
+                    "-t", training_genes)
       process_output <- capture.output(tryCatch(
         system2(process_cmd, args), error = function(e) e))
     }
@@ -148,7 +148,7 @@ shinyServer(function(input, output, session) {
                     "-m", models_folder,
                     "-o", output_folder,
                     "-ex", excluded_models,
-                    "-po", positive_class)
+                    "-p", positive_class)
       analyze_output <- capture.output(tryCatch(
         system2(analyze_cmd, args), error = function(e) e))
     }
@@ -195,9 +195,9 @@ shinyServer(function(input, output, session) {
       generate_cmd <- paste("Rscript", generate_file)
       args <- paste("-i", training_file_path,
                     "-o", output_folder,
-                    "-sa", sampling_method,
-                    "-se", selection_rule,
-                    "-ta", target_feature)
+                    "-m", sampling_method,
+                    "-r", selection_rule,
+                    "-t", target_feature)
       generate_output <- capture.output(tryCatch(
         system2(generate_cmd, args), error = function(e) e))
     }

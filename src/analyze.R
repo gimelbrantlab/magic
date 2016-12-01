@@ -111,6 +111,8 @@ analyze_main <- function(current_folder, input_file, models_folder,
   # Writes predictions to file
   write.table(df, file.path(output_folder, "all_predictions.tsv"), sep = "\t",
               row.names = FALSE, quote = FALSE)
+  
+  cat("Analysis complete.\n")
 }
 
 ######
@@ -123,11 +125,9 @@ analyze_main <- function(current_folder, input_file, models_folder,
 args <- commandArgs()
 current_folder <- dirname(sub("--file=", "", args[grep("--file=", args)]))
 
-# Sets working directory to src folder, gets path to models folder
-# and loads utility functions
-setwd(file.path("..", current_folder))
-models_folder <- file.path("models")
-source("utils.R")
+# Gets path to models folder and loads utility functions
+models_folder <- file.path(current_folder, "..", "models")
+source(file.path(current_folder, "utils.R"))
 
 # Loads optparse
 load_initial_libraries()
@@ -142,7 +142,7 @@ options = list(
               help="output folder [default= %default]"),
   make_option(c("-ex", "--excluded_models"), type="character", default="",
               help="list of models to exclude from folder, separated by commas"),
-  make_option(c("-po", "--positive_class"), type="character", default="MAE",
+  make_option(c("-p", "--positive_class"), type="character", default="MAE",
               help="name of target feature's positive class [default=%default]"),
   make_option(c("-q", "--quiet"), action="store_true", default=FALSE, 
               help="disables console output [default= %default]")
