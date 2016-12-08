@@ -65,7 +65,7 @@ shinyUI(tagList(
                actionButton("processDataButton", "Process data", width = "100%")
                ),
              mainPanel(
-               textOutput("processText"),
+               htmlOutput("processText"),
                conditionalPanel(condition = "output.process_output",
                                 downloadButton("downloadProcessButton", 
                                                "Download processed data"))
@@ -86,7 +86,7 @@ shinyUI(tagList(
                actionButton("analyzeDataButton", "Analyze data", width = "100%")
              ),
              mainPanel(
-               textOutput("analysisText"),
+               htmlOutput("analysisText"),
                conditionalPanel(condition = "output.analyze_output",
                                 downloadButton("downloadAnalyzeButton", 
                                                "Download analysis"))
@@ -111,7 +111,7 @@ shinyUI(tagList(
                actionButton("generateModelsButton", "Generate models", width = "100%")
              ),
              mainPanel(
-               textOutput("generateText"),
+               htmlOutput("generateText"),
                conditionalPanel(condition = "output.generate_output",
                                 downloadButton("downloadGenerateButton", 
                                                "Download generated models"))

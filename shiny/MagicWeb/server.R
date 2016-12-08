@@ -76,18 +76,23 @@ shinyServer(function(input, output, session) {
     },
     handlerExpr = {
       if (input$processingDir > 0) {
-        process_dir = 
+        process_dir <- 
           choose.dir(default = readDirectoryInput(session, 'processingDir'))
+        cat(paste(process_dir, "\n"))
         updateDirectoryInput(session, 'processingDir', value = process_dir)
       }
     }
   )
   
   # Processes data on button press
-  process_data <- eventReactive(input$processDataButton, {
+  observeEvent(input$processDataButton, {
+    
+    cat("process button clicked\n")
+    cat(paste("processing dir: ", process_dir, "\n"))
     
     # Builds command to run process.R and executes it
     if (!is.null(process_dir)) {
+      cat("process running")
       process_output <- NULL
       process_running <- TRUE
       process_cmd <- paste("Rscript", process_dir)
@@ -105,14 +110,20 @@ shinyServer(function(input, output, session) {
   })
   
   # Sets reactive processing output text
-  output$processText <- renderText({
+  output$processText <- renderUI({
     
-    if(process_running) { paste("Processing data...") }
+    line_1 <- "Processing text goes here"
+    line_2 <- ""
+    line_3 <- ""
+    
+    if(process_running) { line_2 <- "Processing data..." }
     
     if(!is.null(process_output)) {
       process_running <- FALSE
-      paste(process_output)
+      line_3 <- process_output
     }
+    
+    HTML(paste(line_1, line_2, line_3, sep = "<br/>"))
   })
   
   # Handler for processed data download
@@ -135,7 +146,7 @@ shinyServer(function(input, output, session) {
   })
   
   # Analyzes data on button press
-  analyze_data <- eventReactive(input$analyzeDataButton, {
+  observeEvent(input$analyzeDataButton, {
     
     # Builds command to run analyze.R and executes it
     if ((!is.null(analysis_file_path)) &&
@@ -155,14 +166,19 @@ shinyServer(function(input, output, session) {
   })
   
   # Sets reactive analysis output text
-  output$analysisText <- renderText({
+  output$analysisText <- renderUI({
     
-    if(analyze_running) { paste("Analyzing data...") }
+    line_1 <- ""
+    line_2 <- ""
+    
+    if(analyze_running) { line_1 <- "Analyzing data..." }
     
     if(!is.null(analyze_output)) {
       analyze_running <- FALSE
-      paste(analyze_output)
+      line_2 <- analyze_output
     }
+    
+    HTML(paste(line_1, line_2, sep = "<br/>"))
   })
   
   # Handler for analyzed data download
@@ -185,7 +201,7 @@ shinyServer(function(input, output, session) {
   })
   
   # Generates models on button press
-  generate_models <- eventReactive(input$generateModelsButton, {
+  observeEvent(input$generateModelsButton, {
     
     # Builds command to run generate.R and executes it
     if ((!is.null(training_file_path)) &&
@@ -204,14 +220,19 @@ shinyServer(function(input, output, session) {
   })
   
   # Sets reactive generation output text
-  output$generateText <- renderText({
+  output$generateText <- renderUI({
     
-    if(generate_running) { paste("Generating models...") }
+    line_1 <- ""
+    line_2 <- ""
+    
+    if(generate_running) { line_1 <- "Generating models..." }
     
     if(!is.null(generate_output)) {
       generate_running <- FALSE
-      paste(generate_output)
+      line_2 <- generate_output
     }
+    
+    HTML(paste(line_1, line_2, sep = "<br/>"))
   })
 })
 
