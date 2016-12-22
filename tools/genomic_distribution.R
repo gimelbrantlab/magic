@@ -90,8 +90,6 @@ genomic_distribution <- ggplot(data, aes(x = start, fill = status)) + geom_histo
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), axis.line = element_line(colour = "black")) 
 genomic_distribution
 
-path <- #set path
-ggsave(genomic_distribution, plot = genomic_distribution, device = pdf, path = path)
 
 
 
