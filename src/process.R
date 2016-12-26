@@ -124,16 +124,20 @@ process_input <- function(x, input_folder, refseq_file, imprinted_file,
     normalize_scores(output_mark_body_file, output_mark_body_norm_file, 
                      dropped_file, mark, "body",
                      output_control_body_file, drop_percent)
-    normalize_scores(output_mark_promoter_file, output_mark_promoter_norm_file, 
-                     dropped_file, mark, "promoter",
-                     output_control_promoter_file, drop_percent) 
+    if (promoter_length > 0) {
+      normalize_scores(output_mark_promoter_file, output_mark_promoter_norm_file, 
+                       dropped_file, mark, "promoter",
+                       output_control_promoter_file, drop_percent) 
+    }
   } else {
     normalize_scores(output_mark_body_file, output_mark_body_norm_file, 
                      dropped_file, mark, "body",
                      NA, drop_percent)
-    normalize_scores(output_mark_promoter_file, output_mark_promoter_norm_file, 
-                     dropped_file, mark, "promoter",
-                     NA, drop_percent)
+    if (promoter_length > 0) {
+      normalize_scores(output_mark_promoter_file, output_mark_promoter_norm_file, 
+                       dropped_file, mark, "promoter",
+                       NA, drop_percent)
+    }
   }
 }
 
@@ -201,14 +205,16 @@ process_main <- function(current_folder, input_folder, output_folder,
   cat_f("gene_name\tlow_baseline_mark", dropped_file)
   
   # Gets correct training genes file depending on species
-  if (training_genes_file == "mouse") {
+  if (tolower(training_genes_file) == "mouse") {
     training_genes_file <- file.path(reference_folder, "mouse_tg.tsv")
-  } else if (training_genes_file == "human") {
+  } else if (tolower(training_genes_file) == "human") {
     training_genes_file <- file.path(reference_folder, "human_tg.tsv")
+  } else if (tolower(training_genes_file) == "none") {
+    training_genes_file <- "none"
   } else {
     training_genes_file <- file.path(reference_folder, training_genes_file)
     if (!file.exists(training_genes_file)) {
-      stop("training genes file does not exist (use 'mouse' or 'human')")
+      stop("training genes file does not exist (use 'mouse', 'human' or 'none')")
     }
   }
   
@@ -284,8 +290,8 @@ options = list(
               help="remove promoter overlap with gene body, see readme for description [default= %default]"),
   make_option(c("-r", "--refseq_file"), type="character", default=NULL, 
               help="refseq file, see readme for description"),
-  make_option(c("-t", "--training_genes_file"), type="character", default="mouse", 
-              help="'mouse' or 'human' for training genes set to use [default= %default]"),
+  make_option(c("-t", "--training_genes_file"), type="character", default="none", 
+              help="'mouse', 'human' or 'none' for training genes set to use [default= %default]"),
   make_option(c("-q", "--quiet"), action="store_true", default=FALSE, 
               help="disables console output [default= %default]")
 )

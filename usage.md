@@ -48,8 +48,8 @@ All arguments are also described via "Rscript process.R --help"
     disables default option of summing enrichment for *promoter_length* base pairs on either side of the TSS for a promoter region
     
 *-t, --training_genes_file*: 
-    if generating classifiers, specify "mouse", "human" or the name of a training genes file in the reference folder; otherwise, specify "none"
-    
+    if generating classifiers, specify "mouse", "human" or the name of a training genes file in the reference folder
+
 *-q, --quiet*: 
     disables console output, do not flag if required packages missing [default FALSE]
 

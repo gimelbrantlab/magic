@@ -98,22 +98,22 @@ generate_model <- function(training, classifier, target_feature, log_file,
                                     classProbs = TRUE,
                                     savePredictions = TRUE)
     }
-    capture.output(model <- train(train_formula,
-                                  data = training,
-                                  method = classifier,
-                                  metric = "ROC",
-                                  na.action = na.omit,
-                                  trControl = train_control))
+    capture.output(model <- caret::train(train_formula,
+                                         data = training,
+                                         method = classifier,
+                                         metric = "ROC",
+                                         na.action = na.omit,
+                                         trControl = train_control))
   } else {
     train_control <- trainControl(method = "cv",
                                   number = 5,
                                   selectionFunction = selection_rule,
                                   savePredictions = TRUE)
-    capture.output(model <- train(train_formula,
-                                  data = training,
-                                  method = classifier,
-                                  na.action = na.omit,
-                                  trControl = train_control))
+    capture.output(model <- caret::train(train_formula,
+                                         data = training,
+                                         method = classifier,
+                                         na.action = na.omit,
+                                         trControl = train_control))
   }
   
   # Prints total time required

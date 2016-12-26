@@ -1,5 +1,12 @@
 
 
+# Adds id column to normalized scores and orders by id
+attach_ids <- function(df) {
+  df$id <- tolower(paste(df$name, df$chrom, sep = "_"))
+  df <- df[order(df$id),]
+  return(df)
+}
+
 # Loads training genes and attaches them to normalized scores
 attach_training_genes <- function(df, training_genes_file) {
   
@@ -7,16 +14,11 @@ attach_training_genes <- function(df, training_genes_file) {
   training_genes <- read.csv(training_genes_file, sep = "\t")
   
   # Keeps only genes in both datasets
-  df$id <- tolower(paste(df$name, df$chrom, sep = "_"))
   training_genes$id <- 
     tolower(paste(training_genes$gene, training_genes$chrom, sep = "_"))
   ids_to_keep <- intersect(training_genes$id, df$id)
   df <- df[df$id %in% ids_to_keep, ]
   training_genes <- training_genes[training_genes$id %in% ids_to_keep, ]
-  
-  # print(length(training_genes$id))
-  # print(length(df$id))
-  # print(length(ids_to_keep))
 
   # Appends training genes to modified df
   df <- df[order(df$id),]
@@ -27,17 +29,26 @@ attach_training_genes <- function(df, training_genes_file) {
   return(df)
 }
 
-# Removes unnecessary columns and renames others for a given df
-clean_cols <- function(df, mark_name) {
-  to_keep <- c("percentile", "norm_sum", "status", "name", "id", "chrom")
+# Removes unnecessary columns from df
+clean_cols <- function(df, status_present = FALSE) {
+  if ("status" %in% colnames(df)) {
+    to_keep <- c("percentile", "norm_sum", "status", "name", "id", "chrom")
+  }
+  else {
+    to_keep <- c("percentile", "norm_sum", "name", "id", "chrom")
+  }
   df <- df[to_keep]
   return(df)
 }
 
-# Wrapper for clean_cols and attach_training_genes
-process_df <- function(df, mark_name, training_genes_file) {
-  df <- attach_training_genes(df, training_genes_file)
-  return(clean_cols(df, mark_name))
+# Attaches ids, subsets to training genes if applicable, and
+# removes unnecessary columns
+process_df <- function(df, training_genes_file) {
+  df <- attach_ids(df)
+  if (training_genes_file != "none") {
+    df <- attach_training_genes(df, training_genes_file)
+  }
+  return(clean_cols(df))
 }
 
 # Joins multiple outputs from normalize_scores.R into one file with
@@ -52,13 +63,13 @@ join_input_main <- function(body_files, promoter_files, mark_names,
   for (i in 1:length(mark_names)) {
     body_dfs[[i]] <- read.csv(body_files[[i]], sep = "\t")
     body_dfs[[i]] <- 
-      process_df(body_dfs[[i]], mark_names[[i]], training_genes_file)
+      process_df(body_dfs[[i]], training_genes_file)
     
     # Also processes promoter files if they exist
     if (promoter_length > 0) {
       promoter_dfs[[i]] <- read.csv(promoter_files[[i]], sep = "\t")
       promoter_dfs[[i]] <- 
-        process_df(promoter_dfs[[i]], mark_names[[i]], training_genes_file)
+        process_df(promoter_dfs[[i]], training_genes_file)
     }
   }
   
@@ -91,6 +102,8 @@ join_input_main <- function(body_files, promoter_files, mark_names,
 
     # Appends promoter cols if they exist
     if (promoter_length > 0) {
+      
+      # Gets relevant variables
       ids_to_keep <- intersect(body_dfs[[i]]$id, promoter_dfs[[i]]$id)
       ids_to_keep <- intersect(ids_to_keep, percentile_df$id)
       promoter_dfs[[i]] <- promoter_dfs[[i]][promoter_dfs[[i]]$id %in% ids_to_keep, ]
@@ -98,25 +111,34 @@ join_input_main <- function(body_files, promoter_files, mark_names,
       percentile_df <- percentile_df[percentile_df$id %in% ids_to_keep, ]
       norm_df <- norm_df[norm_df$id %in% ids_to_keep, ]
       
+      # Appends promoter columns
       percentile_col <- paste(mark_names[[i]], "promoter_percentile", sep = "_")
       percentile_df[percentile_col] <- promoter_dfs[[i]]["percentile"]
       norm_col <- paste(mark_names[[i]], "promoter_norm_sum", sep = "_")
       norm_df[norm_col] <- promoter_dfs[[i]]["norm_sum"]
+      
+      # Appends gene body columns
+      percentile_col <- paste(mark_names[[i]], "body_percentile", sep = "_")
+      percentile_df[percentile_col] <- body_dfs[[i]]["percentile"]
+      norm_col <- paste(mark_names[[i]], "body_norm_sum", sep = "_")
+      norm_df[norm_col] <- body_dfs[[i]]["norm_sum"]
     } else {
+      
+      # Gets relevant variables
       ids_to_keep <- intersect(body_dfs[[i]]$id, percentile_df$id)
       body_dfs[[i]] <- body_dfs[[i]][body_dfs[[i]]$id %in% ids_to_keep, ]
       percentile_df <- percentile_df[percentile_df$id %in% ids_to_keep, ]
       norm_df <- norm_df[norm_df$id %in% ids_to_keep, ]
+      
+      # Appends gene body columns
+      percentile_col <- paste(mark_names[[i]], "percentile", sep = "_")
+      percentile_df[percentile_col] <- body_dfs[[i]]["percentile"]
+      norm_col <- paste(mark_names[[i]], "norm_sum", sep = "_")
+      norm_df[norm_col] <- body_dfs[[i]]["norm_sum"]
     }
-    
-    # Appends gene body columns
-    percentile_col <- paste(mark_names[[i]], "body_percentile", sep = "_")
-    percentile_df[percentile_col] <- body_dfs[[i]]["percentile"]
-    norm_col <- paste(mark_names[[i]], "body_norm_sum", sep = "_")
-    norm_df[norm_col] <- body_dfs[[i]]["norm_sum"]
   }
   
-  # Removes id column
+  # Removes id column if present
   percentile_df <- percentile_df[, !(names(percentile_df) %in% c("id"))]
   norm_df <- norm_df[, !(names(norm_df) %in% c("id"))]
   

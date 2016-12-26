@@ -49,7 +49,7 @@ get_models <- function(input_folder, excluded_models) {
   # Loops through all files and reads in all ending with "_model.rds"
   model_files <- list.files(input_folder, pattern = "*_model.rds", recursive = FALSE)
   for (file in model_files) {
-    model_name <- strsplit(file, "_")[[1]][1]
+    model_name <- strsplit(file, "_model.rds")[[1]][1]
     if (!(model_name %in% excluded_models)) {
       model <- readRDS(file.path(input_folder, file))
       models[[model_name]] = model
@@ -61,11 +61,12 @@ get_models <- function(input_folder, excluded_models) {
 }
 
 # Generates predictions for a single model and logs those to file
-ml_predict_inner <- function(model_name, model, output_folder, 
-                             run_name, positive_class) {
+ml_predict_inner <- function(model_name, model, df, 
+                             output_folder, positive_class) {
   
-  # Generates predictions and writes to file
-  predictions <- predict(model, df, positive = positive_class)
+  # Generates predictions, appends to df and writes to file
+  predictions <-  predict(model, df, positive = positive_class)
+  df$predictions <- predictions
   predictions_file <- file.path(output_folder, 
                                 paste(model_name, "predictions.tsv", sep = "_"))
   write.table(df, predictions_file, sep = "\t", row.names = FALSE,
@@ -81,11 +82,11 @@ ml_predict <- function(df, models_folder, output_folder,
   
   # Generates predictions on df for all models
   for (model_name in names(models)) {
-    ml_predict_inner(model_name, models[[model_name]], output_folder, 
-                     positive_class)
+    ml_predict_inner(model_name, models[[model_name]], df,
+                     output_folder, positive_class)
   }
   
-  # Appends predictions to dataframe and returns it
+  # Joins all files with appended predictions together
   df <- join_prediction_sets(df, output_folder)
   return(df)
 }
@@ -150,7 +151,7 @@ options = list(
 
 # Gets options and checks arguments
 opt <- parse_args(OptionParser(option_list = options))
-if (!dir.exists(opt$input_file)) { stop("input file does not exist") }
+if (!file.exists(opt$input_file)) { stop("input file does not exist") }
 if (!dir.exists(opt$models_folder)) { stop("models folder does not exist") }
 if (!dir.exists(opt$output_folder)) { dir.create(opt$output_folder) }
 
