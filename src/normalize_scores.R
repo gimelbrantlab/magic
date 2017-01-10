@@ -1,9 +1,8 @@
-
 # Normalizes the scores output from bigwig_to_scores based on
 # either a control bigwig file or the length of each interval.
 normalize_scores <- function(scores_file, output_file, dropped_file,
                              mark, gene_region, control_file = NA, 
-                             drop_percent = 0.05, drop_abs = 1) {
+                             drop_percent = 0.05, drop_abs = 1.0) {
   
   # Opens scores file and converts NA values to 0
   scores <- read.csv(scores_file, sep = "\t", header = TRUE)
@@ -19,7 +18,7 @@ normalize_scores <- function(scores_file, output_file, dropped_file,
     
     # Removes indices in the given bottom percentile from both data frames and below a specified absolute mean value
     genes_to_keep <- control$name[(control$percentile > drop_percent) & (control$mean >= drop_abs)]
-    genes_to_remove <- control$name[(control$percentile <= drop_percent) | (control$mean < low_abs)]
+    genes_to_remove <- control$name[(control$percentile <= drop_percent) | (control$mean < drop_abs)]
     control <- control[!control$name %in% genes_to_remove,]
     scores <- scores[!scores$name %in% genes_to_remove,]
  
