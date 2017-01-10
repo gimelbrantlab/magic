@@ -11,6 +11,8 @@ missing.
 
 ## Process
 
+This script processes ChIP-Seq/MBD-seq/etc. data from .bigWig/bw file format to informative tables primed for analyze.R or generate.R.
+
 *Input folder*: contains mark and control files in the bigWig file format (.bigWig or .bw). Mark
 files contain chromatin mark enrichment data across an organism's genome, generally ChIP-Seq,
 and control files contain baseline data for the same experiment. For a given mark name, mark 
@@ -101,6 +103,11 @@ All arguments are also described via "Rscript generate.R --help"
     disables console output, do not flag if required packages missing [default FALSE]
 
 ## Generate
+
+This script allows for user-generated parameters for training a model. 
+This can include ChIP-Seq/MAP-Seq/etc. data files that have been processed with process.R. 
+These training genes  with MAE/BAE allelic bias calls determined by RNA-Seq are assigned scores from the 
+user-provided data and generates a new set of models trained on this data using different classifers, with a corresponding comparison.
 
 *Input file*: file output by process.R
 
