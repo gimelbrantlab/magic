@@ -53,6 +53,9 @@ All arguments are also described via "Rscript process.R --help"
     
 *-d, --drop_percent*: 
     bottom baseline enrichment percentile of genes to drop, as a decimal [default 0.01]
+
+*-a, --drop_absolute*:
+    bottom baseline enrichment raw mean of genes to drop [default 1.0]
     
 *-c, --no_clean_intermediate*: 
     disable automatic removal of intermediate output files
