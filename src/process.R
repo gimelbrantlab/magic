@@ -92,7 +92,7 @@ process_input <- function(x, input_folder, refseq_file, imprinted_file,
                           bwtool_folder, output_folder,
                           dropped_file, filter_input, 
                           promoter_length, drop_percent, 
-                          overlap) {
+                          drop_abs, overlap) {
   
   # Gets mark and files from row in data frame
   mark <- x[[1]]
@@ -123,20 +123,20 @@ process_input <- function(x, input_folder, refseq_file, imprinted_file,
   if (!is.na(x[[3]])) {
     normalize_scores(output_mark_body_file, output_mark_body_norm_file, 
                      dropped_file, mark, "body",
-                     output_control_body_file, drop_percent)
+                     output_control_body_file, drop_percent, drop_abs)
     if (promoter_length > 0) {
       normalize_scores(output_mark_promoter_file, output_mark_promoter_norm_file, 
                        dropped_file, mark, "promoter",
-                       output_control_promoter_file, drop_percent) 
+                       output_control_promoter_file, drop_percent, drop_abs) 
     }
   } else {
     normalize_scores(output_mark_body_file, output_mark_body_norm_file, 
                      dropped_file, mark, "body",
-                     NA, drop_percent)
+                     NA, drop_percent, drop_abs)
     if (promoter_length > 0) {
       normalize_scores(output_mark_promoter_file, output_mark_promoter_norm_file, 
                        dropped_file, mark, "promoter",
-                       NA, drop_percent)
+                       NA, drop_percent, drop_abs)
     }
   }
 }
@@ -181,7 +181,7 @@ clean_intermediate <- function(output_folder, input_df, promoter_length) {
 # Processes a given bigwig file
 process_main <- function(current_folder, input_folder, output_folder,
                          filter_input, promoter_length, drop_percent,
-                         clean, overlap, refseq_file, 
+                         drop_abs, clean, overlap, refseq_file, 
                          training_genes_file) {
   
   # Loads required scripts and libraries
@@ -200,7 +200,7 @@ process_main <- function(current_folder, input_folder, output_folder,
   
   # Resets dropped genes file
   header <- paste("Genes dropped due to baseline enrichment beneath the ",
-                  drop_percent, " percentile", sep = "")
+                  drop_percent, " percentile and below", drop_abs, "mean value", sep = "")
   cat_f(header, dropped_file, FALSE)
   cat_f("gene_name\tlow_baseline_mark", dropped_file)
   
@@ -238,7 +238,7 @@ process_main <- function(current_folder, input_folder, output_folder,
         imprinted_file = imprinted_file, bwtool_folder = bwtool_folder,
         output_folder = output_folder, dropped_file = dropped_file,
         filter_input = filter_input, promoter_length = promoter_length,
-        drop_percent = drop_percent, overlap = overlap)
+        drop_percent = drop_percent, drop_abs = drop_abs, overlap = overlap)
 
   # Joins all files into two tables with percentile scores or normalized sum
   norm_output_file <- file.path(output_folder, "joined_scores_norm.txt")
@@ -284,6 +284,8 @@ options = list(
               help="upstream promoter region length [default= %default]"),
   make_option(c("-d", "--drop_percent"), type="double", default=0.01, 
               help="bottom enrichment percentile of genes to drop [default= %default]"),
+  make_option(c("-a", "--drop_absolute"), type="double", default=1.0,
+              help="bottom absolute mean value of genes to drop [default=%default]"),
   make_option(c("-c", "--no_clean_intermediate"), action="store_false", default=TRUE, 
               help="leave intermediate files [default= %default]"),
   make_option(c("-l", "--no_overlap"), action="store_false", default=TRUE, 
@@ -307,6 +309,7 @@ output_folder <- opt$output_folder
 filter_input <- opt$no_filter
 promoter_length <- opt$promoter_length
 drop_percent <- opt$drop_percent
+drop_abs <- opt$drop_absolute
 clean <- opt$no_clean_intermediate
 overlap <- opt$no_overlap
 refseq_file <- opt$refseq_file
@@ -317,11 +320,11 @@ quiet <- opt$quiet
 if (!quiet) {
   invisible(process_main(current_folder, input_folder, output_folder,
                          filter_input, promoter_length, drop_percent,
-                         clean, overlap, refseq_file, 
+                         drop_abs, clean, overlap, refseq_file, 
                          training_genes_file))
 } else {
   process_main(current_folder, input_folder, output_folder,
                filter_input, promoter_length, drop_percent,
-               clean, overlap, refseq_file, 
+               drop_abs, clean, overlap, refseq_file, 
                raining_genes_file)
 }
