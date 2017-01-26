@@ -42,7 +42,8 @@ generate_sets <- function(df, target_feature, seed = 50, split = 0.8) {
 
 # Runs machine learning analysis on training data using the specified method
 generate_model <- function(training, classifier, target_feature, log_file,
-                           selection_rule, sampling_method, seed = 50) {
+                           selection_rule, sampling_method, metric, 
+                           cv, seed = 50) {
   
   # Sets seed to make this reproducible and gets begin time
   set.seed(seed)
@@ -76,15 +77,16 @@ generate_model <- function(training, classifier, target_feature, log_file,
   # Gets training formula
   train_formula <- as.formula(paste(target_feature, " ~ .", sep = ""))
   
-  # Sets up 5-fold cross-validation training control method and trains model.
+  # Sets up cross-validation training control method and trains model.
   # If only two classes, uses ROC instead of accuracy and kappa
   train_control <- NULL
   model <- NULL
   if (nlevels(training[[target_feature]]) == 2) {
+    
     # Caret doesn't like passing in "none" as the sampling param
     if (sampling_method != "none") {
       train_control <- trainControl(method = "cv",
-                                    number = 5,
+                                    number = cv,
                                     summaryFunction = twoClassSummary,
                                     selectionFunction = selection_rule,
                                     sampling = sampling_method,
@@ -92,7 +94,7 @@ generate_model <- function(training, classifier, target_feature, log_file,
                                     savePredictions = TRUE)
     } else {
       train_control <- trainControl(method = "cv",
-                                    number = 5,
+                                    number = cv,
                                     summaryFunction = twoClassSummary,
                                     selectionFunction = selection_rule,
                                     classProbs = TRUE,
@@ -101,17 +103,18 @@ generate_model <- function(training, classifier, target_feature, log_file,
     capture.output(model <- caret::train(train_formula,
                                          data = training,
                                          method = classifier,
-                                         metric = "ROC",
+                                         metric = metric,
                                          na.action = na.omit,
                                          trControl = train_control))
   } else {
     train_control <- trainControl(method = "cv",
-                                  number = 5,
+                                  number = cv,
                                   selectionFunction = selection_rule,
                                   savePredictions = TRUE)
     capture.output(model <- caret::train(train_formula,
                                          data = training,
                                          method = classifier,
+                                         metric = metric,
                                          na.action = na.omit,
                                          trControl = train_control))
   }
@@ -127,11 +130,13 @@ generate_model <- function(training, classifier, target_feature, log_file,
 # file and print a summary of it to a text file
 generate_classifier <- function(training, testing, testing_gene_names, classifier, 
                                 target_feature, output_folder, log_file, 
-                                selection_rule, sampling_method) {
+                                selection_rule, sampling_method, metric,
+                                cv) {
   
   # Generates model and logs stats to file
   model <- generate_model(training, classifier, target_feature, log_file,
-                          selection_rule, sampling_method)
+                          selection_rule, sampling_method, metric,
+                          cv)
   sink_f(model, log_file)
   
   # Saves model to file
@@ -139,32 +144,36 @@ generate_classifier <- function(training, testing, testing_gene_names, classifie
                           paste(classifier, "_model.rds", sep = ""))
   saveRDS(model, file = model_file)
   
-  # Generates predictions on testing data and writes confusion matrix to file
-  predictions <- predict(model, testing)
-  cat_f("\n", log_file)
-  sink_f(postResample(predictions, testing[[target_feature]]), log_file)
-  if (nlevels(training[[target_feature]]) == 2) {
-    sens <- sensitivity(predictions, testing[[target_feature]], positive = "rMAE")
-    spec <- specificity(predictions, testing[[target_feature]], positive = "rMAE")
-    cat_f(paste("sensitivity:", sens, "\n"), log_file)
-    cat_f(paste("specificity:", spec, "\n"), log_file)
-    cMat <- as.table(confusionMatrix(predictions, testing[[target_feature]]),
-                     positive = "rMAE")
-    matrix_file <- file.path(output_folder, paste(classifier, "matrix", sep = "_"))
-    write.table(cMat, file = matrix_file, quote = FALSE)
+  # Generates predictions on testing data and writes confusion matrix to file.
+  # Only run if testing set exists
+  if (!is.null(testing)) {
+    predictions <- predict(model, testing)
+    cat_f("\n", log_file)
+    sink_f(postResample(predictions, testing[[target_feature]]), log_file)
+    if (nlevels(training[[target_feature]]) == 2) {
+      sens <- sensitivity(predictions, testing[[target_feature]], positive = "rMAE")
+      spec <- specificity(predictions, testing[[target_feature]], positive = "rMAE")
+      cat_f(paste("sensitivity:", sens, "\n"), log_file)
+      cat_f(paste("specificity:", spec, "\n"), log_file)
+      cMat <- as.table(confusionMatrix(predictions, testing[[target_feature]]),
+                       positive = "rMAE")
+      matrix_file <- file.path(output_folder, paste(classifier, "matrix", sep = "_"))
+      write.table(cMat, file = matrix_file, quote = FALSE)
+    }
+    
+    # Writes predictions appended to testing set to file
+    testing$prediction <- predictions
+    testing$name <- testing_gene_names
+    testing_file <- file.path(output_folder, paste(classifier, "_testing.tsv", sep = ""))
+    write.table(testing, file = testing_file, sep = "\t", 
+                quote = FALSE, row.names = FALSE, col.names = TRUE)
   }
-  
-  # Writes predictions appended to testing set to file
-  testing$prediction <- predictions
-  testing$name <- testing_gene_names
-  testing_file <- file.path(output_folder, paste(classifier, "_testing.tsv", sep = ""))
-  write.table(testing, file = testing_file, sep = "\t", 
-              quote = FALSE, row.names = FALSE, col.names = TRUE)
 }
 
 # Runs machine learning analyses on data
 scores_ml <- function(scores_file, target_feature, classifier, output_folder,
-                      selection_rule, sampling_method = "none", cores = 4) {
+                      selection_rule, sampling_method = "none", p = 0.8, 
+                      metric = "Kappa", cv = 5, cores = 4) {
   
   # Checks that input file exists and creates output folder if it doesn't exist
   if (!file.exists(scores_file)) { stop("scores file does not exist") }
@@ -181,18 +190,36 @@ scores_ml <- function(scores_file, target_feature, classifier, output_folder,
   # Loads scores file into a data frame and removes unnecesary cols
   df <- read.csv(scores_file, sep = "\t")
   
-  # Splits data into training and testing sets
-  partition <- createDataPartition(df$status, times = 1, p = 0.8, list = FALSE)
-  training <- df[partition,]
-  testing <- df[-partition,]
-  
-  # Removes unnecessary cols from both sets, saving testing gene names
-  testing_gene_names <- testing$name
-  training <- training[, !(names(training) %in% c("start", "end", "chrom", "name"))]
-  testing <- testing[, !(names(testing) %in% c("start", "end", "chrom", "name"))]
+  # Splits data into training and testing sets if 0 < p < 1
+  testing_gene_names <- NULL
+  training <- NULL
+  testing <- NULL
+  if ((p > 0) && (p < 1)) {
+    
+    # Sets p% of data as training set
+    partition <- createDataPartition(df$status, times = 1, p = p, list = FALSE)
+    training <- df[partition,]
+    testing <- df[-partition,]
+    
+    # Removes unnecessary cols from both sets, saving testing gene names
+    testing_gene_names <- testing$name
+    training <- training[, !(names(training) %in% c("start", "end", "chrom", "name"))]
+    testing <- testing[, !(names(testing) %in% c("start", "end", "chrom", "name"))]
+    
+  # Uses all of the data as the training set if specified
+  } else if (p == 1) {
+    
+    partition <- createDataPartition(df$status, times = 1, p = p, list = FALSE)
+    training <- df[partition,]
+    
+  # Otherwise throws error and exits
+  } else {
+    stop("must input p between 0 and 1")
+  }
   
   # Generates model and saves it to output folder
   generate_classifier(training, testing, testing_gene_names, classifier, 
                       target_feature, output_folder, summary_file, 
-                      selection_rule, sampling_method)
+                      selection_rule, sampling_method, metric,
+                      cv)
 }

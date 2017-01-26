@@ -26,6 +26,7 @@ output_folder <- "output"
 shinyServer(function(input, output, session) {
   
   # Session variables
+  temp_dir <- NULL
   process_dir <- NULL
   analysis_file_path <- NULL
   training_file_path <- NULL
@@ -51,20 +52,33 @@ shinyServer(function(input, output, session) {
   
   ### VARIABLE UPDATING
   
-  var_update <- reactive({
-    refseq_name <- input$refseq
-    training_genes <- input$tg
-    drop_percent <- input$dropPercent
-    promoter_length <- input$promoterLength
-    disable_filtering <- input$disableFilter
-    no_overlap <- input$noOverlap
-    excluded_models <- paste(model_names[!(model_names %in% input$models)],
-                             sep = ",", collapse = "")
-    positive_class <- input$positiveClass
-    target_feature <- input$targetFeature
-    sampling_method <- input$samplingMethod
-    selection_rule <- input$selectionRule
-  })
+  refseq_name <- reactive({ input$refseq })
+  training_genes <- reactive({ input$tg })
+  drop_percent <- reactive({ input$dropPercent })
+  promoter_length <- reactive({ input$promoterLength })
+  disable_filtering <- reactive({ input$disableFilter })
+  no_overlap <- reactive({ input$noOverlap })
+  positive_class <- reactive({ input$positiveClass })
+  target_feature <- reactive({ input$targetFeature })
+  sampling_method <- reactive({ input$samplingMethod })
+  selection_rule <- reactive({ input$selectionRule })
+  excluded_models <- reactive({ paste(model_names[!(model_names %in% input$models)],
+                                      sep = ",", collapse = "") })
+  
+  # var_update <- reactive({
+  #   refseq_name <- input$refseq
+  #   training_genes <- input$tg
+  #   drop_percent <- input$dropPercent
+  #   promoter_length <- input$promoterLength
+  #   disable_filtering <- input$disableFilter
+  #   no_overlap <- input$noOverlap
+  #   excluded_models <- paste(model_names[!(model_names %in% input$models)],
+  #                            sep = ",", collapse = "")
+  #   positive_class <- input$positiveClass
+  #   target_feature <- input$targetFeature
+  #   sampling_method <- input$samplingMethod
+  #   selection_rule <- input$selectionRule
+  # })
   
   ### DATA PROCESSING
   
@@ -76,10 +90,8 @@ shinyServer(function(input, output, session) {
     },
     handlerExpr = {
       if (input$processingDir > 0) {
-        process_dir <- 
-          choose.dir(default = readDirectoryInput(session, 'processingDir'))
-        cat(paste(process_dir, "\n"))
-        updateDirectoryInput(session, 'processingDir', value = process_dir)
+        temp_dir <- choose.dir(default = readDirectoryInput(session, 'processingDir'))
+        updateDirectoryInput(session, 'processingDir', value = temp_dir)
       }
     }
   )
@@ -87,23 +99,24 @@ shinyServer(function(input, output, session) {
   # Processes data on button press
   observeEvent(input$processDataButton, {
     
-    cat("process button clicked\n")
-    cat(paste("processing dir: ", process_dir, "\n"))
+    # Gets processing directory from widget
+    process_dir <- readDirectoryInput(session, 'processingDir')
     
     # Builds command to run process.R and executes it
     if (!is.null(process_dir)) {
-      cat("process running")
       process_output <- NULL
       process_running <- TRUE
-      process_cmd <- paste("Rscript", process_dir)
-      args <- paste("-i", process_dir,
+      process_cmd <- paste("Rscript")
+      args <- paste(process_file,
+                    "-i", process_dir,
                     "-o", output_folder,
-                    "-f", disable_filtering,
-                    "-p", promoter_length,
-                    "-d", drop_percent,
-                    "-l", no_overlap,
-                    "-r", refseq_name,
-                    "-t", training_genes)
+                    "-p", promoter_length(),
+                    "-d", drop_percent(),
+                    "-r", refseq_name(),
+                    "-t", training_genes())
+      if (disable_filtering()) { args <- paste(args, "-f") }
+      if (no_overlap()) { args <- paste(args, "-l") }
+      cat("\n", args, "\n\n")
       process_output <- capture.output(tryCatch(
         system2(process_cmd, args), error = function(e) e))
     }
@@ -154,8 +167,9 @@ shinyServer(function(input, output, session) {
         (!is.null(positive_class))) {
       analyze_output <- NULL
       analyze_running <- TRUE
-      analyze_cmd <- paste("Rscript", analyze_file)
-      args <- paste("-i", analysis_file_path,
+      analyze_cmd <- paste("Rscript")
+      args <- paste(analyze_file,
+                    "-i", analysis_file_path,
                     "-m", models_folder,
                     "-o", output_folder,
                     "-ex", excluded_models,
@@ -208,8 +222,9 @@ shinyServer(function(input, output, session) {
         (!is.null(target_feature))) {
       generate_output <- NULL
       generate_running <- TRUE
-      generate_cmd <- paste("Rscript", generate_file)
-      args <- paste("-i", training_file_path,
+      generate_cmd <- paste("Rscript")
+      args <- paste(generate_file,
+                    "-i", training_file_path,
                     "-o", output_folder,
                     "-m", sampling_method,
                     "-r", selection_rule,

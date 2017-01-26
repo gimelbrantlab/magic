@@ -137,12 +137,21 @@ All arguments are also described via "Rscript generate.R --help"
 *-t, --target_feature*:
     name of column in dataset with feature to classify by [default "status"]
 
-*-m, --sampling_method*: 
-    resampling method to use when training classifiers, one of "none", "down", or "up"
-[default "none"]
+*-m, --metric*: 
+    metric to train on, either "Kappa", "Accuracy", or for data with only two classes "ROC"
+[default "Kappa"]
+
+*-s, --sampling_method*: 
+    resampling method to use when training classifiers, one of "none", "down", or "up" [default "none"]
 
 *-r, --selection_rule*:
     caret rule used to select the best model [default "best"]
+    
+*-p, --training_percent*: 
+    percent of data to use as training set, between 0 and 100 - uses all of data as training set if 100 given [default 80]
+
+*-c, --cross_validation*: 
+    number of times to run cross-validation [default 5]
     
 *-q, --quiet*: 
     disables console output, do not flag if required packages missing [default FALSE]
