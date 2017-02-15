@@ -2,7 +2,7 @@
 ######
 ### UI LIBRARIES
 ######
-
+  
 
 library(shiny)
 library(markdown)
@@ -25,8 +25,9 @@ acceptable_file_types <- c("text/plain",
   "text/tsv", 
   "text/tab-separated-values",
   ".tsv")
-sampling_types <- c("none", "down", "up")
 selection_rules <- c("best", "oneSE", "tolerance")
+metric_names <- c("Kappa", "Accuracy", "ROC")
+sampling_method_names <- c("none", "down", "up")
 
 ######
 ### UI
@@ -100,9 +101,16 @@ shinyUI(tagList(
                          accept = acceptable_file_types),
                textInput('targetFeature', 'Target Feature',
                          placeholder = 'Enter name of target column'),
+               numericInput("trainingPercent", 
+                            "Percent of Data to use for Training:", 0.01, 
+                            min = 0, max = 0.9999, step = 0.01),
+               selectizeInput(
+                 'metric', 'Select Training Metric', 
+                 choices = metric_names
+               ),
                selectizeInput(
                  'samplingMethod', 'Sampling Method',
-                 choices = sampling_types
+                 choices = sampling_method_names
                ),
                selectizeInput(
                  'selectionRule', 'Selection Rule',

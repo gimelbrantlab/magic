@@ -49,33 +49,11 @@ generate_model <- function(training, classifier, target_feature, log_file,
   set.seed(seed)
   start_time <- Sys.time()
   
-  # Only keeps certain features
-  h3k27me3_cols <- c("h3k27me3_body_percentile",
-                     "h3k27me3_promoter_percentile",
-                     "h3k27me3_body_norm_sum",
-                     "h3k27me3_promoter_norm_sum")
-  h3k36me3_cols <- c("h3k36me3_body_percentile",
-                     "h3k36me3_promoter_percentile",
-                     "h3k36me3_body_norm_sum",
-                     "h3k36me3_promoter_norm_sum")
-  h3k9me2_cols <- c("h3k9me2_body_percentile",
-                    "h3k9me2_promoter_percentile",
-                    "h3k9me2_body_norm_sum",
-                    "h3k9me2_promoter_norm_sum")
-  cpg_cols <- c("cpg_body_percentile",
-                "cpg_promoter_percentile",
-                "cpg_body_norm_sum",
-                "cpg_promoter_norm_sum")
-  cols_to_keep <- c(target_feature,
-                    h3k27me3_cols,
-                    h3k36me3_cols,
-                    h3k9me2_cols,
-                    cpg_cols
-                    )
-  #training <- training[, colnames(training) %in% cols_to_keep]
-  
   # Gets training formula
   train_formula <- as.formula(paste(target_feature, " ~ .", sep = ""))
+  
+  # Checks if metric in list of twoClassSummary function's metrics
+  two_class_metrics <- c("ROC", "Sens", "Spec")
   
   # Sets up cross-validation training control method and trains model.
   # If only two classes, uses ROC instead of accuracy and kappa
@@ -83,22 +61,42 @@ generate_model <- function(training, classifier, target_feature, log_file,
   model <- NULL
   if (nlevels(training[[target_feature]]) == 2) {
     
-    # Caret doesn't like passing in "none" as the sampling param
+    # Caret doesn't like passing in "none" as the sampling parameter
     if (sampling_method != "none") {
-      train_control <- trainControl(method = "cv",
-                                    number = cv,
-                                    summaryFunction = twoClassSummary,
-                                    selectionFunction = selection_rule,
-                                    sampling = sampling_method,
-                                    classProbs = TRUE,
-                                    savePredictions = TRUE)
+      
+      # Detects whether or not a twoClassSummary function is appropriate for
+      # the metric to train on
+      if (metric %in% two_class_metrics) {
+        train_control <- trainControl(method = "cv",
+                                      number = cv,
+                                      summaryFunction = twoClassSummary,
+                                      selectionFunction = selection_rule,
+                                      sampling = sampling_method,
+                                      classProbs = TRUE,
+                                      savePredictions = TRUE)
+      } else {
+        train_control <- trainControl(method = "cv",
+                                      number = cv,
+                                      selectionFunction = selection_rule,
+                                      sampling = sampling_method,
+                                      classProbs = TRUE,
+                                      savePredictions = TRUE)
+      }
     } else {
-      train_control <- trainControl(method = "cv",
-                                    number = cv,
-                                    summaryFunction = twoClassSummary,
-                                    selectionFunction = selection_rule,
-                                    classProbs = TRUE,
-                                    savePredictions = TRUE)
+      if (metric %in% two_class_metrics) {
+        train_control <- trainControl(method = "cv",
+                                      number = cv,
+                                      summaryFunction = twoClassSummary,
+                                      selectionFunction = selection_rule,
+                                      classProbs = TRUE,
+                                      savePredictions = TRUE)
+      } else {
+        train_control <- trainControl(method = "cv",
+                                      number = cv,
+                                      selectionFunction = selection_rule,
+                                      classProbs = TRUE,
+                                      savePredictions = TRUE)
+      }
     }
     capture.output(model <- caret::train(train_formula,
                                          data = training,
@@ -171,12 +169,27 @@ generate_classifier <- function(training, testing, testing_gene_names, classifie
 }
 
 # Runs machine learning analyses on data
-scores_ml <- function(scores_file, target_feature, classifier, output_folder,
+scores_ml <- function(scores, target_feature, classifier, output_folder,
                       selection_rule, sampling_method = "none", p = 0.8, 
                       metric = "Kappa", cv = 5, cores = 4) {
   
-  # Checks that input file exists and creates output folder if it doesn't exist
-  if (!file.exists(scores_file)) { stop("scores file does not exist") }
+  # Check if input file is a path or a dataframe. We rename it if
+  # it's a dataframe
+  df <- NULL
+  if(is.data.frame(scores)) {
+    df <- scores
+  } else {
+    
+    # Loads scores file into a data frame and removes unnecesary cols, or exits
+    # if scores file doesn't exist
+    if (file.exists(scores)) {
+      df <- read.csv(scores, sep = "\t")
+    } else {
+      if (!file.exists(scores)) { stop("scores file does not exist") }
+    }
+  }
+  
+  # Creates output folder if it doesn't exist
   if (!dir.exists(output_folder)) { dir.create(output_folder) }
   
   # Creates summary file with header
@@ -186,9 +199,6 @@ scores_ml <- function(scores_file, target_feature, classifier, output_folder,
   
   # Enables multicore processing using doMC package
   registerDoMC(cores = cores)
-  
-  # Loads scores file into a data frame and removes unnecesary cols
-  df <- read.csv(scores_file, sep = "\t")
   
   # Splits data into training and testing sets if 0 < p < 1
   testing_gene_names <- NULL
@@ -206,15 +216,12 @@ scores_ml <- function(scores_file, target_feature, classifier, output_folder,
     training <- training[, !(names(training) %in% c("start", "end", "chrom", "name"))]
     testing <- testing[, !(names(testing) %in% c("start", "end", "chrom", "name"))]
     
-  # Uses all of the data as the training set if specified
-  } else if (p == 1) {
-    
-    partition <- createDataPartition(df$status, times = 1, p = p, list = FALSE)
-    training <- df[partition,]
-    
-  # Otherwise throws error and exits
+  # Uses all of the data as the training set if specified, otherwise throws error
+  } else if (p == 0) {
+    stop("must input p in range 0 < p <= 1")
   } else {
-    stop("must input p between 0 and 1")
+    training <- df
+    training <- training[, !(names(training) %in% c("start", "end", "chrom", "name"))]
   }
   
   # Generates model and saves it to output folder

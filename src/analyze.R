@@ -153,7 +153,7 @@ options = list(
 opt <- parse_args(OptionParser(option_list = options))
 if (!file.exists(opt$input_file)) { stop("input file does not exist") }
 if (!dir.exists(opt$models_folder)) { stop("models folder does not exist") }
-if (!dir.exists(opt$output_folder)) { dir.create(opt$output_folder) }
+if (!dir.exists(opt$output_folder)) { dir.create(opt$output_folder, recursive = TRUE) }
 
 # Extracts variables from args
 input_file <- opt$input_file

@@ -113,3 +113,10 @@ get_names <- function(input_folder, pattern, sep = "_") {
   }
   return(output)
 }
+
+# Adds id column to normalized scores and orders by id
+attach_ids <- function(df) {
+  df$id <- tolower(paste(df$name, df$chrom, sep = "_"))
+  df <- df[order(df$id),]
+  return(df)
+}

@@ -90,9 +90,10 @@ create_input_df <- function(input_folder, output_folder) {
 # and normalize_scores.R. Outputs processed text files in output_folder
 process_input <- function(x, input_folder, refseq_file, imprinted_file, 
                           bwtool_folder, output_folder,
-                          dropped_file, filter_input, 
-                          promoter_length, drop_percent, 
-                          drop_abs, overlap) {
+                          dropped_file, promoter_length, 
+                          drop_percent, drop_abs, 
+                          overlap, filter_olf, 
+                          filter_chroms, filter_imprinted) {
   
   # Gets mark and files from row in data frame
   mark <- x[[1]]
@@ -110,13 +111,15 @@ process_input <- function(x, input_folder, refseq_file, imprinted_file,
   # Runs bigwig_to_scores.R on both mark and control files
   bigwig_to_scores(refseq_file, mark_file, imprinted_file,
                    bwtool_folder, output_mark_body_file,
-                   output_mark_promoter_file, filter_input,
-                   overlap, promoter_length)
+                   output_mark_promoter_file, promoter_length, 
+                   overlap, filter_olf, 
+                   filter_chroms, filter_imprinted)
   if (!is.na(x[[3]])) {
     bigwig_to_scores(refseq_file, control_file, imprinted_file,
                      bwtool_folder, output_control_body_file,
-                     output_control_promoter_file, filter_input,
-                     overlap, promoter_length)
+                     output_control_promoter_file, promoter_length, 
+                     overlap, filter_olf, 
+                     filter_chroms, filter_imprinted)
   }
   
   # Runs normalize_scores.R
@@ -180,9 +183,9 @@ clean_intermediate <- function(output_folder, input_df, promoter_length) {
 
 # Processes a given bigwig file
 process_main <- function(current_folder, input_folder, output_folder,
-                         filter_input, promoter_length, drop_percent,
-                         drop_abs, clean, overlap, refseq_file, 
-                         training_genes_file) {
+                         promoter_length, drop_percent, drop_abs, 
+                         clean, overlap, refseq_file,
+                         filter_olf, filter_chroms, filter_imprinted) {
   
   # Loads required scripts and libraries
   load_process_libraries()
@@ -204,20 +207,6 @@ process_main <- function(current_folder, input_folder, output_folder,
   cat_f(header, dropped_file, FALSE)
   cat_f("gene_name\tlow_baseline_mark", dropped_file)
   
-  # Gets correct training genes file depending on species
-  if (tolower(training_genes_file) == "mouse") {
-    training_genes_file <- file.path(reference_folder, "mouse_tg.tsv")
-  } else if (tolower(training_genes_file) == "human") {
-    training_genes_file <- file.path(reference_folder, "human_tg.tsv")
-  } else if (tolower(training_genes_file) == "none") {
-    training_genes_file <- "none"
-  } else {
-    training_genes_file <- file.path(reference_folder, training_genes_file)
-    if (!file.exists(training_genes_file)) {
-      stop("training genes file does not exist (use 'mouse', 'human' or 'none')")
-    }
-  }
-  
   # Gets refseq file from either references folder or user input
   if (!file.exists(refseq_file)) {
     possible_file_1 <- file.path(reference_folder, tolower(refseq_file))
@@ -237,15 +226,16 @@ process_main <- function(current_folder, input_folder, output_folder,
         input_folder = input_folder, refseq_file = refseq_file,
         imprinted_file = imprinted_file, bwtool_folder = bwtool_folder,
         output_folder = output_folder, dropped_file = dropped_file,
-        filter_input = filter_input, promoter_length = promoter_length,
-        drop_percent = drop_percent, drop_abs = drop_abs, overlap = overlap)
+        promoter_length = promoter_length, drop_percent = drop_percent, 
+        drop_abs = drop_abs, overlap = overlap, 
+        filter_olf = filter_olf, filter_chroms = filter_chroms, 
+        filter_imprinted = filter_imprinted)
 
   # Joins all files into two tables with percentile scores or normalized sum
   norm_output_file <- file.path(output_folder, "joined_scores_norm.txt")
   percentile_output_file <- file.path(output_folder, "joined_scores_percentile.txt")
   join_input_main(input_df$processed_body, input_df$processed_promoter, input_df$mark,
-                  training_genes_file, percentile_output_file, norm_output_file,
-                  promoter_length)
+                  percentile_output_file, norm_output_file, promoter_length)
   
   # Removes intermediate files from output folder if specified
   if (clean) {
@@ -278,22 +268,24 @@ options = list(
               help="input folder, see readme for description"),
   make_option(c("-o", "--output_folder"), type="character", default="output", 
               help="output folder [default= %default]"),
-  make_option(c("-f", "--no_filter"), action="store_false", default=TRUE, 
-              help="disable sex, extra chrom and gene filtering [default= %default]"),
   make_option(c("-p", "--promoter_length"), type="integer", default=5000, 
               help="upstream promoter region length [default= %default]"),
   make_option(c("-d", "--drop_percent"), type="double", default=0.01, 
               help="bottom enrichment percentile of genes to drop [default= %default]"),
-  make_option(c("-a", "--drop_absolute"), type="double", default=1.0,
+  make_option(c("-a", "--drop_absolute"), type="double", default=0.0,
               help="bottom absolute mean value of genes to drop [default=%default]"),
-  make_option(c("-c", "--no_clean_intermediate"), action="store_false", default=TRUE, 
+  make_option(c("-e", "--no_clean_intermediate"), action="store_false", default=TRUE, 
               help="leave intermediate files [default= %default]"),
   make_option(c("-l", "--no_overlap"), action="store_false", default=TRUE, 
               help="remove promoter overlap with gene body, see readme for description [default= %default]"),
   make_option(c("-r", "--refseq_file"), type="character", default=NULL, 
               help="refseq file, see readme for description"),
-  make_option(c("-t", "--training_genes_file"), type="character", default="none", 
-              help="'mouse', 'human' or 'none' for training genes set to use [default= %default]"),
+  make_option(c("-f", "--no_filter_olf"), action="store_false", default=TRUE, 
+              help="disable olfactory receptor gene filtering [default= %default]"),
+  make_option(c("-c", "--no_filter_chroms"), action="store_false", default=TRUE, 
+              help="disable extra, partially-assembled and sex-chromosome gene filtering [default= %default]"),
+  make_option(c("-m", "--no_filter_imprinted"), action="store_false", default=TRUE, 
+              help="disable imprinted gene filtering [default= %default]"),
   make_option(c("-q", "--quiet"), action="store_true", default=FALSE, 
               help="disables console output [default= %default]")
 )
@@ -301,30 +293,31 @@ options = list(
 # Gets options and checks arguments
 opt <- parse_args(OptionParser(option_list = options))
 if (!dir.exists(opt$input_folder)) { stop("input directory does not exist") }
-if (!dir.exists(opt$output_folder)) { dir.create(opt$output_folder) }
+if (!dir.exists(opt$output_folder)) { dir.create(opt$output_folder, recursive = TRUE) }
 
 # Extracts variables from args
 input_folder <- opt$input_folder
 output_folder <- opt$output_folder
-filter_input <- opt$no_filter
 promoter_length <- opt$promoter_length
 drop_percent <- opt$drop_percent
 drop_abs <- opt$drop_absolute
 clean <- opt$no_clean_intermediate
 overlap <- opt$no_overlap
 refseq_file <- opt$refseq_file
-training_genes_file <- tolower(opt$training_genes_file)
+filter_olf <- opt$no_filter_olf
+filter_chroms <- opt$no_filter_chroms
+filter_imprinted <- opt$no_filter_imprinted
 quiet <- opt$quiet
 
 # Calls main function, disabling output if running in quiet mode
 if (!quiet) {
   invisible(process_main(current_folder, input_folder, output_folder,
-                         filter_input, promoter_length, drop_percent,
-                         drop_abs, clean, overlap, refseq_file, 
-                         training_genes_file))
+                         promoter_length, drop_percent, drop_abs, 
+                         clean, overlap, refseq_file,
+                         filter_olf, filter_chroms, filter_imprinted))
 } else {
   process_main(current_folder, input_folder, output_folder,
-               filter_input, promoter_length, drop_percent,
-               drop_abs, clean, overlap, refseq_file, 
-               raining_genes_file)
+               promoter_length, drop_percent, drop_abs, 
+               clean, overlap, refseq_file,
+               filter_olf, filter_chroms, filter_imprinted)
 }

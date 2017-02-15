@@ -7,15 +7,38 @@
 ######
 
 
+# Loads training genes and attaches them to scores
+attach_training_genes <- function(df, training_genes_file) {
+  
+  # Opens training genes
+  training_genes <- read.csv(training_genes_file, sep = "\t")
+  
+  # Keeps only genes in both datasets
+  training_genes$id <- 
+    tolower(paste(training_genes$gene, training_genes$chrom, sep = "_"))
+  ids_to_keep <- intersect(training_genes$id, df$id)
+  df <- df[df$id %in% ids_to_keep, ]
+  training_genes <- training_genes[training_genes$id %in% ids_to_keep, ]
+  
+  # Appends training genes to modified df
+  df <- df[order(df$id),]
+  training_genes <- training_genes[order(training_genes$id),]
+  df$status <- training_genes$status
+  
+  # Explicitly returns modified scores df
+  return(df)
+}
+
+
 # Generates seven different classifiers via scores_ml.R on given scores file
-generate_classifiers <- function(scores_file, output_folder, sampling_method,
+generate_classifiers <- function(scores, output_folder, sampling_method,
                                  selection_rule, target_feature, p,
                                  metric, cv) {
   
   model_list <- c("glmStepAIC", "rf", "nnet", "rpart", "svmPoly",
                   "evtree", "knn", "ada", "mlpML")
   for (model_name in model_list) {
-    scores_ml(scores_file, target_feature, model_name, 
+    scores_ml(scores, target_feature, model_name, 
               output_folder, selection_rule, sampling_method,
               p, metric, cv)
   }
@@ -24,17 +47,48 @@ generate_classifiers <- function(scores_file, output_folder, sampling_method,
 # Generates classifiers from given training file
 generate_main <- function(current_folder, input_file, output_folder,
                           sampling_method, selection_rule, target_feature,
-                          p, metric, cv) {
+                          training_genes_file, p, metric, 
+                          cv) {
   
   # Loads required scripts and libraries
   load_generate_libraries()
   load_generate_scripts(current_folder)
   
+  # Gets reference folder based on location of executing script
+  reference_folder <- file.path(dirname(current_folder), "reference")
+  
+  # Gets correct training genes file depending on species
+  if (tolower(training_genes_file) == "mouse") {
+    training_genes_file <- file.path(reference_folder, "mouse_tg.tsv")
+  } else if (tolower(training_genes_file) == "human") {
+    training_genes_file <- file.path(reference_folder, "human_tg.tsv")
+  } else if (tolower(training_genes_file) == "none") {
+    training_genes_file <- "none"
+  } else {
+    training_genes_file <- file.path(reference_folder, training_genes_file)
+    if (!file.exists(training_genes_file)) {
+      stop("training genes file does not exist (use 'mouse', 'human' or 'none')")
+    }
+  }
+  
+  # Loads input file into a dataframe and attaches ids to it
+  scores <- read.csv(input_file, sep = "\t")
+  
   # Converts percent to double between 0 and 1
   p <- p/100
   
+  cat("Subsetting data to match the given training genes...\n")
+  
+  if (training_genes_file != "none") {
+    scores <- attach_ids(scores)
+    scores <- attach_training_genes(scores, training_genes_file)
+    scores <- scores[, !(names(scores) %in% c("id"))]
+  }
+  
+  cat("Data subset. Generating models...\n")
+  
   # Generates classifiers
-  generate_classifiers(input_file, output_folder, sampling_method,
+  generate_classifiers(scores, output_folder, sampling_method,
                        selection_rule, target_feature, p,
                        metric, cv)
   
@@ -75,6 +129,8 @@ options = list(
               help="name of column in dataset with feature to classify by [default= %default]"),
   make_option(c("-m", "--metric"), type="character", default="Kappa",
               help="metric to train on [default= %default]"),
+  make_option(c("-a", "--training_genes_file"), type="character", default="none", 
+              help="'mouse', 'human' or 'none' for training genes set to use [default= %default]"),
   make_option(c("-s", "--sampling_method"), type="character", default="none",
               help="resampling method used to train classifiers [default= %default]"),
   make_option(c("-r", "--selection_rule"), type="character", default="best",
@@ -90,7 +146,7 @@ options = list(
 # Gets options and checks arguments
 opt <- parse_args(OptionParser(option_list = options))
 if (!file.exists(opt$input_file)) { stop("input file does not exist") }
-if (!dir.exists(opt$output_folder)) { dir.create(opt$output_folder) }
+if (!dir.exists(opt$output_folder)) { dir.create(opt$output_folder, recursive = TRUE) }
 
 # Extracts variables from args
 input_file <- opt$input_file
@@ -100,6 +156,7 @@ selection_rule <- opt$selection_rule
 target_feature <- opt$target_feature
 p <- opt$training_percent
 metric <- opt$metric
+training_genes_file <- tolower(opt$training_genes_file)
 cv <- opt$cross_validation
 quiet <- opt$quiet
 
@@ -107,9 +164,11 @@ quiet <- opt$quiet
 if (!quiet) {
   invisible(generate_main(current_folder, input_file, output_folder, 
                           sampling_method, selection_rule, target_feature,
-                          p, metric, cv))
+                          training_genes_file, p, metric, 
+                          cv))
 } else {
   generate_main(current_folder, input_file, output_folder, 
                 sampling_method, selection_rule, target_feature,
-                p, metric, cv)
+                training_genes_file, p, metric, 
+                cv)
 }

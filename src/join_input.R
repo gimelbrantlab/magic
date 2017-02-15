@@ -1,34 +1,5 @@
 
 
-# Adds id column to normalized scores and orders by id
-attach_ids <- function(df) {
-  df$id <- tolower(paste(df$name, df$chrom, sep = "_"))
-  df <- df[order(df$id),]
-  return(df)
-}
-
-# Loads training genes and attaches them to normalized scores
-attach_training_genes <- function(df, training_genes_file) {
-  
-  # Opens training genes
-  training_genes <- read.csv(training_genes_file, sep = "\t")
-  
-  # Keeps only genes in both datasets
-  training_genes$id <- 
-    tolower(paste(training_genes$gene, training_genes$chrom, sep = "_"))
-  ids_to_keep <- intersect(training_genes$id, df$id)
-  df <- df[df$id %in% ids_to_keep, ]
-  training_genes <- training_genes[training_genes$id %in% ids_to_keep, ]
-
-  # Appends training genes to modified df
-  df <- df[order(df$id),]
-  training_genes <- training_genes[order(training_genes$id),]
-  df$status <- training_genes$status
-  
-  # Explicitly returns modified scores df
-  return(df)
-}
-
 # Removes unnecessary columns from df
 clean_cols <- function(df, status_present = FALSE) {
   if ("status" %in% colnames(df)) {
@@ -43,19 +14,15 @@ clean_cols <- function(df, status_present = FALSE) {
 
 # Attaches ids, subsets to training genes if applicable, and
 # removes unnecessary columns
-process_df <- function(df, training_genes_file) {
+process_df <- function(df) {
   df <- attach_ids(df)
-  if (training_genes_file != "none") {
-    df <- attach_training_genes(df, training_genes_file)
-  }
   return(clean_cols(df))
 }
 
 # Joins multiple outputs from normalize_scores.R into one file with
 # multiple chromatin marks for each interval
 join_input_main <- function(body_files, promoter_files, mark_names, 
-                            training_genes_file, percentile_output_file, 
-                            norm_output_file, promoter_length) {
+                            percentile_output_file, norm_output_file, promoter_length) {
   
   # Reads in lists of data frames and processes each one
   body_dfs <- list()
@@ -63,13 +30,13 @@ join_input_main <- function(body_files, promoter_files, mark_names,
   for (i in 1:length(mark_names)) {
     body_dfs[[i]] <- read.csv(body_files[[i]], sep = "\t")
     body_dfs[[i]] <- 
-      process_df(body_dfs[[i]], training_genes_file)
+      process_df(body_dfs[[i]])
     
     # Also processes promoter files if they exist
     if (promoter_length > 0) {
       promoter_dfs[[i]] <- read.csv(promoter_files[[i]], sep = "\t")
       promoter_dfs[[i]] <- 
-        process_df(promoter_dfs[[i]], training_genes_file)
+        process_df(promoter_dfs[[i]])
     }
   }
   

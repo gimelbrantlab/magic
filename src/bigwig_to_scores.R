@@ -1,13 +1,50 @@
 
 
-# Appends gene names to regions in the counts file, and removes sex-linked 
-# and olfactory receptor genes.
-filter_counts <- function(counts_file, bed_file, imprinted_file) {
+# Removes sex-linked and olfactory receptor genes, as well as genes on
+# extra or partially-assembled chromosomes
+filter_counts <- function(counts, bed, imprinted_file,
+                          filter_olf, filter_chroms, filter_imprinted) {
   
-  # Opens files and adds meaningful colnames
-  counts <- read.csv(counts_file, sep = "\t")
-  bed <- read.csv(bed_file, sep = "\t", header = FALSE)
+  if (filter_olf) { counts <- remove_olfactory(counts) }
+  if (filter_chroms) { counts <- remove_extra_chroms(counts) }
+  if (filter_imprinted) { counts <- remove_imprinted(counts, imprinted_file) }
+  
+  # Explicitly returns filtered counts
+  return(counts)
+}
+
+# Removes imprinted genes from a counts df
+remove_imprinted <- function(counts, imprinted_file) {
   imprinted <- read.csv(imprinted_file, sep = "\t")
+  counts <- counts %>% filter(!(name %in% imprinted[,1]))
+  return(counts)
+}
+
+# Removes olfactory receptors genes from a counts df
+remove_olfactory <- function(counts) {
+  counts <- counts %>% filter(!(grepl('^Olfr', name)))
+  return(counts)
+}
+
+# Removes sex-linked, partially assmebled and extra chromosomes
+# from a counts df
+remove_extra_chroms <- function(counts) {
+  
+  # List of chromosomes to keep
+  chrom_list <- c("chr1", "chr2", "chr3", "chr4", "chr5",
+                  "chr6", "chr7", "chr8", "chr9", "chr10",
+                  "chr11", "chr12", "chr13", "chr14", "chr15",
+                  "chr16", "chr17", "chr18", "chr19")
+  
+  # Removes sex-linked, partially assembled and extra chromosomes
+  counts <- counts %>% filter(chrom %in% chrom_list)
+  return(counts)
+}
+
+# Appends name column from bed df to counts df
+append_bed_names <- function(counts, bed) {
+  
+  # Renames column names in counts and bed dfs
   colnames(counts)[1] <- "chrom"
   colnames(bed)[1] <- "chrom"
   colnames(bed)[2] <- "chromStart"
@@ -21,21 +58,6 @@ filter_counts <- function(counts_file, bed_file, imprinted_file) {
   
   # Appends gene names to counts
   counts$name <- bed$name
-  
-  # Removes imprinted and olfactory receptor genes
-  counts <- counts %>% filter(!(name %in% imprinted[,1]))
-  counts <- counts %>% filter(!(grepl('^Olfr', name)))
-  
-  # List of chromosomes to keep
-  chrom_list <- c("chr1", "chr2", "chr3", "chr4", "chr5",
-                  "chr6", "chr7", "chr8", "chr9", "chr10",
-                  "chr11", "chr12", "chr13", "chr14", "chr15",
-                  "chr16", "chr17", "chr18", "chr19")
-
-  # Removes sex-linked, partially assembled and extra chromosomes
-  counts <- counts %>% filter(chrom %in% chrom_list)
-  
-  # Explicitly returns filtered counts
   return(counts)
 }
 
@@ -109,8 +131,9 @@ refseq_to_bed <- function(refseq_file, promoter_length, overlap) {
 # Inner function to generate scores file for one bigwig file
 bigwig_to_scores_inner <- function(refseq_file, bw_file, imprinted_file, 
                                    bwtool_folder, output_file,
-                                   filter_input, promoter_length,
-                                   overlap) {
+                                   promoter_length, overlap,
+                                   filter_olf, filter_chroms,
+                                   filter_imprinted) {
   
   # Converts refseq table to bed file with short transcripts culled
   bed <- refseq_to_bed(refseq_file, promoter_length, overlap)
@@ -121,12 +144,15 @@ bigwig_to_scores_inner <- function(refseq_file, bw_file, imprinted_file,
   # Executes bwtool on processed refseq bed file and input bw file
   bw_to_counts(bed_file, bw_file, bwtool_folder, output_file)
   
-  # Filters certain genes from counts file(s) if specified
-  if (filter_input) {
-    counts <- filter_counts(output_file, bed_file, imprinted_file)
-    write.table(counts, file = output_file, sep = "\t", quote = FALSE,
-                row.names = FALSE, col.names = TRUE)
-  }
+  # Opens processed counts file and appends names column
+  counts <- read.csv(output_file, sep = "\t")
+  counts <- append_bed_names(counts, bed)
+  
+  # Filters counts file in various ways and writes out to file
+  counts <- filter_counts(counts, bed, imprinted_file,
+                          filter_olf, filter_chroms, filter_imprinted)
+  write.table(counts, file = output_file, sep = "\t", quote = FALSE,
+              row.names = FALSE, col.names = TRUE)
 }
 
 
@@ -134,25 +160,24 @@ bigwig_to_scores_inner <- function(refseq_file, bw_file, imprinted_file,
 # region scores
 bigwig_to_scores <- function(refseq_file, bw_file, imprinted_file, 
                              bwtool_folder, body_output_file,
-                             promoter_output_file = NA,
-                             filter_input = TRUE,
-                             overlap = TRUE,
-                             promoter_length = 2500) {
+                             promoter_output_file = NA, promoter_length = 2500,
+                             overlap = TRUE, filter_olf = TRUE, 
+                             filter_chroms = TRUE, filter_imprinted = TRUE) {
   
   # Generates counts for gene body
   bigwig_to_scores_inner(refseq_file, bw_file, imprinted_file,
-                         bwtool_folder, body_output_file,
-                         filter_input, promoter_length = 0,
-                         overlap)
+                         bwtool_folder, body_output_file, 0, 
+                         overlap, filter_olf, filter_chroms,
+                         filter_imprinted)
   
   # Generates counts for promoter region if specified
   if (promoter_length > 0) {
     if (is.na(promoter_output_file)) {
-      stop("no promoter counts file given")
+      stop(paste("no promoter counts file given for", bw_file))
     }
     bigwig_to_scores_inner(refseq_file, bw_file, imprinted_file,
-                           bwtool_folder, promoter_output_file,
-                           filter_input, promoter_length,
-                           overlap)
+                           bwtool_folder, promoter_output_file, promoter_length, 
+                           overlap, filter_olf, filter_chroms,
+                           filter_imprinted)
   }
 }

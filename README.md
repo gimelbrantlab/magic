@@ -27,10 +27,10 @@ corresponding control file must be named [mark name]\_control.bigWig or [mark na
     Rscript process.R -i input\_dir -r "mm9"
     
 *Human genome*:
-    Rscript process.R -i input\_dir -o output -r "hg19" -t "human"
+    Rscript process.R -i input\_dir -o output -r "hg19"
     
 *Mouse genome with many options*:
-    Rscript process.R -i input\_dir -o output -r "mm9" -f -p 2500 -d 0.01 -c -l
+    Rscript process.R -i input\_dir -o output -r "mm9" -f -p 2500 -d 0.01 -e -l -m
     
 ### Arguments
 
@@ -45,9 +45,6 @@ All arguments are also described via "Rscript process.R --help"
 *-r, --refseq_file*: 
     either a name of a default refseq file ("mm9" or "hg19") *or* a path to a refseq file downloaded from the [UCSC table browser](https://genome.ucsc.edu/cgi-bin/hgTables). IMPORTANT: must *not* contain exonStarts and exonEnds columns
     
-*-f, --no_filter*: 
-    disable sex, extra chrom and olfactory gene filtering
-    
 *-p, --promoter_length*: 
     length of promoter region, disables promoter region separation if set to 0 [default 5000]
     
@@ -57,14 +54,20 @@ All arguments are also described via "Rscript process.R --help"
 *-a, --drop_absolute*:
     bottom baseline enrichment raw mean of genes to drop [default 1.0]
     
-*-c, --no_clean_intermediate*: 
+*-e, --no_clean_intermediate*: 
     disable automatic removal of intermediate output files
 
 *-l, --no_overlap*: 
     disables default option of summing enrichment for *promoter_length* base pairs on either side of the TSS for a promoter region
     
-*-t, --training_genes_file*: 
-    if generating classifiers, specify "mouse", "human" or the name of a training genes file in the reference folder; otherwise, specify "none"
+*-f, --no_filter_olf*: 
+    disable olfactory receptor gene filtering
+    
+*-c, --no_filter_chrom*: 
+    disable extra, partially-assembled and sex-chromosome gene filtering
+    
+*-m, --no_filter_imprinted*: 
+    disable imprinted gene filtering
 
 *-q, --quiet*: 
     disables console output, do not flag if required packages missing [default FALSE]
@@ -85,7 +88,7 @@ All arguments are also described via "Rscript process.R --help"
     
 ### Arguments
 
-All arguments are also described via "Rscript generate.R --help"
+All arguments are also described via "Rscript analyze.R --help"
 
 *-i, --input_file*:
     Path to input file, described in general usage
@@ -100,7 +103,7 @@ All arguments are also described via "Rscript generate.R --help"
     list of models to exclude from folder, separated by commas
 
 *-p, --positive_class*:
-    name of target feature's positive clas [default "MAE"]
+    name of target feature's positive class [default "MAE"]
     
 *-q, --quiet*: 
     disables console output, do not flag if required packages missing [default FALSE]
@@ -141,6 +144,9 @@ All arguments are also described via "Rscript generate.R --help"
     metric to train on, either "Kappa", "Accuracy", or for data with only two classes "ROC"
 [default "Kappa"]
 
+*-a, --training_genes_file*: 
+    subsets data to preset file with training genes, to use specify "mouse", "human" or the name of a training genes file in the reference folder [default "none"]
+
 *-s, --sampling_method*: 
     resampling method to use when training classifiers, one of "none", "down", or "up" [default "none"]
 
@@ -158,7 +164,5 @@ All arguments are also described via "Rscript generate.R --help"
 
 ## Contact us
 
-Questions, comments and concerns can be directed to [Alexander Gimelbrant](alexander_gimelbrant%40dfci.harvard.edu)
-and [Sebastien Vigneau](sebastien.vigneau@gmail.com). Inquiries about how the program works can
-be directed to [Henry Ward](henry.neil.ward@gmail.com) and [Sachit Saksena](sachitdsaksena@utexas.edu).
-Script written by Henry Ward. Data processing tools written by Sachit Saksena.
+Questions, comments and concerns can be directed to [Alexander Gimelbrant](alexander_gimelbrant%40dfci.harvard.edu), [Sebastien Vigneau](Sebastien_Vigneau@dfci.harvard.edu), and [Svetlana Vinogradova](Svetlana_Vinogradova@dfci.harvard.edu). Additional inquiries about how the program works
+can be directed to [Henry Ward](henry.neil.ward@gmail.com) and [Sachit Saksena](sachitdsaksena@utexas.edu).
