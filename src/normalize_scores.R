@@ -1,7 +1,7 @@
 # Normalizes the scores output from bigwig_to_scores based on
 # either a control bigwig file or the length of each interval.
 normalize_scores <- function(scores_file, output_file, dropped_file,
-                             mark, gene_region, control_file = NA, 
+                             mark, gene_region, input_file = NA, 
                              drop_percent = 0.05, drop_abs = 1.0) {
   
   # Opens scores file and converts NA values to 0
@@ -9,10 +9,10 @@ normalize_scores <- function(scores_file, output_file, dropped_file,
   scores[is.na(scores)] <- 0
   
   # Divides scores by control after dropping lowest percentile
-  if (!is.na(control_file)) {
+  if (!is.na(input_file)) {
     
     # Reads in control file, converts NA values to 0 and generates percentiles
-    control <- read.csv(control_file, sep = "\t", header = TRUE)
+    control <- read.csv(input_file, sep = "\t", header = TRUE)
     control[is.na(control)] <- 0
     control <- control %>% mutate(percentile = rank(sum) / length(sum))
     
@@ -21,7 +21,7 @@ normalize_scores <- function(scores_file, output_file, dropped_file,
     genes_to_remove <- control$name[(control$percentile <= drop_percent) | (control$mean < drop_abs)]
     control <- control[!control$name %in% genes_to_remove,]
     scores <- scores[!scores$name %in% genes_to_remove,]
- 
+    
     # Writes list of dropped genes to file
     for (gene in genes_to_remove) {
       cat_f(paste(gene, "\t", mark, "_", gene_region, sep = ""), dropped_file)

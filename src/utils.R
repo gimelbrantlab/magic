@@ -21,12 +21,12 @@ load_analyze_libraries <- function() {
   get_package("randomForest")
   get_package("RSNNS")
   get_package("nnet")
-  get_package("kernlab")
   get_package("lattice")
   get_package("optparse")
   get_package("evtree")
   get_package("MASS")
   get_package("dplyr")
+  get_package("parallel")
 }
 
 # Loads or installs all required packages for processing
@@ -36,6 +36,7 @@ load_process_libraries <- function() {
   get_package("kernlab")
   get_package("caret", dependencies = TRUE)
   get_package("lattice")
+  get_package("parallel")
   get_package("doMC", repos = "http://R-Forge.R-project.org")
 }
 

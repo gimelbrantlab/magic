@@ -13,24 +13,28 @@ missing.
 
 This script processes ChIP-Seq/MBD-seq/etc. data from .bigWig/bw file format to informative tables primed for analyze.R or generate.R.
 
-*Input folder*: contains mark and control files in the bigWig file format (.bigWig or .bw). Mark
+*Input file*: contains pathnames of mark and control files in the bigWig file format (.bigWig or .bw). Mark
 files contain chromatin mark enrichment data across an organism's genome, generally ChIP-Seq,
-and control files contain baseline data for the same experiment. For a given mark name, mark 
-files must be named as [mark name]\_mark.bigWig or [mark name]\_mark.bw, and that mark's 
-corresponding control file must be named [mark name]\_control.bigWig or [mark name]\_control.bw.
+and control (otherwise known as input) files contain baseline data for the same experiment. The format for the input file is as follows, with values separated by tabs and comments indicated by "#":
+
+| mark name 	| mark file                      	| control file                        	|
+|-----------	|--------------------------------	|-------------------------------------	|
+| h3k27me3  	| input_dir/h3k27me3_mark.bigWig 	| mouse_input/h3k27me3_control.bigWig 	|
+| h3k36me3  	| input_dir/h3k36me3_mark.bigWig 	| mouse_input/h3k27me3_control.bigWig 	
+
 
 *Output folder*: contains two tables for normalized scores and percentile ranks of predicted or reference genes. Scores are normalized to either the length of the gene or the baseline enrichment data, if available, and percentile ranks are of the normalized scores. 
 
 ### Example command line usage
 
 *Minimum*:
-    Rscript process.R -i input\_dir -r "mm9"
+    Rscript process.R -i input\_file -r "mm9"
     
 *Human genome*:
-    Rscript process.R -i input\_dir -o output -r "hg19"
+    Rscript process.R -i input\_file -o output -r "hg19"
     
 *Mouse genome with many options*:
-    Rscript process.R -i input\_dir -o output -r "mm9" -f -p 2500 -d 0.01 -e -l -m
+    Rscript process.R -i input\_file -o output -r "mm9" -f -p 2500 -d 0.01 -e -l -m -s 3
     
 ### Arguments
 
@@ -44,6 +48,9 @@ All arguments are also described via "Rscript process.R --help"
     
 *-r, --refseq_file*: 
     either a name of a default refseq file ("mm9" or "hg19") *or* a path to a refseq file downloaded from the [UCSC table browser](https://genome.ucsc.edu/cgi-bin/hgTables). IMPORTANT: must *not* contain exonStarts and exonEnds columns
+    
+*-b, --bed_file*:
+    specifies the path of a custom bed file you want to use in place of a refseq file - if given, the refseq file argument is ignored
     
 *-p, --promoter_length*: 
     length of promoter region, disables promoter region separation if set to 0 [default 5000]
@@ -68,13 +75,16 @@ All arguments are also described via "Rscript process.R --help"
     
 *-m, --no_filter_imprinted*: 
     disable imprinted gene filtering
+  
+*-s, --cores*:   
+    number of cores to use for data processing 
 
 *-q, --quiet*: 
     disables console output, do not flag if required packages missing [default FALSE]
 
 ## Analyze
 
-*Input file*: file output by process.R
+*Input file*: percentiles file output by process.R
 
 *Output folder*: contains predictions on the input file using specified classifiers in a single dataframe
 

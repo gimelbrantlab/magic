@@ -135,13 +135,26 @@ bigwig_to_scores_inner <- function(refseq_file, bw_file, imprinted_file,
                                    filter_olf, filter_chroms,
                                    filter_imprinted) {
   
-  # Converts refseq table to bed file with short transcripts culled
-  bed <- refseq_to_bed(refseq_file, promoter_length, overlap)
+  bed <- ""
+  
+  # Gets file extension of refseq or bed file
+  components <- strsplit(refseq_file, "\\.")[[1]]
+  extension <- tolower(components[length(components)])
+  
+  # If custom bed file given, uses that instead of the refseq file
+  if (extension == "bed") {
+    bed <- read.csv(refseq_file, sep = "\t")
+    
+  # Else, converts refseq table to bed file with short transcripts culled
+  } else {
+    bed <- refseq_to_bed(refseq_file, promoter_length, overlap)
+  }
+  
   bed_file <- file.path(dirname(output_file), "loci.bed")
   write.table(bed, file = bed_file, sep = "\t", quote = FALSE,
               row.names = FALSE, col.names = FALSE)
-  
-  # Executes bwtool on processed refseq bed file and input bw file
+
+  # Executes bwtool on bed file and input bw file
   bw_to_counts(bed_file, bw_file, bwtool_folder, output_file)
   
   # Opens processed counts file and appends names column
@@ -163,7 +176,7 @@ bigwig_to_scores <- function(refseq_file, bw_file, imprinted_file,
                              promoter_output_file = NA, promoter_length = 2500,
                              overlap = TRUE, filter_olf = TRUE, 
                              filter_chroms = TRUE, filter_imprinted = TRUE) {
-  
+    
   # Generates counts for gene body
   bigwig_to_scores_inner(refseq_file, bw_file, imprinted_file,
                          bwtool_folder, body_output_file, 0, 
