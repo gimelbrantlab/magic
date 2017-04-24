@@ -1,4 +1,3 @@
-
 # Generates classifiers for scores data output from predict_mae.R
 
 ######
@@ -149,13 +148,13 @@ generate_classifier <- function(training, testing, testing_gene_names, classifie
     cat_f("\n", log_file)
     sink_f(postResample(predictions, testing[[target_feature]]), log_file)
     if (nlevels(training[[target_feature]]) == 2) {
-      sens <- sensitivity(predictions, testing[[target_feature]], positive = "rMAE")
-      spec <- specificity(predictions, testing[[target_feature]], positive = "rMAE")
+      sens <- sensitivity(predictions, testing[[target_feature]], positive = "MAE")
+      spec <- specificity(predictions, testing[[target_feature]], positive = "MAE")
       cat_f(paste("sensitivity:", sens, "\n"), log_file)
       cat_f(paste("specificity:", spec, "\n"), log_file)
-      cMat <- as.table(confusionMatrix(predictions, testing[[target_feature]]),
-                       positive = "rMAE")
-      matrix_file <- file.path(output_folder, paste(classifier, "matrix", sep = "_"))
+      cMat <- as.table(caret::confusionMatrix(predictions, testing[[target_feature]]),
+                       positive = "MAE")
+      matrix_file <- file.path(output_folder, paste(classifier, "matrix.txt", sep = "_"))
       write.table(cMat, file = matrix_file, quote = FALSE)
     }
     
