@@ -116,6 +116,9 @@ All arguments are also described via "Rscript generate.R --help"
 *-t, --target_feature*:
     name of column in dataset with feature to classify by [default "status"]
 
+*-a, --training_genes_file*:
+    path to file containing true MAE status of genes for training, user can input a path to a file or the word "human" for a human training set, "mouse" for a mouse training set, or "none" for no training [default "none"]
+
 *-m, --sampling_method*: 
     resampling method to use when training classifiers, one of "none", "down", or "up"
 [default "none"]
