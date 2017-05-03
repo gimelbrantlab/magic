@@ -33,10 +33,9 @@ attach_training_genes <- function(df, training_genes_file) {
 # Generates seven different classifiers via scores_ml.R on given scores file
 generate_classifiers <- function(scores, output_folder, sampling_method,
                                  selection_rule, target_feature, p,
-                                 metric, cv) {
+                                 metric, cv, model_string) {
   
-  model_list <- c("glmStepAIC", "rf", "nnet", "rpart", "svmPoly",
-                  "evtree", "knn", "ada", "mlpML")
+  model_list <- strsplit(model_string, ",")    
   for (model_name in model_list) {
     scores_ml(scores, target_feature, model_name, 
               output_folder, selection_rule, sampling_method,
@@ -48,7 +47,7 @@ generate_classifiers <- function(scores, output_folder, sampling_method,
 generate_main <- function(current_folder, input_file, output_folder,
                           sampling_method, selection_rule, target_feature,
                           training_genes_file, p, metric, 
-                          cv) {
+                          cv,model_string) {
   
   # Loads required scripts and libraries
   load_generate_libraries()
@@ -90,7 +89,7 @@ generate_main <- function(current_folder, input_file, output_folder,
   # Generates classifiers
   generate_classifiers(scores, output_folder, sampling_method,
                        selection_rule, target_feature, p,
-                       metric, cv)
+                       metric, cv, model_string)
   
   cat("Models generated. Generating model comparisons on resampled training data...\n")
   
@@ -140,7 +139,10 @@ options = list(
   make_option(c("-c", "--cross_validation"), type="integer", default=5,
               help="number of times to run cross-validation [default= %default]"),
   make_option(c("-q", "--quiet"), action="store_true", default=FALSE, 
-              help="disables console output [default= %default]")
+              help="disables console output [default= %default]"),
+  make_option(c("-l", "--model_list"), type="character", default = "glmStepAIC, rf, nnet, rpart, svmPoly,
+                  evtree, knn, ada, mlpML",
+              help="list of model algorithms to test, see readme for naming conventions [default= %default]")
 )
 
 # Gets options and checks arguments
@@ -165,10 +167,10 @@ if (!quiet) {
   invisible(generate_main(current_folder, input_file, output_folder, 
                           sampling_method, selection_rule, target_feature,
                           training_genes_file, p, metric, 
-                          cv))
+                          cv, model_string))
 } else {
   generate_main(current_folder, input_file, output_folder, 
                 sampling_method, selection_rule, target_feature,
                 training_genes_file, p, metric, 
-                cv)
+                cv, model_string)
 }
