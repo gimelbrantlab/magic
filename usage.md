@@ -122,6 +122,9 @@ All arguments are also described via "Rscript generate.R --help"
 
 *-r, --selection_rule*:
     caret rule used to select the best model [default "best"]
+
+*-l, --model_list*: 
+    string of all algorithms being tested  [default "ada, rf, nnet, mlpML, svmPoly"]
     
 *-q, --quiet*: 
     disables console output, do not flag if required packages missing [default FALSE]
