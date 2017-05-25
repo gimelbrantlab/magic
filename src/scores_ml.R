@@ -149,7 +149,7 @@ generate_classifier <- function(training, testing, testing_gene_names, classifie
     sink_f(postResample(predictions, testing[[target_feature]]), log_file)
     if (nlevels(training[[target_feature]]) == 2) {
       sens <- sensitivity(predictions, testing[[target_feature]], positive = "MAE")
-      spec <- specificity(predictions, testing[[target_feature]], positive = "MAE")
+      spec <- specificity(predictions, testing[[target_feature]], negative = "BAE")
       cat_f(paste("sensitivity:", sens, "\n"), log_file)
       cat_f(paste("specificity:", spec, "\n"), log_file)
       cMat <- as.table(caret::confusionMatrix(predictions, testing[[target_feature]]),

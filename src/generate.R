@@ -35,8 +35,10 @@ generate_classifiers <- function(scores, output_folder, sampling_method,
                                  selection_rule, target_feature, p,
                                  metric, cv, model_string) {
   
-  model_list <- strsplit(model_string, ",")    
-  for (model_name in model_list) {
+  model_string <- gsub(" ", "", model_string)
+  model_string <- gsub("\n", "", model_string)
+  model_list <- strsplit(model_string, ",") 
+  for (model_name in model_list[[1]]) {
     scores_ml(scores, target_feature, model_name, 
               output_folder, selection_rule, sampling_method,
               p, metric, cv)
@@ -47,7 +49,7 @@ generate_classifiers <- function(scores, output_folder, sampling_method,
 generate_main <- function(current_folder, input_file, output_folder,
                           sampling_method, selection_rule, target_feature,
                           training_genes_file, p, metric, 
-                          cv,model_string) {
+                          cv, model_string) {
   
   # Loads required scripts and libraries
   load_generate_libraries()
@@ -161,6 +163,7 @@ metric <- opt$metric
 training_genes_file <- tolower(opt$training_genes_file)
 cv <- opt$cross_validation
 quiet <- opt$quiet
+model_string <- opt$model_list
 
 # Calls main function, disabling output if running in quiet mode
 if (!quiet) {

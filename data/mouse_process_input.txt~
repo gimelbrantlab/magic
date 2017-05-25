@@ -1,0 +1,4 @@
+# name		mark								input
+h3k27me3	h3k27me3\_sample.bigWig		input\_sample.bigWig
+h3k36me3	mouse_input/h3k36me3_mark.bigWig	mouse_input/h3k27me3_control.bigWig
+

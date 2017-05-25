@@ -87,14 +87,18 @@ create_input_df <- function(file_name, output_folder) {
   
   # Checks if all files are valid pathnames, throws error if not
   # or if conflicting 
-  mark_file_check <- lapply(mark_files, file_check, relative_dir = dirname(file_name))
-  input_file_check <- lapply(input_files, file_check, relative_dir = dirname(file_name))
+  mark_file_check <- sapply(mark_files, USE.NAMES = FALSE, 
+                            file_check, relative_dir = dirname(file_name))
+  input_file_check <- sapply(input_files, USE.NAMES = FALSE,
+                             file_check, relative_dir = dirname(file_name))
   if (FALSE %in% mark_file_check) { stop("not all given mark files exist") }
   if (FALSE %in% input_file_check) { stop("not all given input files exist") }
   
   # Changes absolute to relative pathnames if necessary
-  mark_files <- lapply(mark_files, file_to_relative, relative_dir = dirname(file_name))
-  input_files <- lapply(input_files, file_to_relative, relative_dir = dirname(file_name))
+  mark_files <- sapply(mark_files, USE.NAMES = FALSE,
+                       file_to_relative, relative_dir = dirname(file_name))
+  input_files <- sapply(input_files, USE.NAMES = FALSE,
+                        file_to_relative, relative_dir = dirname(file_name))
   
   # Changes empty strings to NAs
   input_files[input_files == ""] <- NA
@@ -296,6 +300,63 @@ process_main <- function(current_folder, input_file, output_folder,
   percentile_output_file <- file.path(output_folder, "joined_scores_percentile.txt")
   join_input_main(input_df$processed_body, input_df$processed_promoter, input_df$marks,
                   percentile_output_file, norm_output_file, promoter_length)
+  
+  
+  # Creates lists of processed input files
+  output_input_body_files <- file.path(output_folder, 
+                                       paste(input_df$marks, "_input_body.txt", sep = ""))
+  output_input_promoter_files <- NA
+  if (promoter_length > 0) {
+    output_input_promoter_files <- file.path(output_folder, 
+                                        paste(mark, "_input_promoter.txt", sep = ""))
+  }
+  
+  # Gets number of rows of input files
+  num_rows <- nrow(read.csv(output_input_body_files[1], sep ="\t", header = TRUE))
+  
+  # Creates dataframes of mean input values necessary for histogram creation 
+  histogram_body_df <- data.frame(id = 1:num_rows)
+  histogram_promoter_df <- data.frame(id = 1:num_rows)
+  for (i in 1:length(input_df$input_files)) {
+    if (!is.null(input_df$input_files[i])) {
+      mark <- input_df$marks[i]
+      body_df <- read.csv(output_input_body_files[i], sep = "\t", header = TRUE)
+      histogram_body_df[[mark]] <- body_df$mean
+      if (promoter_length > 0) {
+        promoter_df <- read.csv(output_input_promoter_files[i], sep = "\t", header = TRUE)
+        histogram_promoter_df[[mark]] <- promoter_df$mean
+      }
+    }
+  }
+  
+  # Removes id columns, melts dataframes, and converts NAs to 0s
+  histogram_body_df <- histogram_body_df[,-c(1)]
+  histogram_body_df <- suppressMessages(melt(histogram_body_df))
+  histogram_body_df$value[is.na(histogram_body_df$value)] = 0
+  if (promoter_length > 0) {
+    histogram_promoter_df <- histogram_promoter_df[,-c(1)]
+    histogram_promoter_df <- suppressMessages(melt(histogram_promoter_df))
+  }
+  
+  # Creates body histogram and saves to file
+  body_hist <- ggplot(histogram_body_df, aes(x = value)) + 
+    facet_wrap(~variable, scales = "free_x") + 
+    geom_histogram(binwidth = 0.02) +
+    xlim(0, 1.5) +
+    xlab("mean count per gene body of input")
+  body_hist_file <- file.path(output_folder, "input_body_hist.png")
+  ggsave(body_hist_file, width = 4, height = 4)
+  
+  # Creates promoter histogram and saves to file
+  if (promoter_length > 0) {
+    promoter_hist <- ggplot(histogram_promoter_df, aes(x = value)) + 
+      facet_wrap(~variable, scales = "free_x") + 
+      geom_histogram(binwidth = 0.02) +
+      xlim(0, 1.5) +
+      xlab("mean count per gene promoter of input")
+    promoter_hist_file <- file.path(output_folder, "input_promoter_hist.png")
+    ggsave(promoter_hist_file, width = 4, height = 4)
+  }
   
   # Removes intermediate files from output folder if specified
   if (clean) {

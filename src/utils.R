@@ -33,6 +33,7 @@ load_analyze_libraries <- function() {
 load_process_libraries <- function() {
   get_package("plyr")
   get_package("dplyr")
+  get_package("reshape2")
   get_package("kernlab")
   get_package("caret", dependencies = TRUE)
   get_package("lattice")
