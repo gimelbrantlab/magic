@@ -1,7 +1,28 @@
 #!/usr/bin/env Rscript
 
-# Process bigwig files into scores files, for use in 
-# generate.R and analyze.R
+# Processes bigwig files into scores files, for use in generate.R and analyze.R
+
+# Copyright (C) 2017 Dana-Farber Cancer Institute Inc.
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# Questions, comments and concerns can be directed to
+#   Alexander Gimelbrant: alexander_gimelbrant@dfci.harvard.edu
+#   Sebastien Vigneau: Sebastien_Vigneau@dfci.harvard.edu
+#   Svetlana Vinogradova: Svetlana_Vinogradova@dfci.harvard.edu
+#   Henry Ward: henry.neil.ward@gmail.com
+#   Sachit Saksena: sachitdsaksena@utexas.edu
 
 ######
 # MAIN FUNCTIONS
@@ -140,6 +161,8 @@ process_input <- function(x, refseq_file, imprinted_file,
   output_input_promoter_file <- file.path(output_folder, paste(mark, "_input_promoter.txt", sep = ""))
   output_mark_body_norm_file <- file.path(output_folder, paste(mark, "_norm_body.txt", sep = ""))
   output_mark_promoter_norm_file <- file.path(output_folder, paste(mark, "_norm_promoter.txt", sep = ""))
+  
+  return()
   
   # Runs bigwig_to_scores.R on both mark and control files
   bigwig_to_scores(refseq_file, mark_file, imprinted_file,
@@ -284,15 +307,27 @@ process_main <- function(current_folder, input_file, output_folder,
   
   # Applies first two steps of pipeline to each row of input_df in parallel
   #before_time <- Sys.time()
-  cluster <- makeCluster(cores, type = "FORK")
-  parApply(cluster, input_df, 1, process_input,
-        refseq_file = refseq_file, imprinted_file = imprinted_file,
-        bwtool_folder = bwtool_folder, output_folder = output_folder,
-        dropped_file = dropped_file, promoter_length = promoter_length,
-        drop_percent = drop_percent, drop_abs = drop_abs,
-        overlap = overlap, filter_olf = filter_olf,
-        filter_chroms = filter_chroms, filter_imprinted = filter_imprinted)
-  stopCluster(cluster)
+  if (cores > 1) {
+    cluster <- makeCluster(cores, type = "FORK")
+    parApply(cluster, input_df, 1, process_input,
+          refseq_file = refseq_file, imprinted_file = imprinted_file,
+          bwtool_folder = bwtool_folder, output_folder = output_folder,
+          dropped_file = dropped_file, promoter_length = promoter_length,
+          drop_percent = drop_percent, drop_abs = drop_abs,
+          overlap = overlap, filter_olf = filter_olf,
+          filter_chroms = filter_chroms, filter_imprinted = filter_imprinted)
+    stopCluster(cluster)
+  } else if (cores == 1) {
+    apply(input_df, 1, process_input,
+          refseq_file = refseq_file, imprinted_file = imprinted_file,
+          bwtool_folder = bwtool_folder, output_folder = output_folder,
+          dropped_file = dropped_file, promoter_length = promoter_length,
+          drop_percent = drop_percent, drop_abs = drop_abs,
+          overlap = overlap, filter_olf = filter_olf,
+          filter_chroms = filter_chroms, filter_imprinted = filter_imprinted)
+  } else {
+    stop("must specify >= 1 core, e.g. with argument '-s 2'")
+  }
   #print(Sys.time() - before_time)
 
   # Joins all files into two tables with percentile scores or normalized sum
@@ -308,7 +343,7 @@ process_main <- function(current_folder, input_file, output_folder,
   output_input_promoter_files <- NA
   if (promoter_length > 0) {
     output_input_promoter_files <- file.path(output_folder, 
-                                        paste(mark, "_input_promoter.txt", sep = ""))
+                                        paste(input_df$marks, "_input_promoter.txt", sep = ""))
   }
   
   # Gets number of rows of input files
