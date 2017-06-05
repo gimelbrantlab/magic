@@ -168,6 +168,10 @@ All arguments are also described via "Rscript generate.R --help"
 
 *-c, --cross_validation*: 
     number of times to run cross-validation [default 5]
+
+*-l, --model_list*:
+    list of model algorithms to test [default "glmStepAIC, rf, nnet, rpart, svmPoly,
+                  evtree, knn, ada, mlpML"]
     
 *-q, --quiet*: 
     disables console output, do not flag if required packages missing [default FALSE]
