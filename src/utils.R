@@ -59,6 +59,7 @@ load_process_libraries <- function() {
   get_package("caret", dependencies = TRUE)
   get_package("lattice")
   get_package("parallel")
+  get_package("diptest")
   get_package("doMC", repos = "http://R-Forge.R-project.org")
 }
 
@@ -103,12 +104,14 @@ load_generate_scripts <- function(src_folder) {
 
 # Checks if a package is installed, and installs it if specified.
 # Also loads the package
-get_package <- function(package_name, repos = "", dependencies = FALSE) {
+get_package <- function(package_name, repos = "http://cran.us.r-project.org", 
+                        dependencies = NA) {
   if(!is.element(package_name, installed.packages()[,1])) {
+    print(package_name)
     if (repos == "") {
-      install.packages(package_name, dependencies)
+      install.packages(pkgs = package_name, dependencies = dependencies)
     } else {
-      install.packages(package_name, repos)
+      install.packages(pkgs = package_name, repos = repos)
     }
   }
   if(!suppressMessages(require(package_name, character.only = TRUE))) {

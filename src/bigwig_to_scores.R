@@ -85,6 +85,11 @@ append_bed_names <- function(counts, bed) {
 # and refseq bed file to return file with counts
 bw_to_counts <- function(bed_file, bw_file, bwtool_folder, output_file) {
   
+  # Checks to see if any of the arguments are empty
+  if((bed_file == "") || (bw_file == "") || (output_file == "")) {
+    stop("one or more arguments to bwtool summary are missing, check your input files")
+  }
+  
   # Builds command to run bwtool and executes it
   bwtool_file <- file.path(bwtool_folder, "bwtool")
   args <- paste("summary", bed_file, bw_file, output_file, 

@@ -73,16 +73,20 @@ create_input_df <- function(file_name, output_folder) {
   
   # Counts number of marks added
   i = 1
+  line_num = 1
   for (line in lines) {
     
     # Ignores commented lines
-    if (startsWith(line, "#")) { next }
+    if (startsWith(line, "#")) {
+      line_num = line_num + 1
+      next 
+    }
     
     # Splits line by tabs and ignores lines with too few arguments
     line <- strsplit(line, "\t")
     if (length(line[[1]]) < 2) { 
       if (length(line[[1]]) == 1) { 
-        print(cat("ignoring line with too few arguments:", line[[1]]))
+        print(paste("ignoring line", line_num, "with too few arguments:", line[[1]]))
       }
       next
     }
@@ -91,6 +95,11 @@ create_input_df <- function(file_name, output_folder) {
     mark <- line[[1]][1]
     mark_file <- line[[1]][2]
     input_file <- ""
+    if (mark_file == "") {
+      stop_msg <- paste("mark file on line", line_num, 
+                        "missing, check that your input file has only one tab between arguments")
+      stop(stop_msg)
+    }
     if (length(line[[1]]) >= 3) { input_file <- line[[1]][3] }
     
     # Adds mark to list, throws error if already added
@@ -104,8 +113,9 @@ create_input_df <- function(file_name, output_folder) {
     mark_files[i] <- mark_file
     input_files[i] <- input_file
     
-    # Iterates counter
+    # Iterates counters
     i = i + 1
+    line_num = line_num + 1
   }
   
   # Subsets vectors to exclude ignored lines
@@ -251,6 +261,148 @@ clean_intermediate <- function(output_folder, input_df, promoter_length) {
   }
 }
 
+# Generates histograms of input value distributions
+generate_histograms <- function(input_df, output_folder, promoter_length,
+                                xmax = NA) {
+  
+  # Creates lists of processed input files
+  output_input_body_files <- file.path(output_folder, 
+                                       paste(input_df$marks, "_input_body.txt", sep = ""))
+  output_input_promoter_files <- NA
+  if (promoter_length > 0) {
+    output_input_promoter_files <- file.path(output_folder, 
+                                             paste(input_df$marks, "_input_promoter.txt", sep = ""))
+  }
+  
+  # Gets number of rows of input files
+  num_rows <- nrow(read.csv(output_input_body_files[1], sep ="\t", header = TRUE))
+  
+  # Creates dataframes of mean input values necessary for histogram creation.
+  # Also finds the largest quintile across all marks for both gene regions
+  mark <- NULL
+  quintile <- NULL
+  largest_body_quintile <- 0
+  largest_promoter_quintile <- 0
+  largest_body_max <- 0
+  largest_promoter_max <- 0
+  histogram_body_df <- data.frame(id = 1:num_rows)
+  histogram_promoter_df <- data.frame(id = 1:num_rows)
+  for (i in 1:length(input_df$input_files)) {
+    if (!is.null(input_df$input_files[i])) {
+      
+      # Body region column creation and quintile calculation
+      mark <- input_df$marks[i]
+      body_df <- read.csv(output_input_body_files[i], sep = "\t", header = TRUE)
+      histogram_body_df[[mark]] <- body_df$mean
+      quintile <- quantile(histogram_body_df[[mark]], c(.8), na.rm = TRUE)[[1]]
+      
+      # Gets largest quintile and max value
+      if (quintile > largest_body_quintile) {
+        largest_body_quintile <- quintile
+      }
+      if (max(histogram_body_df[[mark]], na.rm = TRUE) > largest_body_max) {
+        largest_body_max <- max(histogram_body_df[[mark]])
+      }
+      
+      # Promoter region column creation and quintile calculation
+      if (promoter_length > 0) {
+        promoter_df <- read.csv(output_input_promoter_files[i], sep = "\t", header = TRUE)
+        histogram_promoter_df[[mark]] <- promoter_df$mean
+        quintile <- quantile(histogram_promoter_df[[mark]], c(.8), na.rm = TRUE)[[1]]
+        
+        # Gets largest quintile and max value
+        if (quintile > largest_promoter_quintile) {
+          largest_promoter_quintile <- quintile
+        }
+        if (max(histogram_promoter_df[[mark]], na.rm = TRUE) > largest_promoter_max) {
+          largest_promoter_max <- max(histogram_promoter_df[[mark]])
+        }
+      }
+    }
+  }
+  
+  # Removes id columns, melts dataframes, and converts NAs to 0s
+  histogram_body_df <- histogram_body_df[,-c(1)]
+  histogram_body_df <- suppressMessages(melt(histogram_body_df))
+  histogram_body_df$value[is.na(histogram_body_df$value)] = 0
+  if (promoter_length > 0) {
+    histogram_promoter_df <- histogram_promoter_df[,-c(1)]
+    histogram_promoter_df <- suppressMessages(melt(histogram_promoter_df))
+  }
+  
+  # Sets xmax for both gene body and promoter regions to largest quintile.
+  # Ignores quintile values if the user manually sets an xmax value
+  body_xmax <- NA
+  promoter_xmax <- NA
+  if (is.na(xmax)) {
+    body_xmax <- largest_body_quintile
+    promoter_xmax <- largest_promoter_quintile
+  } else {
+    body_xmax <- xmax
+    promoter_xmax <- xmax
+  }
+  
+  # Creates histograms of input data using facet_wrap if more than 1 mark
+  if(length(input_df$input_files) > 1) {
+    
+    # Creates body histogram and saves to file
+    body_hist <- ggplot(histogram_body_df, aes(x = value)) + 
+      facet_wrap(~variable, scales = "free_x") + 
+      geom_histogram(binwidth = 0.02, na.rm = TRUE) +
+      xlim(0, body_xmax) +
+      xlab("mean count per gene body of input")
+    body_hist_file <- file.path(output_folder, "input_body_hist.png")
+    ggsave(body_hist_file, width = 4, height = 4)
+    
+    # Creates promoter histogram and saves to file
+    if (promoter_length > 0) {
+      promoter_hist <- ggplot(histogram_promoter_df, aes(x = value)) + 
+        facet_wrap(~variable, scales = "free_x") + 
+        geom_histogram(binwidth = 0.02, na.rm = TRUE) +
+        xlim(0, promoter_xmax) +
+        xlab("mean count per gene promoter of input")
+      promoter_hist_file <- file.path(output_folder, "input_promoter_hist.png")
+      ggsave(promoter_hist_file, width = 4, height = 4)
+    }
+    
+  # If there is only one mark, creates non-wrapped histograms of the input data
+  } else {
+    
+    # Creates body histogram and saves to file
+    body_hist <- ggplot(histogram_body_df, aes(x = value)) + 
+      geom_histogram(binwidth = 0.02, na.rm = TRUE) +
+      xlim(0, body_xmax) +
+      xlab("mean count per gene body of input")
+    body_hist_file <- file.path(output_folder, 
+                                paste(mark, "input_body_hist.png", sep = "_"))
+    ggsave(body_hist_file, width = 4, height = 4)
+    
+    # Creates promoter histogram and saves to file
+    if (promoter_length > 0) {
+      promoter_hist <- ggplot(histogram_promoter_df, aes(x = value)) + 
+        geom_histogram(binwidth = 0.02, na.rm = TRUE) +
+        xlim(0, promoter_xmax) +
+        xlab("mean count per gene promoter of input")
+      promoter_hist_file <- file.path(output_folder, 
+                                      paste(mark, "input_promoter_hist.png", sep = "_"))
+      ggsave(promoter_hist_file, width = 4, height = 4)
+    }
+  }
+  
+  # Tells the user how much data is displayed on the histograms
+  if(is.na(xmax)) {
+    cat(paste("Body and promoter histograms display data up to",
+              body_xmax,
+              "and", 
+              promoter_xmax,
+              "along the x-axis, respectively\n"))
+  } else {
+    cat(paste("All body and promoter histograms display data up to", 
+              xmax, 
+              "along the x-axis\n"))
+  }
+}
+
 # Processes a given bigwig file
 process_main <- function(current_folder, input_file, output_folder,
                          promoter_length, drop_percent, drop_abs, 
@@ -344,70 +496,13 @@ process_main <- function(current_folder, input_file, output_folder,
   
   # Only generates histograms if input files exist
   if(!all(is.na(input_df$input_files))) {
-    
-    # Creates lists of processed input files
-    output_input_body_files <- file.path(output_folder, 
-                                         paste(input_df$marks, "_input_body.txt", sep = ""))
-    output_input_promoter_files <- NA
-    if (promoter_length > 0) {
-      output_input_promoter_files <- file.path(output_folder, 
-                                               paste(input_df$marks, "_input_promoter.txt", sep = ""))
-    }
-    
-    # Gets number of rows of input files
-    num_rows <- nrow(read.csv(output_input_body_files[1], sep ="\t", header = TRUE))
-    
-    # Creates dataframes of mean input values necessary for histogram creation 
-    histogram_body_df <- data.frame(id = 1:num_rows)
-    histogram_promoter_df <- data.frame(id = 1:num_rows)
-    for (i in 1:length(input_df$input_files)) {
-      if (!is.null(input_df$input_files[i])) {
-        mark <- input_df$marks[i]
-        body_df <- read.csv(output_input_body_files[i], sep = "\t", header = TRUE)
-        histogram_body_df[[mark]] <- body_df$mean
-        if (promoter_length > 0) {
-          promoter_df <- read.csv(output_input_promoter_files[i], sep = "\t", header = TRUE)
-          histogram_promoter_df[[mark]] <- promoter_df$mean
-        }
-      }
-    }
-    
-    # Removes id columns, melts dataframes, and converts NAs to 0s
-    histogram_body_df <- histogram_body_df[,-c(1)]
-    histogram_body_df <- suppressMessages(melt(histogram_body_df))
-    histogram_body_df$value[is.na(histogram_body_df$value)] = 0
-    if (promoter_length > 0) {
-      histogram_promoter_df <- histogram_promoter_df[,-c(1)]
-      histogram_promoter_df <- suppressMessages(melt(histogram_promoter_df))
-    }
-    
-    # Creates body histogram and saves to file
-    body_hist <- ggplot(histogram_body_df, aes(x = value)) + 
-      facet_wrap(~variable, scales = "free_x") + 
-      geom_histogram(binwidth = 0.02) +
-      xlim(0, 1.5) +
-      xlab("mean count per gene body of input")
-    body_hist_file <- file.path(output_folder, "input_body_hist.png")
-    ggsave(body_hist_file, width = 4, height = 4)
-    
-    # Creates promoter histogram and saves to file
-    if (promoter_length > 0) {
-      promoter_hist <- ggplot(histogram_promoter_df, aes(x = value)) + 
-        facet_wrap(~variable, scales = "free_x") + 
-        geom_histogram(binwidth = 0.02) +
-        xlim(0, 1.5) +
-        xlab("mean count per gene promoter of input")
-      promoter_hist_file <- file.path(output_folder, "input_promoter_hist.png")
-      ggsave(promoter_hist_file, width = 4, height = 4)
-    }
+    generate_histograms(input_df, output_folder, promoter_length)
   }
   
   # Removes intermediate files from output folder if specified
   if (clean) {
     clean_intermediate(output_folder, input_df, promoter_length)
   }
-  
-  cat("Data processing complete.\n")
 }
 
 ######
