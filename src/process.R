@@ -160,12 +160,12 @@ create_input_df <- function(file_name, output_folder) {
 
 # Runs input and control files, if applicable, through bigwig_to_scores
 # and normalize_scores.R. Outputs processed text files in output_folder
-process_input <- function(x, refseq_file, imprinted_file, 
-                          bwtool_folder, output_folder,
-                          dropped_file, promoter_length, 
+process_input <- function(x, body_bed_file, promoter_bed_file,
+                          imprinted_file, bwtool_folder, 
+                          output_folder, dropped_file,
                           drop_percent, drop_abs, 
-                          overlap, filter_olf, 
-                          filter_chroms, filter_imprinted) {
+                          filter_olf, filter_chroms, 
+                          filter_imprinted) {
   
   # Gets mark and files from row in data frame
   mark <- x[[1]]
@@ -174,29 +174,37 @@ process_input <- function(x, refseq_file, imprinted_file,
   
   # Builds variables to pass to R scripts
   output_mark_body_file <- file.path(output_folder, paste(mark, "_mark_body.txt", sep = ""))
-  output_mark_promoter_file <- file.path(output_folder, paste(mark, "_mark_promoter.txt", sep = ""))
   output_input_body_file <- file.path(output_folder, paste(mark, "_input_body.txt", sep = ""))
-  output_input_promoter_file <- file.path(output_folder, paste(mark, "_input_promoter.txt", sep = ""))
   output_mark_body_norm_file <- file.path(output_folder, paste(mark, "_norm_body.txt", sep = ""))
-  output_mark_promoter_norm_file <- file.path(output_folder, paste(mark, "_norm_promoter.txt", sep = ""))
+  
+  # Optionally sets promoter file paths if promoter length is specified
+  output_mark_promoter_file <- NA
+  output_input_promoter_file <- NA
+  output_mark_promoter_norm_file <- NA
+  if (!is.na(promoter_bed_file)) {
+    output_mark_promoter_file <- file.path(output_folder, paste(mark, "_mark_promoter.txt", sep = ""))
+    output_input_promoter_file <- file.path(output_folder, paste(mark, "_input_promoter.txt", sep = ""))
+    output_mark_promoter_norm_file <- file.path(output_folder, paste(mark, "_norm_promoter.txt", sep = ""))
+  }
   
   # Runs bigwig_to_scores.R on both mark and control files
-  bigwig_to_scores(refseq_file, mark_file, imprinted_file,
-                   bwtool_folder, output_mark_body_file,
-                   output_mark_promoter_file, promoter_length,
-                   overlap, filter_olf,
-                   filter_chroms, filter_imprinted)
+  bigwig_to_scores(mark_file, imprinted_file, bwtool_folder, 
+                   output_mark_body_file, body_bed_file,
+                   output_mark_promoter_file, promoter_bed_file,
+                   filter_olf, filter_chroms, 
+                   filter_imprinted)
   if (!is.na(input_file)) {
 
     # Copies input if processed earlier
     # NEED ACTUAL LOGIC HERE TO MARK EARLIER PROCESSED FILE
     #old_process_file <- file.path(output_folder, paste(mark, "_input_body.txt", sep = ""))
     #if(!file.exists(output_control_body_file)) {
-      bigwig_to_scores(refseq_file, input_file, imprinted_file,
-                       bwtool_folder, output_input_body_file,
-                       output_input_promoter_file, promoter_length,
-                       overlap, filter_olf,
-                       filter_chroms, filter_imprinted)
+    
+      bigwig_to_scores(input_file, imprinted_file, bwtool_folder, 
+                       output_input_body_file, body_bed_file,
+                       output_input_promoter_file, promoter_bed_file,
+                       filter_olf, filter_chroms,
+                       filter_imprinted)
     # } else {
     #   file.copy(output_control_body_file)
     # }
@@ -238,7 +246,9 @@ clean_intermediate <- function(output_folder, input_df, promoter_length) {
   for (file in all_files) {
     
     # Removes refseq file (loci passed to bwtool) and body output files
-    if (file == file.path(output_folder, "loci.bed")) {
+    if (file == file.path(output_folder, "body_loci.bed")) {
+      file.remove(file)
+    } else if (file == file.path(output_folder, "promoter_loci.bed")) {
       file.remove(file)
     } else if (file %in% input_df$mark_body) {
       file.remove(file)
@@ -301,7 +311,7 @@ generate_histograms <- function(input_df, output_folder, promoter_length,
         largest_body_quintile <- quintile
       }
       if (max(histogram_body_df[[mark]], na.rm = TRUE) > largest_body_max) {
-        largest_body_max <- max(histogram_body_df[[mark]])
+        largest_body_max <- max(histogram_body_df[[mark]], na.rm = TRUE)
       }
       
       # Promoter region column creation and quintile calculation
@@ -315,7 +325,7 @@ generate_histograms <- function(input_df, output_folder, promoter_length,
           largest_promoter_quintile <- quintile
         }
         if (max(histogram_promoter_df[[mark]], na.rm = TRUE) > largest_promoter_max) {
-          largest_promoter_max <- max(histogram_promoter_df[[mark]])
+          largest_promoter_max <- max(histogram_promoter_df[[mark]], na.rm = TRUE)
         }
       }
     }
@@ -463,26 +473,39 @@ process_main <- function(current_folder, input_file, output_folder,
     }
   }
   
+  # Writes the refseq file or bed file out to "loci.bed" for
+  # the body and promoter regions
+  body_bed_file <- file.path(output_folder, "body_loci.bed")
+  promoter_bed_file <- file.path(output_folder, "promoter_loci.bed")
+  make_bed(refseq_file, body_bed_file, 0, 
+           overlap)
+  if (promoter_length > 0) {
+    make_bed(refseq_file, promoter_bed_file, promoter_length, 
+             overlap)
+  } else {
+    promoter_bed_file <- NA
+  }
+  
   # Applies first two steps of pipeline to each row of input_df in parallel
   #before_time <- Sys.time()
   if (cores > 1) {
     cluster <- makeCluster(cores, type = "FORK")
     parApply(cluster, input_df, 1, process_input,
-          refseq_file = refseq_file, imprinted_file = imprinted_file,
-          bwtool_folder = bwtool_folder, output_folder = output_folder,
-          dropped_file = dropped_file, promoter_length = promoter_length,
-          drop_percent = drop_percent, drop_abs = drop_abs,
-          overlap = overlap, filter_olf = filter_olf,
-          filter_chroms = filter_chroms, filter_imprinted = filter_imprinted)
+             body_bed_file = body_bed_file, promoter_bed_file = promoter_bed_file,
+             imprinted_file = imprinted_file, bwtool_folder = bwtool_folder, 
+             output_folder = output_folder, dropped_file = dropped_file, 
+             drop_percent = drop_percent, drop_abs = drop_abs,
+             filter_olf = filter_olf, filter_chroms = filter_chroms, 
+             filter_imprinted = filter_imprinted)
     stopCluster(cluster)
   } else if (cores == 1) {
     apply(input_df, 1, process_input,
-          refseq_file = refseq_file, imprinted_file = imprinted_file,
-          bwtool_folder = bwtool_folder, output_folder = output_folder,
-          dropped_file = dropped_file, promoter_length = promoter_length,
+          body_bed_file = body_bed_file, promoter_bed_file = promoter_bed_file,
+          imprinted_file = imprinted_file, bwtool_folder = bwtool_folder, 
+          output_folder = output_folder, dropped_file = dropped_file, 
           drop_percent = drop_percent, drop_abs = drop_abs,
-          overlap = overlap, filter_olf = filter_olf,
-          filter_chroms = filter_chroms, filter_imprinted = filter_imprinted)
+          filter_olf = filter_olf, filter_chroms = filter_chroms, 
+          filter_imprinted = filter_imprinted)
   } else {
     stop("must specify >= 1 core, e.g. with argument '-s 2'")
   }
@@ -528,7 +551,7 @@ options = list(
               help="input file, see readme or included example file for description"),
   make_option(c("-o", "--output_folder"), type="character", default="output", 
               help="output folder [default= %default]"),
-  make_option(c("-p", "--promoter_length"), type="integer", default=5000, 
+  make_option(c("-p", "--promoter_length"), type="integer", default=2500, 
               help="upstream promoter region length [default= %default]"),
   make_option(c("-d", "--drop_percent"), type="double", default=0.01, 
               help="bottom enrichment percentile of genes to drop [default= %default]"),

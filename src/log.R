@@ -30,21 +30,67 @@
 write_log <- function(log_file, entry) {
   current_date <- format(Sys.Date(), format="%B %d, %Y")
   date_header <- paste("###", current_date)
+  create_header <- paste("Activity log created on", current_date)
+  update_header <- paste("Activity log last updated on", current_date,
+                         "at", format(Sys.time(), "%X"))
+  newly_created <- FALSE
   
   # Opens connection to log and creates new log if necessary
   lines <- NA
   conn <- file(log_file)
   if (!file.exists(log_file)) {  
-    writeLines(c("", paste("Activity log created on", current_date)), conn)
+    newly_created <- TRUE
+    writeLines(c("", create_header, update_header), conn)
     lines <- readLines(conn)
   } else {
     lines <- readLines(conn)
   }
   close(conn)
   
-  print(lines)
+  # Checks to see if there is an entry for the current day
+  # and records that line number if it exists. Otherwise,
+  # the current date index is set to the first line
+  current_date_line <- match(date_header, lines)
+  if (is.na(current_date_line)) { current_date_line <- 1 }
+  
+  # Duplicates each line before the current header in the
+  # output array we build up
+  output <- c()
+  if (newly_created) {
+    output <- c(output, date_header)
+  }
+  else {
+    if (current_date_line != 1) {
+      output <- lines[1:current_date_line] 
+    } else {
+      
+      # Checks for the case where the first line is the current date
+      output <- c(output, date_header) 
+    }
+  }
+  
+  # Adds our new entry to the first open position under
+  # the current date along with an empty line
+  output <- c(output, entry)
+  output <- c(output, "")
+  
+  # Joins the new entry and current date with the previous
+  # entries in the log. Retains previous date header if
+  # the previous date is on the first line
+  if (!newly_created && (!is.na(match(date_header, lines)))) {
+    current_date_line <- current_date_line + 1
+  }
+  output <- c(output, lines[current_date_line:length(lines)])
+  
+  # Records the update time
+  output[length(output)] = update_header
+  
+  # Overwrites file with new output
+  conn <- file(log_file)
+  writeLines(output, conn)
+  close(conn)
 }
 
-write_log("Documents/Histograms/activity_log_test.txt", "a")
+write_log("Documents/Histograms/activity_log_test.txt", "this is an update")
 
 

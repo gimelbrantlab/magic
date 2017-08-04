@@ -1,5 +1,7 @@
 # Copyright (C) 2017 Dana-Farber Cancer Institute Inc.
 
+# Reads in a bigwig file and a bed file and runs them through bwtool
+
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -97,93 +99,18 @@ bw_to_counts <- function(bed_file, bw_file, bwtool_folder, output_file) {
   try(system2(bwtool_file, args))
 }
 
-# Reads refseq table, calculates promoter region upstream of
-# TSS, and culls all but the longest transcript for a gene.
-# Outputs a bed file
-refseq_to_bed <- function(refseq_file, promoter_length, overlap) {
-  
-  # Reads refseq table into dataframe
-  refseq <- read.csv(refseq_file, sep = "\t")
-  colnames(refseq)[1] <- "bin"
-  
-  # Calculates each transcript length
-  refseq["transcriptLength"] <- abs(refseq["txEnd"] - refseq["txStart"])
-  
-  # Removes all but the longest transcript for each gene and chromosome
-  refseq <- refseq %>% group_by(name2, chrom) %>% 
-    slice(which.max(transcriptLength))
-  
-  # Adds one to each transcript position, to move from refseq
-  # 0-based indexing to bigwig 1-based indexing
-  refseq$txStart <- refseq$txStart + 1
-  refseq$txEnd <- refseq$txEnd + 1
-  
-  # Calculates promoter regions if specified
-  if (promoter_length > 0) {
-    i <- refseq$strand == "+"
-    
-    # For "+" strand, assume txStart is TSS
-    if (overlap) {
-      refseq$txEnd[i] <- refseq$txStart[i] + promoter_length
-      refseq$txStart[i] <- refseq$txStart[i] - promoter_length
-    } else {
-      refseq$txEnd[i] <- refseq$txStart[i]
-      refseq$txStart[i] <- refseq$txStart[i] - promoter_length
-    }
-    
-    # For "-" stand, assume txEnd is TSS
-    if (overlap) {
-      refseq$txStart[!i] <- refseq$txEnd[!i] - promoter_length
-      refseq$txEnd[!i] <- refseq$txEnd[!i] + promoter_length 
-    } else {
-      refseq$txStart[!i] <- refseq$txEnd[!i]
-      refseq$txEnd[!i] <- refseq$txEnd[!i] + promoter_length
-    }
-  }
-  
-  # Replaces negative positional values with 0
-  refseq$txStart[refseq$txStart < 0] = 0
-  refseq$txEnd[refseq$txEnd < 0] = 0
-  
-  # Appends updated information to output
-  bed <- data.frame(refseq$chrom, refseq$txStart, refseq$txEnd,
-                    refseq$name2)
-  
-  # Explicitly returns bed file
-  return(bed)
-}
-
 # Inner function to generate scores file for one bigwig file
-bigwig_to_scores_inner <- function(refseq_file, bw_file, imprinted_file, 
+bigwig_to_scores_inner <- function(bed_file, bw_file, imprinted_file, 
                                    bwtool_folder, output_file,
-                                   promoter_length, overlap,
                                    filter_olf, filter_chroms,
                                    filter_imprinted) {
-  
-  bed <- ""
-  
-  # Gets file extension of refseq or bed file
-  components <- strsplit(refseq_file, "\\.")[[1]]
-  extension <- tolower(components[length(components)])
-  
-  # If custom bed file given, uses that instead of the refseq file
-  if (extension == "bed") {
-    bed <- read.csv(refseq_file, sep = "\t")
-    
-  # Else, converts refseq table to bed file with short transcripts culled
-  } else {
-    bed <- refseq_to_bed(refseq_file, promoter_length, overlap)
-  }
-  
-  bed_file <- file.path(dirname(output_file), "loci.bed")
-  write.table(bed, file = bed_file, sep = "\t", quote = FALSE,
-              row.names = FALSE, col.names = FALSE)
 
   # Executes bwtool on bed file and input bw file
   bw_to_counts(bed_file, bw_file, bwtool_folder, output_file)
   
-  # Opens processed counts file and appends names column
-  counts <- read.csv(output_file, sep = "\t")
+  # Reads bed and processed counts files and appends names column
+  bed <- read.csv(bed_file, sep = "\t", header = FALSE)
+  counts <- read.csv(output_file, sep = "\t", header = TRUE)
   counts <- append_bed_names(counts, bed)
   
   # Filters counts file in various ways and writes out to file
@@ -196,26 +123,37 @@ bigwig_to_scores_inner <- function(refseq_file, bw_file, imprinted_file,
 
 # Converts refseq to bed file and outputs scores, with optional promoter
 # region scores
-bigwig_to_scores <- function(refseq_file, bw_file, imprinted_file, 
-                             bwtool_folder, body_output_file,
-                             promoter_output_file = NA, promoter_length = 2500,
-                             overlap = TRUE, filter_olf = TRUE, 
-                             filter_chroms = TRUE, filter_imprinted = TRUE) {
-    
+bigwig_to_scores <- function(bw_file, imprinted_file, bwtool_folder, 
+                             body_output_file, body_bed_file, 
+                             promoter_output_file = NA, promoter_bed_file = NA, 
+                             filter_olf = TRUE, filter_chroms = TRUE, 
+                             filter_imprinted = TRUE) {
+  
+  # Verifies that the given bed files exist
+  if (!file.exists(body_bed_file)) {
+    stop(paste("body bed file does not exist for", bw_file))
+  }
+  if (!is.na(promoter_bed_file) && !file.exists(promoter_bed_file)) {
+    stop(paste("promoter bed file does not exist for", bw_file))
+  }
+  
   # Generates counts for gene body
-  bigwig_to_scores_inner(refseq_file, bw_file, imprinted_file,
-                         bwtool_folder, body_output_file, 0, 
-                         overlap, filter_olf, filter_chroms,
-                         filter_imprinted)
+  bigwig_to_scores_inner(body_bed_file, bw_file, imprinted_file,
+                         bwtool_folder, body_output_file, filter_olf, 
+                         filter_chroms, filter_imprinted)
   
   # Generates counts for promoter region if specified
-  if (promoter_length > 0) {
-    if (is.na(promoter_output_file)) {
+  if (!is.na(promoter_bed_file) || !is.na(promoter_output_file)) {
+    
+    # Checks to see if both the promoter bed and counts files are given
+    if (is.na(promoter_bed_file)) {
+      stop(paste("no promoter bed file given for", bw_file))
+    } else if (is.na(promoter_output_file)) {
       stop(paste("no promoter counts file given for", bw_file))
     }
-    bigwig_to_scores_inner(refseq_file, bw_file, imprinted_file,
-                           bwtool_folder, promoter_output_file, promoter_length, 
-                           overlap, filter_olf, filter_chroms,
-                           filter_imprinted)
+    
+    bigwig_to_scores_inner(promoter_bed_file, bw_file, imprinted_file,
+                           bwtool_folder, promoter_output_file, filter_olf, 
+                           filter_chroms, filter_imprinted)
   }
 }

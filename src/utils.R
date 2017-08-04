@@ -65,6 +65,7 @@ load_process_libraries <- function() {
 
 # Sources all scripts required for processing
 load_process_scripts <- function(src_folder) {
+  source(file.path(src_folder, "make_bed.R"))
   source(file.path(src_folder, "bigwig_to_scores.R"))
   source(file.path(src_folder, "normalize_scores.R"))
   source(file.path(src_folder, "join_input.R"))
