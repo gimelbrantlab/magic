@@ -44,9 +44,20 @@
 # Processes data on button press
 observeEvent(input$processDataButton, 
   {
-  withProgress(message = "Running process.R", value = 0, {
+  message_list <- c("Preparing process command","Downloading binaries...", "Compiling arguments...", "Mining gold ore",
+                    "Merging annotation for gene intervals...", "Creating magic genie...",
+                    "Calculating enrichment...", "Making coffee...", "Moving to America...",
+                    "Starting an italian restaurant...", "Having first child...", "Starting postdoc...",
+                    "Starting second postdoc...", "Applying for K99...", "Reapplying for K99",
+                    "Developing ulcers", "Faculty?","Running process.R")
+  withProgress(value = 0, 
+               {
+                 for (i in 1:length(message_list)){
+                   incProgress(1/length(message_list), detail = paste(message_list[i]))
+                   Sys.sleep(0.25)
+                 }
+                 
    done = FALSE
-    
     
   # Builds command to run process.R and executes it
   if (!is.null(input$fileInput)) {
@@ -56,26 +67,16 @@ observeEvent(input$processDataButton,
                   "-i", paste(datapath, input$fileInput, sep = ""),
                   "-p", input$promoterLength,
                   "-d", input$dropPercent,
-                  "-r", "hg19")
+                  "-r", input$assembly)
     if(input$cores > 1) { args <- paste(args, "-s", input$cores) }
     # if() { args <- paste(args, "-f") }
-    # if (no_overlap()) { args <- paste(args, "-l") }
+    if (input$noOverlap == TRUE) { args <- paste(args, "-l") }
     cat("\n", args, "\n\n")
     process_output <- capture.output(tryCatch(
       system2("Rscript", args))) # error = function(e) e))
     
-    message_list <- c("Downloading binaries...", "Compiling arguments...", "Mining gold ore",
-                      "Merging annotation for gene intervals...", "Creating magic genie...",
-                      "Calculating enrichment...", "Making coffee...", "Moving to America...",
-                      "Starting an italian restaurant...", "Having first child...", "Starting postdoc...",
-                      "Starting second postdoc...", "Applying for K99...", "Reapplying for K99")
-    
-    for(i in 1:length(message_list)){
-      incProgress(1/length(message_list), detail = paste(message_list[i]))
-    }
   }
-  }
-  )
+   })
     
   ###################################################################################################
   ###################################################################################################
@@ -89,19 +90,65 @@ observeEvent(input$processDataButton,
 
   ########################## Data plotting #############################
   
-  joined_scores_percentile <- load_data("./output/joined_scores_percentile")
+  joined_scores_percentile <- load_data("./output/joined_scores_percentile.txt")
   joined_scores_norm <- load_data("./output/joined_scores_norm.txt")
   
-  # plot genomic distribution
-  if (input$tg != "none"){
-  output$trainingDist <- renderPlot ({
-    genomic_distribution(mouse_obs)
-  })
+  
+  
+  if ("status" %in% colnames(joined_scores_percentile)){
+    output$chipQCnorm <- renderPlot ({
+      ggpairs(joined_scores_norm, 
+              columns = 3:ncol(joined_scores_percentile)) +
+        theme(panel.grid.major = element_blank(), 
+              panel.grid.minor = element_blank(), 
+              panel.background = element_blank(), 
+              axis.line = element_line(colour = "black"))
+    })
+    
+    output$chipQC <- renderPlot ({
+      ggpairs(joined_scores_percentile, 
+              columns = 3:ncol(joined_scores_percentile)) +
+        theme(panel.grid.major = element_blank(), 
+              panel.grid.minor = element_blank(), 
+              panel.background = element_blank(), 
+              axis.line = element_line(colour = "black"))
+    })
+  } else {
+    output$chipQCnorm <- renderPlot ({
+      ggpairs(joined_scores_norm,
+              columns = 3:ncol(joined_scores_percentile)) +
+        theme(panel.grid.major = element_blank(), 
+              panel.grid.minor = element_blank(), 
+              panel.background = element_blank(), 
+              axis.line = element_line(colour = "black"))
+    })
+    
+    output$chipQC <- renderPlot ({
+      ggpairs(joined_scores_percentile, 
+              columns = 3:ncol(joined_scores_percentile)) +
+        theme(panel.grid.major = element_blank(), 
+              panel.grid.minor = element_blank(), 
+              panel.background = element_blank(), 
+              axis.line = element_line(colour = "black"))
+    })
   }
+  
+    output$norm_table <- renderDataTable(
+      joined_scores_norm
+    )
+    
+    output$perc_table <- renderDataTable(
+      joined_scores_percentile
+    )
+    
+  # plot genomic distribution
+  # output$trainingDist <- renderPlot ({
+  #   genomic_distribution()
+  # })
   }
 )
 
-# Handler for processed data download
+# Handler for processed data downloa
 output$downloadProcessButton <- downloadHandler(
   filename = function() { paste("processedData.txt") } ,
   content <- function(file) {
@@ -111,7 +158,6 @@ output$downloadProcessButton <- downloadHandler(
     write.table(df, file, sep = "\t", row.names = FALSE, quote = FALSE)
   }
 )  
-
 
 
 
