@@ -28,6 +28,7 @@
 library(shiny)
 library(markdown)
 library(shinythemes)
+library(GGally)
 
 ######
 ### UI GLOBALS
@@ -35,8 +36,8 @@ library(shinythemes)
 
 # All ui-specific global variables
 organism <- c("human", "mouse", "other")
-mouse_refseq_reference <- c("mm7", "mm8", "mm9", "mm10", "other")
-human_refseq_reference <- c("hg16", "hg17", "hg18", "hg19", "hg38", "other")
+assembly <- c("mm7", "mm8", "mm9", "mm10", "other")
+assembly <- c(assembly, "hg16", "hg17", "hg18", "hg19", "hg38", "other")
 tg_names <- get_names(reference_folder, pattern = "*_tg.tsv")
 tg_names <- c(tg_names, "none", "other")
 model_names <- get_names(models_folder, pattern = "*_model.rds")
@@ -55,6 +56,9 @@ model_list <- c("ada", "svmPoly", "rf", "nnet")
 filtering <- c("olfactory genes", "sex chromosomes", "imprinted genes")
 
 source("../../src/utils.R", local=TRUE)
+load_process_libraries()
+load_analyze_libraries()
+load_generate_libraries()
 ######
 ### UI
 ######
