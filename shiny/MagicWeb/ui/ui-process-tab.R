@@ -33,30 +33,33 @@ tabPanel(value = "process",
                choices = organism,
                selected = "human"
              ),
-             conditionalPanel(
-               condition = "input.organism == 'mouse'",
-               selectizeInput('assembly', 'Assembly',
-                              choices = mouse_refseq_reference,
-                              selected = "mm9")
-               ),
-             conditionalPanel(
-               condition = "input.organism == 'human'",
-               selectizeInput("assembly", 'Assembly',
-                              choices = human_refseq_reference,
-                              selected = "hg19")
-             ),
-             conditionalPanel(
-               condition = "input.organism == 'other'",
-               fileInput(
-                 'assembly',
-                 label = h5("Upload file"),
-                 accept = c(
-                   'text/comma-separated-values',
-                   'text/tab-separated-values',
-                   '.tsv'
-                 )
-               )
-             ),
+             selectizeInput('assembly', 'Assembly',
+                               choices = assembly,
+                               selected = "hg19"),
+             # conditionalPanel(
+             #   condition = "input.organism == 'mouse'",
+             #   selectizeInput('assembly', 'Assembly',
+             #                  choices = mouse_refseq_reference,
+             #                  selected = "mm9")
+             #   ),
+             # conditionalPanel(
+             #   condition = "input.organism == 'human'",
+             #   selectizeInput("assembly", 'Assembly',
+             #                  choices = human_refseq_reference,
+             #                  selected = "hg19")
+             # ),
+             # conditionalPanel(
+             #   condition = "input.organism == 'other'",
+             #   fileInput(
+             #     'assembly',
+             #     label = h5("Upload file"),
+             #     accept = c(
+             #       'text/comma-separated-values',
+             #       'text/tab-separated-values',
+             #       '.tsv'
+             #     )
+             #   )
+             # ),
              selectizeInput(
                inputId = 'tg', 
                label = 'Select training genes',
@@ -84,7 +87,7 @@ tabPanel(value = "process",
            ),
            mainPanel = mainPanel(
              conditionalPanel(
-               condition = "output.dummyLoad",
+               condition = "input.processDataButton",
                               tabsetPanel("processPlots",
                                tabPanel("Tables",
                                         sidebarLayout(
@@ -92,9 +95,9 @@ tabPanel(value = "process",
                                             radioButtons("normPercTable",
                                                          "Raw normalized table or Percentile ranked table",
                                                          choices = c("Normalized", "Percentile ranked")),
-                                            conditionalPanel("normPercTable == 'Percentile ranked'",
+                                            conditionalPanel("normPercTable == 'Percentile ranked",
                                                              dataTableOutput("perc_table")),
-                                            conditionalPanel("normPercTable == 'Normalized'",
+                                            conditionalPanel("normPercTable == 'Normalized",
                                                              dataTableOutput("norm_table"))
                                           ),
                                           mainPanel(
@@ -130,8 +133,6 @@ tabPanel(value = "process",
                                          mainPanel(
                                            conditionalPanel(
                                              condition = "input.normPerc == 'Percentile ranked'",
-                                             actionButton("excludeToggle", "Toggle points"),
-                                             actionButton("excludeReset", "Reset"),
                                              actionButton("reProcess",
                                                           "Redo processing with new dataframe")
                                            )
@@ -148,18 +149,17 @@ tabPanel(value = "process",
                                      width = 700
                                      )
                                )
-                              ) # end tabsetPanel
-             ) # end of overall mainPanel 
+                              ),
+               conditionalPanel(condition = "input.processDataButton",
+                                downloadButton("downloadProcessButton",
+                                               "Download processed data")) 
+             )
+             
              )# end of conditionalPanel
              
-             # htmlOutput("processText"),
-             # conditionalPanel(condition = "output.process_output",
-             #                  downloadButton("downloadProcessButton",
-             #                                 "Download processed data"))
-             # )
      
       ),
-      conditionalPanel(condition = "output.chipQC",
+      conditionalPanel(condition = "input.downloadProcessButton",
                        fluidRow(column(12,
                                        actionButton("next_generate", "Next"),
                                        tags$style(type="text/css", "#next_generate { width:10%; margin-left: 1000px;}")

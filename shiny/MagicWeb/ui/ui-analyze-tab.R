@@ -37,16 +37,14 @@ tabPanel(value = "analyze",
                               conditionalPanel(condition = "input.expression_filter == TRUE",
                               fileInput('expressionData', label = "Input RNA-Seq file"))
              )
-           ), mainPanel(
-             print("Hello world")
-           ) # end of overall mainPanel 
+           ), mainPanel( # end of overall mainPanel 
              
-             
-             # htmlOutput("analysisText"),
-             # conditionalPanel(condition = "output.analyze_output",
-             #                  downloadButton("downloadAnalyzeButton",
-             #                                 "Download analysis"))
+             htmlOutput("analysisText"),
+             conditionalPanel(condition = "output.analyze_output",
+                              downloadButton("downloadAnalyzeButton",
+                                             "Download analysis"))
            )
            )
+)
 
 
