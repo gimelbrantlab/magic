@@ -25,14 +25,15 @@
 ### SERVER LIBRARIES AND SCRIPTS
 ######
 
-
 library(shiny)
+library(ggplot2)
+library(plyr)
+library(dplyr)
 
 
 ######
 ### SERVER GLOBALS
 ######
-
 
 process_file <- file.path(src_folder, "process.R")
 generate_file <- file.path(src_folder, "generate.R")
@@ -44,25 +45,22 @@ output_folder <- "output"
 ### SERVER
 ######
 
-
 shinyServer(function(input, output, session) {
   
   # Session variables
   temp_dir <- NULL
-  process_dir <- NULL
-  analysis_file_path <- NULL
-  training_file_path <- NULL
-  refseq_name <- NULL
-  training_genes <- NULL
-  drop_percent <- NULL
-  promoter_length <- NULL
   no_overlap <- NULL
   
   # new process arguments
+  process_dir <- NULL
   no_filter_olf <- NULL
   no_filter_chrom <- NULL
   no_filter_imprinted <- NULL
+  promoter_length <- NULL
+  refseq_name <- NULL
+  drop_percent <- NULL
   cores <- NULL
+  training_genes <- NULL
   
   # new generate arguments
   model_list <- NULL
@@ -71,6 +69,9 @@ shinyServer(function(input, output, session) {
   target_feature <- NULL
   sampling_method <- NULL
   selection_rule <- NULL
+  
+  # analysis arguments
+  analysis_file_path <- NULL
   
   # Session variables for program output
   process_output <- NULL
@@ -81,25 +82,33 @@ shinyServer(function(input, output, session) {
   generate_running <- FALSE
   
   ### VARIABLE UPDATING
-  
-  refseq_name <- reactive({ input$refseq })
-  training_genes <- reactive({ input$tg })
-  drop_percent <- reactive({ input$dropPercent })
-  promoter_length <- reactive({ input$promoterLength })
-  disable_filtering <- reactive({ input$disableFilter })
-  no_overlap <- reactive({ input$noOverlap })
+
   positive_class <- reactive({ input$positiveClass })
   target_feature <- reactive({ input$targetFeature })
   sampling_method <- reactive({ input$samplingMethod })
   selection_rule <- reactive({ input$selectionRule })
   excluded_models <- reactive({ paste(model_names[!(model_names %in% input$models)],
                                       sep = ",", collapse = "") })
+  
+  # get data path for passing to process.R
+  observeEvent(
+    ignoreNULL = TRUE,
+    eventExpr = {
+      input$dataDirectory
+    },
+    handlerExpr = {
+      # prevent launching directoryInput at app start
+      if (input$dataDirectory){
+        datapath <<- choose.dir(default = readDirectoryInput(session, 'dataDirectory'))
+      }
+    }
+  )
+  
   source("server/server-main.R", local=TRUE)
   source("server/server-analyze.R", local=TRUE)
   source("server/server-generate.R", local=TRUE)
   source("server/server-process.R", local=TRUE)
 })
-
 
 ##########################################################################################################################################################
 ##########################################################################################################################################################
