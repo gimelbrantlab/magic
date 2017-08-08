@@ -20,75 +20,98 @@
 #   Henry Ward: henry.neil.ward@gmail.com
 #   Sachit Saksena: sachitdsaksena@utexas.edu
 
+
+
 ################
 # PROCESS SERVER
 ################
 
-### DATA PROCESSING
+### FOR GLOBAL VARIABLES REFERENCE SERVER.R
 
+### VARIABLES AND DATA
+
+
+### DATA PROCESSING
+###################################################################################################
+###################################################################################################
+###################################################################################################
+###################################################################################################
+###################################################################################################
+###################################################################################################
+###################################################################################################
+###################################################################################################
+###################################################################################################
 # Processes data on button press
-observeEvent(input$processDataButton, {
-  
-  # Gets processing directory from widget
-  process_dir <- readDirectoryInput(session, 'file_input')
-  
+observeEvent(input$processDataButton, 
+  {
+  withProgress(message = "Running process.R", value = 0, {
+   done = FALSE
+    
+    
   # Builds command to run process.R and executes it
-  if (!is.null(process_dir)) {
+  if (!is.null(input$fileInput)) {
     process_output <- NULL
     process_running <- TRUE
-    process_cmd <- paste("Rscript")
     args <- paste(process_file,
-                  "-i", process_dir,
-                  "-o", output_folder,
-                  "-p", promoter_length(),
-                  "-d", drop_percent(),
-                  "-r", refseq_name(),
-                  "-t", training_genes())
-    if(cores()) { args <- paste(args, "-s") }
-    if(no_filter_olf()) { args <- paste(args, "-f") }
-    if (disable_filtering()) { args <- paste(args, "-f") }
-    if (no_overlap()) { args <- paste(args, "-l") }
+                  "-i", paste(datapath, input$fileInput, sep = ""),
+                  "-p", input$promoterLength,
+                  "-d", input$dropPercent,
+                  "-r", "hg19")
+    if(input$cores > 1) { args <- paste(args, "-s", input$cores) }
+    # if() { args <- paste(args, "-f") }
+    # if (no_overlap()) { args <- paste(args, "-l") }
     cat("\n", args, "\n\n")
     process_output <- capture.output(tryCatch(
-      system2(process_cmd, args), error = function(e) e))
+      system2("Rscript", args))) # error = function(e) e))
+    
+    message_list <- c("Downloading binaries...", "Compiling arguments...", "Mining gold ore",
+                      "Merging annotation for gene intervals...", "Creating magic genie...",
+                      "Calculating enrichment...", "Making coffee...", "Moving to America...",
+                      "Starting an italian restaurant...", "Having first child...", "Starting postdoc...",
+                      "Starting second postdoc...", "Applying for K99...", "Reapplying for K99")
+    
+    for(i in 1:length(message_list)){
+      incProgress(1/length(message_list), detail = paste(message_list[i]))
+    }
   }
-})
-
-
-# Sets reactive processing output text
-output$processText <- renderUI({
-  
-  line_1 <- "Processing text goes here"
-  line_2 <- ""
-  line_3 <- ""
-  
-  if(process_running) { line_2 <- "Processing data..." }
-  
-  if(!is.null(process_output)) {
-    process_running <- FALSE
-    line_3 <- process_output
   }
+  )
+    
+  ###################################################################################################
+  ###################################################################################################
+  ###################################################################################################
+  ###################################################################################################
+  ###################################################################################################
+  ###################################################################################################
+  ###################################################################################################
+  ###################################################################################################
+  ###################################################################################################
+
+  ########################## Data plotting #############################
   
-  HTML(paste(line_1, line_2, line_3, sep = "<br/>"))
-})
+  joined_scores_percentile <- load_data("./output/joined_scores_percentile")
+  joined_scores_norm <- load_data("./output/joined_scores_norm.txt")
+  
+  # plot genomic distribution
+  if (input$tg != "none"){
+  output$trainingDist <- renderPlot ({
+    genomic_distribution(mouse_obs)
+  })
+  }
+  }
+)
 
 # Handler for processed data download
 output$downloadProcessButton <- downloadHandler(
   filename = function() { paste("processedData.txt") } ,
   content <- function(file) {
-    df <- read.csv(file.path(output_folder, "joined_scores_percentile.txt"),
+    df <- read.csv(file.path(output_folder, 
+                             "joined_scores_percentile.txt"),
                    sep = "\t")
     write.table(df, file, sep = "\t", row.names = FALSE, quote = FALSE)
   }
-)
+)  
 
-# Output data table
-output$processTable <- 
-  
-  # Output plots about data
-  output$processPlots <- renderPlot({
-    
-    ggplot(outpu)
-    
-    
-  })
+
+
+

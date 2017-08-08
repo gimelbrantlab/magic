@@ -42,20 +42,28 @@ observeEvent(
 # action buttons between tabs
 observeEvent(
   input$get_started,
-  {updateTabsetPanel(session = session, inputId = "main_panel", selected = "input")}
+  {updateTabsetPanel(session = session, 
+                     inputId = "main_panel", 
+                     selected = "input")}
 )
 
 observeEvent(
   input$next_process,
-  {updateTabsetPanel(session = session, inputId = "main_panel", selected = "process")}
+  {updateTabsetPanel(session = session, 
+                     inputId = "main_panel", 
+                     selected = "process")}
 )
 
 observeEvent(
   input$next_generate,
-  {updateTabsetPanel(session = session, inputId = "main_panel", selected = "generate")}
+  {updateTabsetPanel(session = session, 
+                     inputId = "main_panel", 
+                     selected = "generate")}
 )
 
 observeEvent(
   input$next_analyze,
-  {updateTabsetPanel(session = session, inputId = "main_panel", selected = "analyze")}
+  {updateTabsetPanel(session = session, 
+                     inputId = "main_panel", 
+                     selected = "analyze")}
 )
