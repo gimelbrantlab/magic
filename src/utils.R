@@ -26,6 +26,15 @@
 # LIBRARIES AND SCRIPTS
 ######
 
+# easy load data func
+load_data <- function(training_path){
+  if (grepl(".\\.csv", c(training_path))){
+    training_set <- read.csv(training_path, header = TRUE)
+  }else {training_set <- read.delim(training_path, header = TRUE)
+  }
+  return(training_set)
+}
+
 
 # Loads or installs all required packages for analysis
 load_analyze_libraries <- function() {
