@@ -20,7 +20,7 @@
 #   Henry Ward: henry.neil.ward@gmail.com
 #   Sachit Saksena: sachitdsaksena@utexas.edu
 
-
+       
 ######
 ### UI LIBRARIES
 ######
@@ -52,7 +52,9 @@ metric_names <- c("Kappa", "Accuracy", "ROC")
 sampling_method_names <- c("none", "down", "up")
 positive_classes <- c("MAE", "BAE", "other")
 model_list <- c("ada", "svmPoly", "rf", "nnet")
+filtering <- c("olfactory genes", "sex chromosomes", "imprinted genes")
 
+source("../../src/utils.R", local=TRUE)
 ######
 ### UI
 ######
@@ -61,11 +63,11 @@ model_list <- c("ada", "svmPoly", "rf", "nnet")
 shinyUI(
   
   tagList(
-    
     # make navbar look cool
     navbarPage(
        title = "", id="main_panel",
-       theme = shinytheme("simplex"),
+       # good themes: flatly, simplex
+       theme = shinytheme("flatly"),
     
      # source tabPanels
      source("ui/ui-main-tab.R", local=TRUE)$value,
@@ -74,12 +76,11 @@ shinyUI(
      source("ui/ui-generate-tab.R", local=TRUE)$value,
      source("ui/ui-analyze-tab.R", local=TRUE)$value,
      
-     
+     # Additional information about the program
      navbarMenu("More",
      source("ui/ui-cmd-tab.R", local=TRUE)$value,
      source("ui/ui-about-tab.R", local=TRUE)$value
      )
-            
   )
 )
 )
