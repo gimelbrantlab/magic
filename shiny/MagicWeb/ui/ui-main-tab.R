@@ -26,11 +26,13 @@
 
 
 tabPanel(value = "main_panel",
-         title = p("MaGICs", style = "font-size: 20px; padding-bottom: -0.5cm"),
+         # title = p("MaGICs", 
+         #          style = "font-size: 20px; padding-bottom: -0.5cm"),
+         title = icon(name = "magic", class = "fa-2x", lib = "font-awesome"),
          fluidRow(column(12,
          sidebarLayout(
-           sidebarPanel(
-             h2(HTML("Welcome to MaGICs: <br> <b>M</b>ono<b>a</b>llelic <b>G</b>ene <b>I</b>nference from <b>C</b>hromatin for <b>S</b>hiny")),
+           mainPanel(
+             h2(HTML("Welcome to MaGICs: <br> <b>M</b>ono<b>a</b>llelic <b>G</b>ene <b>I</b>nference from <b>C</b>hromatin for <b>s</b>hiny")),
              actionButton("get_started", "Get started"),
              br(),
              h2(HTML("<u>Overview</u>")),

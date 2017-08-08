@@ -25,7 +25,7 @@
 #######
 
 tabPanel(value = "generate",
-          title = ">Generate",
+          title = "Generate",
          sidebarLayout(
            fluidRow(column(6,
                            radioButtons("choosePath",
@@ -50,6 +50,17 @@ tabPanel(value = "generate",
                  "Select models to train",
                  choices = model_list,
                  multiple=TRUE
+               ),
+               selectizeInput(
+                 "positiveClass",
+                 "Select positive class",
+                 choices = positive_classes,
+                 selected = "MAE"
+               ),
+               conditionalPanel(
+                 condition = "input.positiveClass == other",
+                 textInput("positiveClass",
+                           label = "Enter positive class")
                ),
                selectizeInput(
                  'metric', 'Select Loss Function',
@@ -79,10 +90,12 @@ tabPanel(value = "generate",
            condition = "input.choosePath == 'Use existing model'",
              selectizeInput(
                'models', 'Select Models',
-               choices = model_names, multiple = TRUE
+               choices = model_names, 
+               multiple = TRUE
              ),
            h2(HTML("<u>Or:</u>")),
-           directoryInput("modelDir",
+           directoryInput(
+             "modelDir",
              label = "Select model directory:",
              value = "~"),
            conditionalPanel(

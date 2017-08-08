@@ -24,32 +24,29 @@
 # ANALYZE TAB
 ##########
 
-
-
 tabPanel(value = "analyze",
-         title = ">Analyze",
+         title = "Analyze",
          sidebarLayout(
            sidebarPanel(
              fileInput('analysisFile', 'Upload processed TSV file',
                        accept = acceptable_file_types
                        ),
-             selectizeInput(
-               "positiveClass",
-               "Select positive class",
-               choices = positive_classes,
-               selected = "MAE"
-               ),
-             conditionalPanel(
-               condition = "input.positiveClass == other",
-               textInput("positiveClass",
-               label = "Enter positive class")
-              ),
-             actionButton("analyzeDataButton", "Analyze data", width = "100%")
-           ),
-           mainPanel(
-             htmlOutput("analysisText"),
-             conditionalPanel(condition = "output.analyze_output",
-                              downloadButton("downloadAnalyzeButton",
-                                             "Download analysis"))
-           ))
-)
+             actionButton("analyzeDataButton", "Analyze data", width = "100%"),
+             conditionalPanel(condition = "input.analyzeDataButton",
+                              checkboxInput("expression_filter", label = "Filter lowly expressed genes?"),
+                              conditionalPanel(condition = "input.expression_filter == TRUE",
+                              fileInput('expressionData', label = "Input RNA-Seq file"))
+             )
+           ), mainPanel(
+             print("Hello world")
+           ) # end of overall mainPanel 
+             
+             
+             # htmlOutput("analysisText"),
+             # conditionalPanel(condition = "output.analyze_output",
+             #                  downloadButton("downloadAnalyzeButton",
+             #                                 "Download analysis"))
+           )
+           )
+
+

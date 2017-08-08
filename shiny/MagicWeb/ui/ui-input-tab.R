@@ -30,14 +30,13 @@ tabPanel(value = "input",
   sidebarLayout(
     sidebarPanel(
       br(),
-      h4( HTML("First, set your working directory that contains all your input data.")),
-      directoryInput("processingDir",
-                     label = "Select input directory:",
-                     value = "~"),
+      h4( HTML("First, set your working directory where your data lives.")),
+      directoryInput("dataDirectory",
+                     label = "Select input directory:"),
      width = 8
     ),
     mainPanel(
-  fluidRow(column(12,
+    fluidRow(column(12,
          tabsetPanel(
            tabPanel("Option 1: File",
                     column(12,
@@ -72,14 +71,11 @@ tabPanel(value = "input",
                                  ),
                              fluidRow(
                                sidebarPanel(
-                                 fluidRow(fileInput(
-                                   'file_inputs',
+                                 fluidRow(
+                                   textInput(
+                                   'fileInput',
                                    label = h5("Upload file"),
-                                   accept = c(
-                                     'text/comma-separated-values',
-                                     'text/tab-separated-values',
-                                     '.tsv'
-                                   )
+                                   value = NULL
                                  )),
                                  width = 12
                                )
@@ -102,7 +98,7 @@ tabPanel(value = "input",
                                sidebarPanel(
                                  fluidRow(numericInput(
                                    "marks",
-                                   "Number of epigenetic signatures being evaluated:", value=0,
+                                   "Number of epigenetic marks being evaluated:", value=0,
                                    min = 2, max = 5
                                  ),
                                  conditionalPanel(condition = "input.marks == 2",

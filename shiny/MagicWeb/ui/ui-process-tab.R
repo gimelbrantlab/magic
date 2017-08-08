@@ -25,30 +25,30 @@
 ########
 
 tabPanel(value = "process",
-        title = ">Process",
+        title = "Process",
          sidebarLayout(
-           sidebarPanel(
+           sidebarPanel = sidebarPanel(
              selectizeInput(
-               'organism', 'Select organism',
+               'organism', 'Model organism',
                choices = organism,
                selected = "human"
              ),
              conditionalPanel(
                condition = "input.organism == 'mouse'",
-               selectizeInput('mouse_refseq', 'Select assembly',
+               selectizeInput('assembly', 'Assembly',
                               choices = mouse_refseq_reference,
                               selected = "mm9")
                ),
              conditionalPanel(
                condition = "input.organism == 'human'",
-               selectizeInput("human_refseq", 'Select assembly',
+               selectizeInput("assembly", 'Assembly',
                               choices = human_refseq_reference,
                               selected = "hg19")
              ),
              conditionalPanel(
                condition = "input.organism == 'other'",
                fileInput(
-                 'file1',
+                 'assembly',
                  label = h5("Upload file"),
                  accept = c(
                    'text/comma-separated-values',
@@ -58,32 +58,114 @@ tabPanel(value = "process",
                )
              ),
              selectizeInput(
-               'tg', 'Select training genes',
+               inputId = 'tg', 
+               label = 'Select training genes',
                choices = tg_names,
-               selected = "none"
+               selected = 'none'
              ),
-             sliderInput("dropPercent", "Drop percent:", 0.01,
-                          min = 0, max = 0.80, step = 0.01),
              numericInput("promoterLength", "Promoter Length:", 5000, min = 0,
                           step = 100),
-             checkboxInput("disableFilter",
-                           "Disable filtering?",
-                           value = FALSE),
+             selectizeInput("enableFilters",
+                           "Choose filters",
+                            choices = filtering,
+                            multiple=TRUE),
              checkboxInput("noOverlap",
                            "Disable overlap calculation?",
                            value = FALSE),
-             actionButton("processDataButton", "Process data", width = "100%")
+             sliderInput("dropPercent", "Drop percent:", 0.01,
+                         min = 0, max = 0.80, step = 0.01),
+             selectizeInput("cores",
+                            "Number of cores:",
+                             choices = c(1:12)
              ),
-           mainPanel(
-             htmlOutput("processText"),
-             conditionalPanel(condition = "output.process_output",
-                              downloadButton("downloadProcessButton",
-                                             "Download processed data"))
-             )
+             actionButton("processDataButton", 
+                          "Process data", 
+                          width = "100%")
            ),
-      fluidRow(column(12,
-      actionButton("next_generate", "Next"),
-      tags$style(type="text/css", "#next_generate { width:10%; margin-left: 1000px;}")
+           mainPanel = mainPanel(
+             conditionalPanel(
+               condition = "output.dummyLoad",
+                              tabsetPanel("processPlots",
+                               tabPanel("Tables",
+                                        sidebarLayout(
+                                          mainPanel(
+                                            radioButtons("normPercTable",
+                                                         "Raw normalized table or Percentile ranked table",
+                                                         choices = c("Normalized", "Percentile ranked")),
+                                            conditionalPanel("normPercTable == 'Percentile ranked'",
+                                                             dataTableOutput("perc_table")),
+                                            conditionalPanel("normPercTable == 'Normalized'",
+                                                             dataTableOutput("norm_table"))
+                                          ),
+                                          mainPanel(
+                                            actionButton("reProcess",
+                                                         "Redo processing with new parameters")
+                                          )
+                                        )
+                               ),
+                               tabPanel("ChIP QC",
+                                       sidebarLayout(
+                                         mainPanel(
+                                              radioButtons("normPerc",
+                                                           "Raw normalized plot or Percentile ranked plot",
+                                                           choices = c("Normalized", "Percentile ranked")),
+                                              conditionalPanel(
+                                                condition = "input.normPerc == 'Normalized'",
+                                                plotOutput("chipQCnorm",
+                                                           height = 480,
+                                                           width = 700
+                                                           )
+                                              ),
+                                              conditionalPanel(
+                                                condition = "input.normPerc == 'Percentile ranked'",
+                                                plotOutput("chipQC",
+                                                           height = 480,
+                                                           width = 700,
+                                                           click = "plot1_click",
+                                                           brush = brushOpts(
+                                                             id = "plot1_brush")
+                                                )
+                                              )
+                                         ), 
+                                         mainPanel(
+                                           conditionalPanel(
+                                             condition = "input.normPerc == 'Percentile ranked'",
+                                             actionButton("excludeToggle", "Toggle points"),
+                                             actionButton("excludeReset", "Reset"),
+                                             actionButton("reProcess",
+                                                          "Redo processing with new dataframe")
+                                           )
+                                         )
+                                )
+                               ),
+                               tabPanel(
+                                 title = "Input distribution"
+                               ),
+                                 tabPanel(
+                                   title = "Training genes",
+                                   plotOutput("trainingDist",
+                                     height = 480,
+                                     width = 700
+                                     )
+                               )
+                              ) # end tabsetPanel
+             ) # end of overall mainPanel 
+             )# end of conditionalPanel
+             
+             # htmlOutput("processText"),
+             # conditionalPanel(condition = "output.process_output",
+             #                  downloadButton("downloadProcessButton",
+             #                                 "Download processed data"))
+             # )
+     
+      ),
+      conditionalPanel(condition = "output.chipQC",
+                       fluidRow(column(12,
+                                       actionButton("next_generate", "Next"),
+                                       tags$style(type="text/css", "#next_generate { width:10%; margin-left: 1000px;}")
+                       )
+                       )
       )
-      )
+      
 )
+
