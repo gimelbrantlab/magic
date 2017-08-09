@@ -71,6 +71,9 @@ observeEvent(input$processDataButton,
     if(input$cores > 1) { args <- paste(args, "-s", input$cores) }
     # if() { args <- paste(args, "-f") }
     if (input$noOverlap == TRUE) { args <- paste(args, "-l") }
+    if (!"olfactory genes" %in% input$enableFilters) { args <- paste(args, "-f") }
+    if (!"sex chromosomes" %in% input$enableFilters) { args <- paste(args, "-c") }
+    if (!"imprinted genes" %in% input$enableFilters) { args <- paste(args, "-m") }
     cat("\n", args, "\n\n")
     process_output <- capture.output(tryCatch(
       system2("Rscript", args))) # error = function(e) e))
