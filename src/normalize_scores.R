@@ -39,7 +39,6 @@ normalize_scores <- function(scores_file, output_file, dropped_file,
     control <- control %>% mutate(percentile = rank(sum) / length(sum))
     
     # Removes indices in the given bottom percentile from both data frames and below a specified absolute mean value
-    genes_to_keep <- control$name[(control$percentile > drop_percent) & (control$mean >= drop_abs)]
     genes_to_remove <- control$name[(control$percentile <= drop_percent) | (control$mean < drop_abs)]
     control <- control[!control$name %in% genes_to_remove,]
     scores <- scores[!scores$name %in% genes_to_remove,]

@@ -57,6 +57,7 @@ load_analyze_libraries <- function() {
   get_package("MASS")
   get_package("dplyr")
   get_package("parallel")
+  get_package("e1071")
 }
 
 # Loads or installs all required packages for processing
@@ -70,6 +71,7 @@ load_process_libraries <- function() {
   get_package("parallel")
   get_package("diptest")
   get_package("doMC", repos = "http://R-Forge.R-project.org")
+  get_package("e1071")
 }
 
 # Sources all scripts required for processing
@@ -99,6 +101,7 @@ load_generate_libraries <- function() {
   get_package("dplyr")
   get_package("evtree")
   get_package("MASS")
+  get_package("e1071")
 }
 
 # Sources all scripts required for machine learning
