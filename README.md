@@ -101,10 +101,10 @@ All arguments are also described via "Rscript process.R --help"
 All arguments are also described via "Rscript analyze.R --help"
 
 *-i, --input_file*:
-    Path to input file, described in general usage
+    path to input file, described in general usage
     
 *-o, --output_folder*:
-    Path to output folder, described in general usage [default output]
+    path to output folder, described in general usage [default output]
 
 *-m, --models_folder*:
     contains models output from generate.R
@@ -115,8 +115,27 @@ All arguments are also described via "Rscript analyze.R --help"
 *-p, --positive_class*:
     name of target feature's positive class [default "MAE"]
     
+*-f, --filter*:
+    path to file with gene expression values and/or length
+    
+*-l, --length*:
+    gene length threshold [default "2500"]
+    
 *-q, --quiet*: 
     disables console output, do not flag if required packages missing [default FALSE]
+    
+    
+### Filtering
+
+Ouput file with BAE/MAE classification predictions can be filtered by gene expression and/or length. To do this, user specifies path to file containing information about gene expression (in any units: RPKM, FPKM, CPM, counts, etc.) and/or length. If file contains only expression values, the filtering will be done only by expression. If file contains only gene lengths, the filtering will be done only by length. The format for the file is as follows, with values separated by tabs:
+
+| gene 	| expression                      	| length                        	|
+|-----------	|--------------------------------	|-------------------------------------	|
+| A1BG  	| 10 	| 2400 	|
+| A1CF  	| 40 	| 2600 	
+
+All genes are ordered according to their expression (highly expressed genes to low expressed genes), and then botton half of the genes is filtered out. 
+The default length threshold is 2500, can be changed using -l option. 
 
 ## Generate
 
