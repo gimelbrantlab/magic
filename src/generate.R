@@ -55,7 +55,7 @@ attach_training_genes <- function(df, training_genes_file) {
 # Generates seven different classifiers via scores_ml.R on given scores file
 generate_classifiers <- function(scores, output_folder, sampling_method,
                                  selection_rule, target_feature, p,
-                                 metric, cv, model_string) {
+                                 metric, cv, model_string, validation_file) {
   
   model_string <- gsub(" ", "", model_string)
   model_string <- gsub("\n", "", model_string)
@@ -64,14 +64,35 @@ generate_classifiers <- function(scores, output_folder, sampling_method,
     scores_ml(scores, target_feature, model_name, 
               output_folder, selection_rule, sampling_method,
               p, metric, cv)
+    if (!is.null(validation_file)) validation(model_name, output_folder, validation_file)
   }
+}
+
+validation <- function(model_name, output_folder, validation_file) {
+  # read the model generated just before
+  model_file <- file.path(output_folder, 
+                          paste(model_name, "_model.rds", sep = ""))
+  model <- readRDS(model_file)
+  # read validation file to df
+  validation_set <- read.table(validation_file, header = T)
+  # run comparison
+  predictions <- predict(model, validation_set)
+  validation_set[["status"]] <- sub("BAE", 0, validation_set[["status"]])
+  validation_set[["status"]] <- sub("MAE", 1, validation_set[["status"]])
+  predictions <- sub("BAE", 0, predictions)
+  predictions <- sub("MAE", 1, predictions)
+  # print output
+  model_to_valid <- file.path(output_folder, 
+                          paste(model_name, "_to_validation.txt", sep = ""))
+  cm <- caret::confusionMatrix(predictions, validation_set[["status"]], positive = "1")
+  capture.output(cm, file = model_to_valid, append = F)
 }
 
 # Generates classifiers from given training file
 generate_main <- function(current_folder, input_file, output_folder,
                           sampling_method, selection_rule, target_feature,
                           training_genes_file, p, metric, 
-                          cv, model_string) {
+                          cv, model_string, validation_file) {
   
   # Loads required scripts and libraries
   load_generate_libraries()
@@ -113,14 +134,14 @@ generate_main <- function(current_folder, input_file, output_folder,
   # Generates classifiers
   generate_classifiers(scores, output_folder, sampling_method,
                        selection_rule, target_feature, p,
-                       metric, cv, model_string)
+                       metric, cv, model_string, validation_file)
   
-  cat("Models generated. Generating model comparisons on resampled training data...\n")
+  #cat("Models generated. Generating model comparisons on resampled training data...\n")
   
   # Creates model comparison output folders and compares models
-  comparison_folder <- file.path(output_folder, "comparisons")
-  if (!dir.exists(comparison_folder)) { dir.create(comparison_folder) }
-  compare_ml(output_folder, comparison_folder)
+  #comparison_folder <- file.path(output_folder, "comparisons")
+  #if (!dir.exists(comparison_folder)) { dir.create(comparison_folder) }
+  #compare_ml(output_folder, comparison_folder)
   
   cat("Model generation complete\n")
 }
@@ -162,6 +183,8 @@ options = list(
               help="percent of data to use as training set [default= %default]"),
   make_option(c("-c", "--cross_validation"), type="integer", default=5,
               help="number of times to run cross-validation [default= %default]"),
+  make_option(c("-v", "--validation_file"), type="character", default=NULL, 
+              help="tsv file with genes and matching BAE/MAE status and chromatin data, see readme for description"),
   make_option(c("-q", "--quiet"), action="store_true", default=FALSE, 
               help="disables console output [default= %default]"),
   make_option(c("-l", "--model_list"), type="character", default = "glmStepAIC, rf, nnet, rpart, svmPoly,
@@ -184,6 +207,7 @@ p <- opt$training_percent
 metric <- opt$metric
 training_genes_file <- tolower(opt$training_genes_file)
 cv <- opt$cross_validation
+validation_file <- opt$validation_file
 quiet <- opt$quiet
 model_string <- opt$model_list
 
@@ -192,10 +216,10 @@ if (!quiet) {
   invisible(generate_main(current_folder, input_file, output_folder, 
                           sampling_method, selection_rule, target_feature,
                           training_genes_file, p, metric, 
-                          cv, model_string))
+                          cv, model_string, validation_file))
 } else {
   generate_main(current_folder, input_file, output_folder, 
                 sampling_method, selection_rule, target_feature,
                 training_genes_file, p, metric, 
-                cv, model_string)
+                cv, model_string, validation_file)
 }
