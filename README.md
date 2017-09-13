@@ -154,17 +154,17 @@ user-provided data and generates a new set of models trained on this data using 
     Rscript generate.R -i "input_file.tsv"
     
 *With many options*:
-    Rscript generate.R -i "input_file.tsv" -o output -ta "status" -sa "down" -se "oneSE"
+    Rscript generate.R -i "input_file.tsv" -o output -ta "status" -sa "down" -se "oneSE" -v testing_human_2015.tsv
     
 ### Arguments
 
 All arguments are also described via "Rscript generate.R --help"
 
-*-i, --input_folder*:
-    Path to input folder, described in general usage
+*-i, --input_file*:
+    path to input file, described in general usage
     
 *-o, --output_folder*:
-    Path to output folder, described in general usage [default output]
+    path to output folder, described in general usage [default output]
 
 *-t, --target_feature*:
     name of column in dataset with feature to classify by [default "status"]
@@ -191,9 +191,21 @@ All arguments are also described via "Rscript generate.R --help"
 *-l, --model_list*:
     list of model algorithms to test [default "glmStepAIC, rf, nnet, rpart, svmPoly,
                   evtree, knn, ada, mlpML"]
+*-v, --validation_file*:
+    path to tsv file with genes and matching BAE/MAE status and chromatin data       
     
 *-q, --quiet*: 
     disables console output, do not flag if required packages missing [default FALSE]
+    
+ ### Validation
+ 
+ To test model performance on external control file, users can use option -v providing the path to control file. Control file should have columns with gene names, status ("BAE"/"MAE") and chromatin marks percentiles, same as used for model training (should be produced by process.R as then merged with true genes status). 
+ 
+ | gene 	| chr | status | h3k27me3_percentile | h3k36me3_percentile | 
+|-----------	|--------------------------------	|-------------------------------------	|-------------------------------------	|-------------------------------------	|
+| AATF  	| chr17 	| BAE 	| 0.332400069 	| 0.885768436
+| ABAT  	| chr16 	| MAE 	| 0.578437285 	| 0.438146106
+| ABCA7  	| chr19  	| BAE  	| 0.143047898  	| 0.615609924
 
 ## Contact us
 
