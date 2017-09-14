@@ -207,6 +207,8 @@ All arguments are also described via "Rscript generate.R --help"
 | ABAT  	| chr16 	| MAE 	| 0.578437285 	| 0.438146106
 | ABCA7  	| chr19  	| BAE  	| 0.143047898  	| 0.615609924
 
+With -v option on, model_name_to_validation.txt file is created for each model containg information about model performance. Additionally, file summary_models.tsv is created with table of perfomance metrics of all models.
+
 ## Contact us
 
 Questions, comments and concerns can be directed to [Alexander Gimelbrant](alexander_gimelbrant@dfci.harvard.edu), [Sebastien Vigneau](Sebastien_Vigneau@dfci.harvard.edu), and [Svetlana Vinogradova](Svetlana_Vinogradova@dfci.harvard.edu). Additional inquiries about how the program works
