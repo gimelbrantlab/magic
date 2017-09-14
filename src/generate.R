@@ -60,11 +60,22 @@ generate_classifiers <- function(scores, output_folder, sampling_method,
   model_string <- gsub(" ", "", model_string)
   model_string <- gsub("\n", "", model_string)
   model_list <- strsplit(model_string, ",") 
+  if (!is.null(validation_file)) stats <- data.frame(Accuracy = numeric(0), Kappa = numeric(0),  Sensitivity = numeric(0), Specificity = numeric(0), PPV = numeric(0), NPV = numeric(0), Precision = numeric(0), Recall = numeric(0), F1 = numeric(0), Prevalence = numeric(0), DetectionRate = numeric(0), DetectionPrevalence = numeric(0), BalancedAccuracy = numeric(0), stringsAsFactors = FALSE)
   for (model_name in model_list[[1]]) {
     scores_ml(scores, target_feature, model_name, 
               output_folder, selection_rule, sampling_method,
               p, metric, cv)
-    if (!is.null(validation_file)) validation(model_name, output_folder, validation_file)
+    if (!is.null(validation_file)) {
+      metrics_out <- validation(model_name, output_folder, validation_file)
+      stats <- rbind(stats, setNames(as.list(metrics_out), names(stats)))
+    }
+  }
+  if (!is.null(validation_file)) {
+    stats <- round(stats,3)
+    stats <- cbind(model_list[[1]], stats)
+    colnames(stats)[1] <- "Model"
+    models_stats <- file.path(output_folder, "summary_models.tsv")
+    write.table(stats, file=models_stats, quote = F, row.names = F, sep="\t")
   }
 }
 
@@ -86,6 +97,8 @@ validation <- function(model_name, output_folder, validation_file) {
                           paste(model_name, "_to_validation.txt", sep = ""))
   cm <- caret::confusionMatrix(predictions, validation_set[["status"]], positive = "1")
   capture.output(cm, file = model_to_valid, append = F)
+  out <- c(cm$overall[1:2],cm$byClass)
+  return(out)
 }
 
 # Generates classifiers from given training file
