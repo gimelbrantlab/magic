@@ -60,7 +60,7 @@ generate_classifiers <- function(scores, output_folder, sampling_method,
   model_string <- gsub(" ", "", model_string)
   model_string <- gsub("\n", "", model_string)
   model_list <- strsplit(model_string, ",") 
-  if (!is.null(validation_file)) stats <- data.frame(Accuracy = numeric(0), Kappa = numeric(0),  Sensitivity = numeric(0), Specificity = numeric(0), PPV = numeric(0), NPV = numeric(0), Precision = numeric(0), Recall = numeric(0), F1 = numeric(0), Prevalence = numeric(0), DetectionRate = numeric(0), DetectionPrevalence = numeric(0), BalancedAccuracy = numeric(0), stringsAsFactors = FALSE)
+  if (!is.null(validation_file)) stats <- data.frame(Accuracy = numeric(0), Kappa = numeric(0),  Sensitivity = numeric(0), Specificity = numeric(0), PPV = numeric(0), NPV = numeric(0), Precision = numeric(0), Recall = numeric(0), F1 = numeric(0), Prevalence = numeric(0), Detection_Rate = numeric(0), Detection_Prevalence = numeric(0), Balanced_Accuracy = numeric(0), stringsAsFactors = FALSE)
   for (model_name in model_list[[1]]) {
     scores_ml(scores, target_feature, model_name, 
               output_folder, selection_rule, sampling_method,
