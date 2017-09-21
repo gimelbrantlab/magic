@@ -60,17 +60,64 @@ generate_classifiers <- function(scores, output_folder, sampling_method,
   model_string <- gsub(" ", "", model_string)
   model_string <- gsub("\n", "", model_string)
   model_list <- strsplit(model_string, ",") 
-  if (!is.null(validation_file)) stats <- data.frame(Accuracy = numeric(0), Kappa = numeric(0),  Sensitivity = numeric(0), Specificity = numeric(0), PPV = numeric(0), NPV = numeric(0), Precision = numeric(0), Recall = numeric(0), F1 = numeric(0), Prevalence = numeric(0), Detection_Rate = numeric(0), Detection_Prevalence = numeric(0), Balanced_Accuracy = numeric(0), stringsAsFactors = FALSE)
+  
+  # Creates output folder if it doesn't exist
+  if (!dir.exists(output_folder)) { dir.create(output_folder) }
+  
+  # Subset the data into training and testing
+  
+  ## Splits data into training and testing sets if 0 < p < 1
+  df <- scores
+  testing_gene_names <- NULL
+  training <- NULL
+  testing <- NULL
+  if ((p > 0) && (p < 1)) {
+    
+    # Sets p% of data as training set
+    partition <- createDataPartition(df$status, times = 1, p = p, list = FALSE)
+    training <- df[partition,]
+    testing <- df[-partition,]
+    
+    # Removes unnecessary cols from both sets, saving testing gene names
+    testing_gene_names <- testing$name
+    training <- training[, !(names(training) %in% c("start", "end", "chrom", "name"))]
+    testing <- testing[, !(names(testing) %in% c("start", "end", "chrom", "name"))]
+    
+    # Uses all of the data as the training set if specified, otherwise throws error
+  } else if (p == 0) {
+    stop("must input p in range 0 < p <= 1")
+  } else {
+    training <- df
+    training <- training[, !(names(training) %in% c("start", "end", "chrom", "name"))]
+  }
+  
+  # Make sure we have file for validation
+  if (!is.null(validation_file)){
+    validation_df <- read.table(validation_file, header = T)
+  }
+  else if (((p > 0) && (p < 1))) {
+    validation_df <- testing
+  }
+  else {
+    warning("using 100% of training data for training and no validation file specified, no summary file will be created")
+    validation_df <- NULL
+  }
+  
+  # Create vector with stats for validaton
+  if (!is.null(validation_df)){
+    stats <- data.frame(Sensitivity = numeric(0), Specificity = numeric(0), PPV = numeric(0), NPV = numeric(0), F1 = numeric(0), Kappa = numeric(0), Accuracy = numeric(0), Balanced_Accuracy = numeric(0), stringsAsFactors = FALSE)
+  }
+  
   for (model_name in model_list[[1]]) {
-    scores_ml(scores, target_feature, model_name, 
+    scores_ml(training, testing, testing_gene_names, target_feature, model_name, 
               output_folder, selection_rule, sampling_method,
-              p, metric, cv)
-    if (!is.null(validation_file)) {
-      metrics_out <- validation(model_name, output_folder, validation_file)
+              p, metric, cv, testing_file)
+    if (!is.null(validation_df)) {
+      metrics_out <- validation(model_name, output_folder, validation_df)
       stats <- rbind(stats, setNames(as.list(metrics_out), names(stats)))
     }
   }
-  if (!is.null(validation_file)) {
+  if (!is.null(validation_df)) {
     stats <- round(stats,3)
     stats <- cbind(model_list[[1]], stats)
     colnames(stats)[1] <- "Model"
@@ -79,13 +126,11 @@ generate_classifiers <- function(scores, output_folder, sampling_method,
   }
 }
 
-validation <- function(model_name, output_folder, validation_file) {
+validation <- function(model_name, output_folder, validation_set) {
   # read the model generated just before
   model_file <- file.path(output_folder, 
                           paste(model_name, "_model.rds", sep = ""))
   model <- readRDS(model_file)
-  # read validation file to df
-  validation_set <- read.table(validation_file, header = T)
   # run comparison
   predictions <- predict(model, validation_set)
   validation_set[["status"]] <- sub("BAE", 0, validation_set[["status"]])
@@ -97,7 +142,7 @@ validation <- function(model_name, output_folder, validation_file) {
                           paste(model_name, "_to_validation.txt", sep = ""))
   cm <- caret::confusionMatrix(predictions, validation_set[["status"]], positive = "1")
   capture.output(cm, file = model_to_valid, append = F)
-  out <- c(cm$overall[1:2],cm$byClass)
+  out <- c(cm$byClass[1:4], cm$byClass[7], cm$overall[2], cm$overall[1], cm$byClass[11])
   return(out)
 }
 
@@ -122,13 +167,13 @@ generate_main <- function(current_folder, input_file, output_folder,
   } else if (tolower(training_genes_file) == "none") {
     training_genes_file <- "none"
   } else {
-    training_genes_file <- file.path(reference_folder, training_genes_file)
+    training_genes_file <- file.path(training_genes_file)
     if (!file.exists(training_genes_file)) {
       stop("training genes file does not exist (use 'mouse', 'human' or 'none')")
     }
   }
   
-  # Loads input file into a dataframe and attaches ids to it
+  # Loads input file into a dataframe
   scores <- read.csv(input_file, sep = "\t")
   
   # Converts percent to double between 0 and 1
@@ -148,13 +193,6 @@ generate_main <- function(current_folder, input_file, output_folder,
   generate_classifiers(scores, output_folder, sampling_method,
                        selection_rule, target_feature, p,
                        metric, cv, model_string, validation_file)
-  
-  #cat("Models generated. Generating model comparisons on resampled training data...\n")
-  
-  # Creates model comparison output folders and compares models
-  #comparison_folder <- file.path(output_folder, "comparisons")
-  #if (!dir.exists(comparison_folder)) { dir.create(comparison_folder) }
-  #compare_ml(output_folder, comparison_folder)
   
   cat("Model generation complete\n")
 }
