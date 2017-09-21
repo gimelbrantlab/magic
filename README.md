@@ -191,6 +191,7 @@ All arguments are also described via "Rscript generate.R --help"
 *-l, --model_list*:
     list of model algorithms to test [default "glmStepAIC, rf, nnet, rpart, svmPoly,
                   evtree, knn, ada, mlpML"]
+
 *-v, --validation_file*:
     path to tsv file with genes and matching BAE/MAE status and chromatin data       
     
@@ -208,6 +209,8 @@ All arguments are also described via "Rscript generate.R --help"
 | ABCA7  	| chr19  	| BAE  	| 0.143047898  	| 0.615609924
 
 With -v option on, model_name_to_validation.txt file is created for each model containg information about model performance. Additionally, file summary_models.tsv is created with table of perfomance metrics of all models.
+
+If no validation file is provided, validation is performed on the testing portion of the training data (the fraction is controlled by -p parameter). Is p is set to 100 (meaning that 100% of training data is used for training), no validation is performed (and files model_name_to_validation.txt and summary_models.tsv are not created).
 
 ## Contact us
 
