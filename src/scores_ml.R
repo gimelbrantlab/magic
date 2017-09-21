@@ -190,28 +190,9 @@ generate_classifier <- function(training, testing, testing_gene_names, classifie
 }
 
 # Runs machine learning analyses on data
-scores_ml <- function(scores, target_feature, classifier, output_folder,
+scores_ml <- function(training, testing, testing_gene_names, target_feature, classifier, output_folder,
                       selection_rule, sampling_method = "none", p = 0.8, 
                       metric = "Kappa", cv = 5, cores = 4) {
-  
-  # Check if input file is a path or a dataframe. We rename it if
-  # it's a dataframe
-  df <- NULL
-  if(is.data.frame(scores)) {
-    df <- scores
-  } else {
-    
-    # Loads scores file into a data frame and removes unnecesary cols, or exits
-    # if scores file doesn't exist
-    if (file.exists(scores)) {
-      df <- read.csv(scores, sep = "\t")
-    } else {
-      if (!file.exists(scores)) { stop("scores file does not exist") }
-    }
-  }
-  
-  # Creates output folder if it doesn't exist
-  if (!dir.exists(output_folder)) { dir.create(output_folder) }
   
   # Creates summary file with header
   summary_file <- file.path(output_folder, 
@@ -220,30 +201,6 @@ scores_ml <- function(scores, target_feature, classifier, output_folder,
   
   # Enables multicore processing using doMC package
   registerDoMC(cores = cores)
-  
-  # Splits data into training and testing sets if 0 < p < 1
-  testing_gene_names <- NULL
-  training <- NULL
-  testing <- NULL
-  if ((p > 0) && (p < 1)) {
-    
-    # Sets p% of data as training set
-    partition <- createDataPartition(df$status, times = 1, p = p, list = FALSE)
-    training <- df[partition,]
-    testing <- df[-partition,]
-    
-    # Removes unnecessary cols from both sets, saving testing gene names
-    testing_gene_names <- testing$name
-    training <- training[, !(names(training) %in% c("start", "end", "chrom", "name"))]
-    testing <- testing[, !(names(testing) %in% c("start", "end", "chrom", "name"))]
-    
-  # Uses all of the data as the training set if specified, otherwise throws error
-  } else if (p == 0) {
-    stop("must input p in range 0 < p <= 1")
-  } else {
-    training <- df
-    training <- training[, !(names(training) %in% c("start", "end", "chrom", "name"))]
-  }
   
   # Generates model and saves it to output folder
   generate_classifier(training, testing, testing_gene_names, classifier, 
