@@ -140,7 +140,8 @@ tabPanel(value = "process",
                                 )
                                ),
                                tabPanel(
-                                 title = "Input distribution"
+                                 title = "Input distribution",
+                                 imageOutput("inputHist")
                                )
                               ),
                conditionalPanel(condition = "input.processDataButton",
@@ -161,6 +162,4 @@ tabPanel(value = "process",
       )
       
 )
-
-
 
