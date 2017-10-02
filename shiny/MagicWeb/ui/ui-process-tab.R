@@ -131,11 +131,7 @@ tabPanel(value = "process",
                                               )
                                          ), 
                                          mainPanel(
-                                           conditionalPanel(
-                                             condition = "input.normPerc == 'Percentile ranked'",
-                                             actionButton("reProcess",
-                                                          "Redo processing with new dataframe")
-                                           )
+                                           NULL
                                          )
                                 )
                                ),
@@ -162,4 +158,5 @@ tabPanel(value = "process",
       )
       
 )
+
 
