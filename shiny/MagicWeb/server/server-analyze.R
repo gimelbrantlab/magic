@@ -31,52 +31,91 @@
 # Gets uploaded analysis file
 getAnalysisFile <- reactive({
   if(!is.null(input$analysisFile)) { 
-    analysis_file_path <- input$analysisFile$datapath 
+    analysis_file_path <<- input$analysisFile$datapath 
+    print(output_path)
   }
 })
 
 # Analyzes data on button press
-observeEvent(input$analyzeDataButton, {
-  
+
+
+observeEvent(input$analyzeDataButton, 
+             {
+  message_list <- c("Preparing analyze command","Downloading binaries...", "Compiling arguments...", "Mining gold ore",
+                    "Merging annotation for gene intervals...", "Creating magic genie...",
+                    "Determining status...", "Making coffee...", "Moving to America...",
+                    "Starting an italian restaurant...", "Having first child...", "Starting postdoc...",
+                    "Starting second postdoc...", "Applying for K99...", "Reapplying for K99",
+                    "Developing ulcers", "Faculty?","Running process.R")
+  withProgress(value = 0, 
+               {
+                 for (i in 1:length(message_list)){
+                   incProgress(1/length(message_list), detail = paste(message_list[i]))
+                   Sys.sleep(0.25)
+                 }
+                 
+                 done = FALSE
+if (dir.exists(paste(output_path, "model_output", sep=""))){
+  print("a")
   # Builds command to run analyze.R and executes it
-  if ((!is.null(analysis_file_path)) &&
-      (!is.null(models)) && 
-      (!is.null(positive_class))) {
     analyze_output <- NULL
     analyze_running <- TRUE
     analyze_cmd <- paste("Rscript")
     args <- paste(analyze_file,
-                  "-i", analysis_file_path,
-                  "-m", models_folder,
-                  "-o", output_folder,
-                  "-ex", excluded_models,
-                  "-p", positive_class)
+                  "-i", input$analysisFile$datapath,
+                  "-m", paste(output_path, "model_output", sep=""),
+                  "-o", paste(output_path, "analysis_output", sep=""),
+                  "-p", "MAE")
+    if(!is.null(input$exModels)) {args <- paste(args, "-ex", input$exModels)}
+    if(!is.null(input$expression_filter)) { args <- paste(args, "-f", input$expressionData) }
+    if(!is.null(input$expression_filter)) { args <- paste(args, "-l", input$lengthFilter) }
+    print(paste(analyze_cmd, args))
     analyze_output <- capture.output(tryCatch(
-      system2(analyze_cmd, args), error = function(e) e))
-  }
+    system2(analyze_cmd, args), error = function(e) e))
+}else if(file.exists(input$modelDir)){
+    print("b")
+    # Builds command to run analyze.R and executes it
+      analyze_output <- NULL
+      analyze_running <- TRUE
+      analyze_cmd <- paste("Rscript")
+      args <- paste(analyze_file,
+                    "-i", input$analysisFile$datapath,
+                    "-m", paste(model_dir),
+                    "-o", paste(output_path, "analysis_output"),
+                    "-p", "MAE")
+      if(!is.null(input$exModels)) {args <- paste(args, "-ex", input$exModels)}
+      if(!is.null(input$expression_filter)) { 
+        args <- paste(args, "-f", input$expressionData) 
+      } else { args <- paste(args, "-f", "NULL")}
+      if(!is.null(input$expression_filter)) { args <- paste(args, "-l", input$lengthFilter) }
+      analyze_output <- capture.output(tryCatch(
+        system2(analyze_cmd, args), error = function(e) e))
+} else {
+    # Builds command to run analyze.R and executes it
+      analyze_output <- NULL
+      analyze_running <- TRUE
+      analyze_cmd <- paste("Rscript")
+      args <- paste(analyze_file,
+                    "-i", input$analysisFile$datapath,
+                    "-m", models_folder,
+                    "-o", paste(output_path, "analysis_output", sep=""),
+                    "-p", "MAE")
+      if(!is.null(input$exModels)) {args <- paste(args, "-ex", input$exModels)}
+      if(!is.null(input$expression_filter)) { args <- paste(args, "-f", input$expressionData) }
+      if(!is.null(input$expression_filter)) { args <- paste(args, "-l", input$lengthFilter) }
+      analyze_output <- capture.output(tryCatch(
+        system2(analyze_cmd, args), error = function(e) e))
+}
+                 
 })
 
-# Sets reactive analysis output text
-output$analysisText <- renderUI({
   
-  line_1 <- ""
-  line_2 <- ""
-  
-  if(analyze_running) { line_1 <- "Analyzing data..." }
-  
-  if(!is.null(analyze_output)) {
-    analyze_running <- FALSE
-    line_2 <- analyze_output
-  }
-  
-  HTML(paste(line_1, line_2, sep = "<br/>"))
 })
-
 # Handler for analyzed data download
 output$downloadAnalyzeButton <- downloadHandler(
   filename = function() { paste("analyzedData.txt") } ,
   content <- function(file) {
-    df <- read.csv(file.path(output_folder, "all_predictions.tsv"),
+    df <- read.csv(paste(output_path, "all_predictions.tsv"),
                    sep = "\t")
     write.table(df, file, sep = "\t", row.names = FALSE, quote = FALSE)
   }
