@@ -31,12 +31,28 @@ tabPanel(value = "analyze",
              fileInput('analysisFile', 'Upload processed TSV file',
                        accept = acceptable_file_types
                        ),
-             actionButton("analyzeDataButton", "Analyze data", width = "100%"),
-             conditionalPanel(condition = "input.analyzeDataButton",
-                              checkboxInput("expression_filter", label = "Filter lowly expressed genes?"),
-                              conditionalPanel(condition = "input.expression_filter == TRUE",
-                              fileInput('expressionData', label = "Input RNA-Seq file"))
-             )
+             fileInput('expressionData', 
+                       label = "Input expression and length file if available (see readme)"),
+             selectizeInput(
+               "exModels",
+               "Select models to exclude from analysis",
+               choices = model_list,
+               multiple=TRUE
+             ),
+             textInput("positiveClass", "Positive class:",
+                       value = "MAE"),
+             checkboxInput("expression_filter", 
+                           label = "Filter genes by expression and/or length?"),
+                              # conditionalPanel(
+                              #   condition = "input.expression_filter == TRUE",
+                              #   fileInput('expressionData', 
+                              #     label = "Input RNA-Seq file")
+                              # ),
+             sliderInput("lengthFilter", 
+                         "Set length filter", 
+                         0, 5000,
+                         value=0),
+             actionButton("analyzeDataButton", "Analyze data", width = "100%")
            ), mainPanel( # end of overall mainPanel 
              
              htmlOutput("analysisText"),
@@ -46,5 +62,4 @@ tabPanel(value = "analyze",
            )
            )
 )
-
 
