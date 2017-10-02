@@ -97,7 +97,6 @@ observeEvent(input$generateModelsButton, {
     } else {
       print("You must only choose one training gene file")
     }
-    print(generate_cmd)
     generate_output <- capture.output(tryCatch(
       system2(generate_cmd, args), error = function(e) e))
   }
