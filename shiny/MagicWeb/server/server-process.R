@@ -50,14 +50,16 @@ observeEvent(input$processDataButton,
                     "Starting an italian restaurant...", "Having first child...", "Starting postdoc...",
                     "Starting second postdoc...", "Applying for K99...", "Reapplying for K99",
                     "Developing ulcers", "Faculty?","Running process.R")
+  done = FALSE
   withProgress(value = 0, 
                {
                  for (i in 1:length(message_list)){
                    incProgress(1/length(message_list), detail = paste(message_list[i]))
                    Sys.sleep(0.25)
+                   done = TRUE
                  }
                  
-   done = FALSE
+  
     
   # Builds command to run process.R and executes it
   if (!is.null(input$fileInput)) {
@@ -79,7 +81,7 @@ observeEvent(input$processDataButton,
       system2("Rscript", args))) # error = function(e) e))
     
   }
-   done = TRUE
+   
    })
     
   ###################################################################################################
@@ -94,7 +96,7 @@ observeEvent(input$processDataButton,
 
   ########################## Data plotting #############################
   
-  if (done == TRUE){
+  if (file.exists(paste(output_path, "joined_scores_percentile.txt", sep = ""))){
     joined_scores_percentile <- load_data(paste(output_path, "joined_scores_percentile.txt", sep = ""))
     joined_scores_norm <- load_data(paste(output_path, "joined_scores_norm.txt", sep = ""))
     
@@ -147,6 +149,18 @@ observeEvent(input$processDataButton,
   }
 )
 
+
+output$inputHist <- renderImage({
+  # filename <- normalizePath(paste(output_path, "input_body_hist.png", sep = ""))
+  files <- list.files(pattern = "\\.png$")
+  for (filename in files){
+    list(src = filename,
+       alt = "input histogram")
+  }
+  }, deleteFile = FALSE
+)
+
+
 # Handler for processed data downloa
 output$downloadProcessButton <- downloadHandler(
   filename = function() { paste("processedData.txt") } ,
@@ -157,10 +171,6 @@ output$downloadProcessButton <- downloadHandler(
     write.table(df, file, sep = "\t", row.names = FALSE, quote = FALSE)
   }
 )  
-
-
-
-
 
 
 
