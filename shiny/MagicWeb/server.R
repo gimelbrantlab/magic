@@ -39,7 +39,6 @@ process_file <- file.path(src_folder, "process.R")
 generate_file <- file.path(src_folder, "generate.R")
 analyze_file <- file.path(src_folder, "analyze.R")
 model_names <- get_names(models_folder, pattern = "*_model.rds")
-output_folder <- "output"
 
 ######
 ### SERVER
@@ -104,10 +103,24 @@ shinyServer(function(input, output, session) {
     }
   )
   
-  source("server/server-main.R", local=TRUE)
-  source("server/server-analyze.R", local=TRUE)
-  source("server/server-generate.R", local=TRUE)
-  source("server/server-process.R", local=TRUE)
+  # get output path for passing to  process.R
+  observeEvent(
+    ignoreNULL = TRUE,
+    eventExpr = {
+      input$outputDirectory
+    },
+    handlerExpr = {
+      if (input$outputDirectory){
+        output_path <<- choose.dir(default = readDirectoryInput(session, "outputDirectory"))
+      }
+    }
+  )
+
+  
+  source("server/server-main.R", local=TRUE)$value
+  source("server/server-analyze.R", local=TRUE)$value
+  source("server/server-generate.R", local=TRUE)$value
+  source("server/server-process.R", local=TRUE)$value
 })
 
 ##########################################################################################################################################################
