@@ -165,12 +165,15 @@ output$inputHist <- renderImage({
 output$downloadProcessButton <- downloadHandler(
   filename = function() { paste("processedData.txt") } ,
   content <- function(file) {
-    df <- read.csv(file.path(output_folder, 
+    df <- read.csv(paste(output_path, 
                              "joined_scores_percentile.txt"),
                    sep = "\t")
     write.table(df, file, sep = "\t", row.names = FALSE, quote = FALSE)
   }
 )  
+
+
+
 
 
 
