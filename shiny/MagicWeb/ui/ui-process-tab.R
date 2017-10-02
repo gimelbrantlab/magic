@@ -18,7 +18,7 @@
 #   Sebastien Vigneau: Sebastien_Vigneau@dfci.harvard.edu
 #   Svetlana Vinogradova: Svetlana_Vinogradova@dfci.harvard.edu
 #   Henry Ward: henry.neil.ward@gmail.com
-#   Sachit Saksena: sachitdsaksena@utexas.edu
+#   Sachit Saksena: sachitdsaksena@utexas.eduA
 
 ########
 # PROCESS.R
@@ -34,8 +34,14 @@ tabPanel(value = "process",
                selected = "human"
              ),
              selectizeInput('assembly', 'Assembly',
-                               choices = assembly,
+                               choices = c(assembly, "other"),
                                selected = "hg19"),
+             conditionalPanel("input.assembly == 'other",
+                              fileInput("bed",
+                                        label = "Choose a bed file of assembly",
+                                        accept = c(".bed")
+                                        )
+                              ),
              # conditionalPanel(
              #   condition = "input.organism == 'mouse'",
              #   selectizeInput('assembly', 'Assembly',
@@ -60,12 +66,6 @@ tabPanel(value = "process",
              #     )
              #   )
              # ),
-             selectizeInput(
-               inputId = 'tg', 
-               label = 'Select training genes',
-               choices = tg_names,
-               selected = 'none'
-             ),
              numericInput("promoterLength", "Promoter Length:", 5000, min = 0,
                           step = 100),
              selectizeInput("enableFilters",
@@ -141,13 +141,6 @@ tabPanel(value = "process",
                                ),
                                tabPanel(
                                  title = "Input distribution"
-                               ),
-                                 tabPanel(
-                                   title = "Training genes",
-                                   plotOutput("trainingDist",
-                                     height = 480,
-                                     width = 700
-                                     )
                                )
                               ),
                conditionalPanel(condition = "input.processDataButton",
@@ -168,4 +161,6 @@ tabPanel(value = "process",
       )
       
 )
+
+
 
