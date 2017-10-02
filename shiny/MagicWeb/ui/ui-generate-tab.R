@@ -27,19 +27,38 @@
 tabPanel(value = "generate",
           title = "Generate",
          sidebarLayout(
-           fluidRow(column(6,
-                           radioButtons("choosePath",
-                                       "Choose a model",
-                                       choices = c("Generate new model",
-                                                    "Use existing model"),
-                                       selected = "Use existing model"
+              # mainPanel = mainPanel(NULL),
+          mainPanel = mainPanel(
+             tabsetPanel("generatePlots",
+                         tabPanel("Summary Table",
+                                dataTableOutput("modelTbl")
+                         ),
+                         tabPanel("Precision-recall plot",
+                                      plotOutput("modelPlot",
+                                                 height = 480,
+                                                 width = 700
                                       )
-           )),
-           conditionalPanel(
-             condition = "input.choosePath == 'Generate new model'",
-             sidebarPanel(
-               fileInput('trainingFile', 'Upload Processed TSV File',
+                                      
+                                    ))
+              ),
+              sidebarPanel = sidebarPanel(
+              tabsetPanel("options",
+                tabPanel("New",   
+               fileInput('trainingFile', 'Upload Processed ChIP-seq TSV File',
                          accept = acceptable_file_types),
+               fileInput('validationSet', 'Upload an external validation set if you have one (optional):',
+                         accept = acceptable_file_types),
+               selectizeInput(
+                 inputId = 'tg', 
+                 label = 'Select training genes',
+                 choices = tg_names,
+                 selected = 'none'
+               ),
+               fileInput(
+                 inputId = 'tg2',
+                 label = "Alternatively, select a training file not packaged with MaGIC",
+                 accept = acceptable_file_types
+               ),
                textInput('targetFeature', 'Target Feature',
                          placeholder = 'Enter name of target column'),
                numericInput("trainingPercent",
@@ -50,18 +69,10 @@ tabPanel(value = "generate",
                  "Select models to train",
                  choices = model_list,
                  multiple=TRUE
-               ),
-               selectizeInput(
-                 "positiveClass",
-                 "Select positive class",
-                 choices = positive_classes,
-                 selected = "MAE"
-               ),
-               conditionalPanel(
-                 condition = "input.positiveClass == other",
-                 textInput("positiveClass",
-                           label = "Enter positive class")
-               ),
+               ), 
+               textInput("positiveClass",
+                           label = "Enter positive class"
+               ), 
                selectizeInput(
                  'metric', 'Select Loss Function',
                  choices = metric_names
@@ -74,43 +85,40 @@ tabPanel(value = "generate",
                  'selectionRule', 'Selection Rule',
                  choices = selection_rules
                ),
-               actionButton("generateModelsButton", "Generate models", width = "100%")
+               selectizeInput(
+                 'crossValidation',
+                 "Number of cross-validations",
+                 choices=c(1:20)
+               ),
+               actionButton("generateModelsButton", "Generate models", width = "100%"),
+               actionButton("plotModelsButton", "Generate model plots and tables", width = "100%")
              ),
-             mainPanel(
-               htmlOutput("generateText"),
-               conditionalPanel(condition = "output.generate_output",
-                                downloadButton("downloadGenerateButton",
-                                               "Download generated models"))
-             )
-           )
-         ),
+        tabPanel("Existing",
          fluidRow(
-           column(6,
-          conditionalPanel(
-           condition = "input.choosePath == 'Use existing model'",
+           column(12,
              selectizeInput(
                'models', 'Select Models',
                choices = model_names, 
                multiple = TRUE
              ),
-           h2(HTML("<u>Or:</u>")),
+           h3(HTML("<u>Or:</u>")),
            directoryInput(
              "modelDir",
              label = "Select model directory:",
              value = "~"),
-           conditionalPanel(
              h3(HTML("Now:")),
-             condition = "input.modelDir",
              model_name <- get_names("input.modelDir", pattern = "*.rds"),
              selectizeInput(
                'models', 'Select Models',
                choices = model_name, multiple = TRUE
              )
-           )
-           )
-          )),
+          ))
+         ))
+        )),
+        conditionalPanel("output.generate_done == TRUE",
          fluidRow(column(12,
          actionButton("next_analyze", "Next"),
          tags$style(type="text/css", "#next_analyze { width:10%; margin-left: 1000px;}")
          ))
+         )
 )
