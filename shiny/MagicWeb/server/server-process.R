@@ -65,11 +65,11 @@ observeEvent(input$processDataButton,
     process_running <- TRUE
     args <- paste(process_file,
                   "-i", paste(datapath, input$fileInput, sep = ""),
+                  "-o", paste(output_path),
                   "-p", input$promoterLength,
                   "-d", input$dropPercent,
                   "-r", input$assembly)
     if(input$cores > 1) { args <- paste(args, "-s", input$cores) }
-    # if() { args <- paste(args, "-f") }
     if (input$noOverlap == TRUE) { args <- paste(args, "-l") }
     if (!"olfactory genes" %in% input$enableFilters) { args <- paste(args, "-f") }
     if (!"sex chromosomes" %in% input$enableFilters) { args <- paste(args, "-c") }
@@ -79,6 +79,7 @@ observeEvent(input$processDataButton,
       system2("Rscript", args))) # error = function(e) e))
     
   }
+   done = TRUE
    })
     
   ###################################################################################################
@@ -93,61 +94,56 @@ observeEvent(input$processDataButton,
 
   ########################## Data plotting #############################
   
-  joined_scores_percentile <- load_data("./output/joined_scores_percentile.txt")
-  joined_scores_norm <- load_data("./output/joined_scores_norm.txt")
-  
-  
-  
-  if ("status" %in% colnames(joined_scores_percentile)){
-    output$chipQCnorm <- renderPlot ({
-      ggpairs(joined_scores_norm, 
-              columns = 3:ncol(joined_scores_percentile)) +
-        theme(panel.grid.major = element_blank(), 
-              panel.grid.minor = element_blank(), 
-              panel.background = element_blank(), 
-              axis.line = element_line(colour = "black"))
-    })
+  if (done == TRUE){
+    joined_scores_percentile <- load_data(paste(output_path, "joined_scores_percentile.txt", sep = ""))
+    joined_scores_norm <- load_data(paste(output_path, "joined_scores_norm.txt", sep = ""))
     
-    output$chipQC <- renderPlot ({
-      ggpairs(joined_scores_percentile, 
-              columns = 3:ncol(joined_scores_percentile)) +
-        theme(panel.grid.major = element_blank(), 
-              panel.grid.minor = element_blank(), 
-              panel.background = element_blank(), 
-              axis.line = element_line(colour = "black"))
-    })
-  } else {
-    output$chipQCnorm <- renderPlot ({
-      ggpairs(joined_scores_norm,
-              columns = 3:ncol(joined_scores_percentile)) +
-        theme(panel.grid.major = element_blank(), 
-              panel.grid.minor = element_blank(), 
-              panel.background = element_blank(), 
-              axis.line = element_line(colour = "black"))
-    })
+    if ("status" %in% colnames(joined_scores_percentile)){
+      output$chipQCnorm <- renderPlot ({
+        ggpairs(joined_scores_norm, 
+                columns = 3:ncol(joined_scores_percentile)) +
+          theme(panel.grid.major = element_blank(), 
+                panel.grid.minor = element_blank(), 
+                panel.background = element_blank(), 
+                axis.line = element_line(colour = "black"))
+      })
+      
+      output$chipQC <- renderPlot ({
+        ggpairs(joined_scores_percentile, 
+                columns = 3:ncol(joined_scores_percentile)) +
+          theme(panel.grid.major = element_blank(), 
+                panel.grid.minor = element_blank(), 
+                panel.background = element_blank(), 
+                axis.line = element_line(colour = "black"))
+      })
+    } else {
+      output$chipQCnorm <- renderPlot ({
+        ggpairs(joined_scores_norm,
+                columns = 3:ncol(joined_scores_percentile)) +
+          theme(panel.grid.major = element_blank(), 
+                panel.grid.minor = element_blank(), 
+                panel.background = element_blank(), 
+                axis.line = element_line(colour = "black"))
+      })
+      
+      output$chipQC <- renderPlot ({
+        ggpairs(joined_scores_percentile, 
+                columns = 3:ncol(joined_scores_percentile)) +
+          theme(panel.grid.major = element_blank(), 
+                panel.grid.minor = element_blank(), 
+                panel.background = element_blank(), 
+                axis.line = element_line(colour = "black"))
+      })
+    }
     
-    output$chipQC <- renderPlot ({
-      ggpairs(joined_scores_percentile, 
-              columns = 3:ncol(joined_scores_percentile)) +
-        theme(panel.grid.major = element_blank(), 
-              panel.grid.minor = element_blank(), 
-              panel.background = element_blank(), 
-              axis.line = element_line(colour = "black"))
-    })
+      output$norm_table <- renderDataTable(
+        joined_scores_norm
+      )
+      
+      output$perc_table <- renderDataTable(
+        joined_scores_percentile
+      )
   }
-  
-    output$norm_table <- renderDataTable(
-      joined_scores_norm
-    )
-    
-    output$perc_table <- renderDataTable(
-      joined_scores_percentile
-    )
-    
-  # plot genomic distribution
-  # output$trainingDist <- renderPlot ({
-  #   genomic_distribution()
-  # })
   }
 )
 
@@ -161,6 +157,12 @@ output$downloadProcessButton <- downloadHandler(
     write.table(df, file, sep = "\t", row.names = FALSE, quote = FALSE)
   }
 )  
+
+
+
+
+
+
 
 
 
