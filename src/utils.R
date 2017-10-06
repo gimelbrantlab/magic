@@ -35,6 +35,14 @@ load_data <- function(training_path){
   return(training_set)
 }
 
+# load shiny libraries
+load_shiny_libraries <- function(){
+  get_package("shiny")
+  get_package("markdown")
+  get_package("shinythemes")
+  get_package("GGally")
+  get_package("PRROC")
+}
 
 # Loads or installs all required packages for analysis
 load_analyze_libraries <- function() {
