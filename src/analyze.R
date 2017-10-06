@@ -208,7 +208,7 @@ options = list(
               help="name of target feature's positive class [default=%default]"),
   make_option(c("-f", "--filter"), type="character", default=NULL, 
               help="file with gene expression values and/or length, see readme for file format"),
-  make_option(c("-l", "--filter_length"), type="integer", default=2500, 
+  make_option(c("-l", "--f_length"), type="integer", default=2500, 
               help="gene length threshold [default= %default]"),
   make_option(c("-q", "--quiet"), action="store_true", default=FALSE, 
               help="disables console output [default= %default]")
@@ -230,7 +230,7 @@ excluded_models <- opt$excluded_models
 positive_class <- opt$positive_class
 quiet <- opt$quiet
 filter_file <- opt$filter
-filter_length <- opt$filter_length
+filter_length <- opt$f_length
 
 # Calls main function, disabling output if running in quiet mode
 if (!quiet) {
