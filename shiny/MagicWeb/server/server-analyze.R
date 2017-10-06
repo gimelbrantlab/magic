@@ -67,8 +67,8 @@ if (dir.exists(paste(output_path, "model_output", sep=""))){
                   "-o", paste(output_path, "analysis_output", sep=""),
                   "-p", "MAE")
     if(!is.null(input$exModels)) {args <- paste(args, "-ex", input$exModels)}
-    if(!is.null(input$expression_filter)) { args <- paste(args, "-f", input$expressionData) }
-    if(!is.null(input$expression_filter)) { args <- paste(args, "-l", input$lengthFilter) }
+    if(input$expression_filter == TRUE) { args <- paste(args, "-f", input$expressionData) }
+    if(input$expression_filter == FALSE) { args <- paste(args, "-l", input$lengthFilter) }
     print(paste(analyze_cmd, args))
     analyze_output <- capture.output(tryCatch(
     system2(analyze_cmd, args), error = function(e) e))
