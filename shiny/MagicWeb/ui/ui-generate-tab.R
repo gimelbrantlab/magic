@@ -29,7 +29,8 @@ tabPanel(value = "generate",
          sidebarLayout(
               # mainPanel = mainPanel(NULL),
           mainPanel = mainPanel(
-             tabsetPanel("generatePlots",
+             tabsetPanel(
+                       id = "generatePlots",
                          tabPanel("Summary Table",
                                 dataTableOutput("modelTbl")
                          ),
@@ -42,7 +43,8 @@ tabPanel(value = "generate",
                                     ))
               ),
               sidebarPanel = sidebarPanel(
-              tabsetPanel("options",
+              tabsetPanel(
+                id = "options",
                 tabPanel("New",   
                fileInput('trainingFile', 'Upload Processed ChIP-seq TSV File',
                          accept = acceptable_file_types),
