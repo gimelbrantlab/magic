@@ -88,7 +88,8 @@ tabPanel(value = "process",
            mainPanel = mainPanel(
              conditionalPanel(
                condition = "input.processDataButton",
-                              tabsetPanel("processPlots",
+                              tabsetPanel(
+                               id = "processPlots",
                                tabPanel("Tables",
                                         sidebarLayout(
                                           mainPanel(
@@ -148,14 +149,14 @@ tabPanel(value = "process",
              )# end of conditionalPanel
              
      
-      ),
-      conditionalPanel(condition = "input.downloadProcessButton",
-                       fluidRow(column(12,
-                                       actionButton("next_generate", "Next"),
-                                       tags$style(type="text/css", "#next_generate { width:10%; margin-left: 1000px;}")
-                       )
-                       )
       )
+      # conditionalPanel(condition = "input.downloadProcessButton",
+      #                  fluidRow(column(12,
+      #                                  actionButton("next_generate", "Next"),
+      #                                  tags$style(type="text/css", "#next_generate { width:10%; margin-left: 1000px;}")
+      #                  )
+      #                  )
+      # )
       
 )
 
