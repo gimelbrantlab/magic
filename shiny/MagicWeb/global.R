@@ -16,3 +16,6 @@ reference_folder <- file.path("..", "..", "reference")
 source('directoryInput.R')
 source(file.path(src_folder, "utils.R"))
 source("fig2a_script.R")
+
+# load shiny libraries from utils.R
+load_shiny_libraries()
