@@ -1,36 +1,10 @@
-# Copyright (C) 2017 Dana-Farber Cancer Institute Inc.
-
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-# 
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-# Questions, comments and concerns can be directed to
-#   Alexander Gimelbrant: alexander_gimelbrant@dfci.harvard.edu
-#   Sebastien Vigneau: Sebastien_Vigneau@dfci.harvard.edu
-#   Svetlana Vinogradova: Svetlana_Vinogradova@dfci.harvard.edu
-#   Henry Ward: henry.neil.ward@gmail.com
-#   Sachit Saksena: sachitdsaksena@utexas.edu
-
-#######
-# GENERATE.R
-#######
-
 tabPanel(value = "generate",
-          title = "Generate",
+          title = "Select model",
          sidebarLayout(
               # mainPanel = mainPanel(NULL),
           mainPanel = mainPanel(
              tabsetPanel(
-                       id = "generatePlots",
+              id = "generatePlots",
                          tabPanel("Summary Table",
                                 dataTableOutput("modelTbl")
                          ),
@@ -61,11 +35,11 @@ tabPanel(value = "generate",
                  label = "Alternatively, select a training file not packaged with MaGIC",
                  accept = acceptable_file_types
                ),
-               textInput('targetFeature', 'Target Feature',
+               textInput('targetFeature', 'Target Feature (the name of the column with class labels, normally MAE/BAE)',
                          placeholder = 'Enter name of target column'),
                numericInput("trainingPercent",
-                            "Fraction of Data to use for Training:", 0.01,
-                            min = 0, max = 0.9999, step = 0.01),
+                            "Fraction of Data to use for Training:", 80,
+                            min = 0, max = 100, step = 10),
                selectizeInput(
                  "modelList",
                  "Select models to train",
@@ -73,7 +47,7 @@ tabPanel(value = "generate",
                  multiple=TRUE
                ), 
                textInput("positiveClass",
-                           label = "Enter positive class"
+                           label = "Enter positive class (the class label being predicted, normally 'MAE')"
                ), 
                selectizeInput(
                  'metric', 'Select Loss Function',
@@ -93,7 +67,11 @@ tabPanel(value = "generate",
                  choices=c(1:20)
                ),
                actionButton("generateModelsButton", "Generate models", width = "100%"),
+               br(),
+               h4( HTML("Now, to visualize your results, press the button below.")),
+               conditionalPanel("input.generateModelsButton",
                actionButton("plotModelsButton", "Generate model plots and tables", width = "100%")
+               )
              ),
         tabPanel("Existing",
          fluidRow(
