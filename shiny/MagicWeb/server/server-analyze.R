@@ -115,8 +115,19 @@ if (dir.exists(paste(output_path, "model_output", sep=""))){
 output$downloadAnalyzeButton <- downloadHandler(
   filename = function() { paste("analyzedData.txt") } ,
   content <- function(file) {
-    df <- read.csv(paste(output_path, "all_predictions.tsv"),
+    df <- read.csv(paste(output_path, "analysis_output/all_predictions.tsv"),
                    sep = "\t")
     write.table(df, file, sep = "\t", row.names = FALSE, quote = FALSE)
   }
 )
+
+observeEvent(input$analyzeTableButton, {
+if(file.exists(paste(output_path, "analysis_output/all_predictions.tsv"))){
+  predictTable <- load_data(paste(output_path, "analysis_output/all_predictions.tsv", sep=""))
+  output$predTbl <- renderDataTable(
+    predictTable
+  )
+}
+})
+
+
