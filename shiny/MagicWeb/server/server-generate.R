@@ -54,6 +54,19 @@ observeEvent(
   }
 )
 
+# observeEvent(
+#   eventExpr = {
+#     input$modelList
+#   },
+#   handlerExpr = {
+#   model_string <- input$modelList
+#   model_string <- gsub(" ", "", model_string)
+#   model_string <- gsub("\n", "", model_string)
+#   model_list <<- as.character(strsplit(model_string, ","))
+#   cat(model_list)
+#   }
+# )
+
 # Generates models on button press
 observeEvent(input$generateModelsButton, {
   
@@ -63,6 +76,13 @@ observeEvent(input$generateModelsButton, {
                     "Starting an italian restaurant...", "Having first child...", "Starting postdoc...",
                     "Starting second postdoc...", "Applying for K99...", "Reapplying for K99",
                     "Developing ulcers", "Faculty?","Running generate.R")
+  
+  # model_string <- as.list(input$modelList)
+  # model_string <<- gsub(" ", "", model_string)
+  # cat(as.character(model_string))
+  # model_list <<- strsplit(as.character(model_string), ",")
+  # cat(as.character(model_list))
+  
   withProgress(value = 0, 
                {
                  for (i in 1:length(message_list)){
@@ -78,27 +98,25 @@ observeEvent(input$generateModelsButton, {
     args <- paste(generate_file,
                   "-i", input$trainingFile$datapath,
                   "-o", paste(output_path, "model_output", sep=""),
-                  "-m", input$samplingMethod,
+                  "-m", input$metric,
+                  "-s", input$samplingMethod,
                   "-r", input$selectionRule,
                   "-t", input$targetFeature,
                   "-l", input$modelList,
+                  "-p", input$trainingPercent,
                   "-c", input$crossValidation
                   )
     if(!is.null(input$validationSet$datapath)) {
       args <- paste(args, "-v", input$validationSet$datapath) 
       }
-    if(!is.null(input$tg) & is.null(input$tg2)) 
-    { args <- paste(args, "-a", input$tg)
+    if(!is.null(input$tg2)){ 
+      args <- paste(args, "-a", input$tg2$datapath)
     } else {
-        print("You must only choose one training gene file")
-      }
-    if(!is.null(input$tg2) & is.null(input$tg)) { 
-      args <- paste(args, "-a", input$tg2)
-    } else {
-      print("You must only choose one training gene file")
-    }
+      args <- paste(args, "-a", input$tg)
+      } 
     generate_output <- capture.output(tryCatch(
       system2(generate_cmd, args), error = function(e) e))
+    cat(generate_cmd, args)
   }
 })
 })
@@ -125,6 +143,7 @@ observeEvent(input$plotModelsButton, {
   output$modelTbl <- renderDataTable(
     modelTable
   )
+
 
 
   # #### Precision Recall Curve ######
