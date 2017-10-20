@@ -41,26 +41,26 @@ tabPanel(value = "analyze",
              ),
              textInput("positiveClass", "Positive class:",
                        value = "MAE"),
-             checkboxInput("expression_filter", 
-                           label = "Filter genes by expression and/or length?",
-                           value = FALSE),
+             # checkboxInput("expression_filter", 
+             #               label = "Filter genes by expression and/or length?",
+             #               value = FALSE),
                               # conditionalPanel(
                               #   condition = "input.expression_filter == TRUE",
                               #   fileInput('expressionData', 
                               #     label = "Input RNA-Seq file")
                               # ),
-             sliderInput("lengthFilter", 
-                         "Set length filter", 
-                         0, 5000,
-                         value=0),
-             actionButton("analyzeDataButton", "Analyze data", width = "100%")
-           ), mainPanel( # end of overall mainPanel 
-             
-             htmlOutput("analysisText"),
-             conditionalPanel(condition = "output.analyze_output",
-                              downloadButton("downloadAnalyzeButton",
-                                             "Download analysis"))
+             numericInput("lengthFilter", 
+                         "Set length filter"),
+             actionButton("analyzeDataButton", "Analyze data", width = "100%"),
+             br(),
+             h4( HTML("Now, to visualize your results, press the button below.")),
+             conditionalPanel("input.analyzeDataButton",
+                              actionButton("analyzeTableButton", "Generate model plots and tables", width = "100%")
+             )
+           ), mainPanel(tabsetPanel(id = "outputPlot",
+                          tabPanel(id = "tbl",
+                            dataTableOutput("predTbl")
            )
+           ))
            )
 )
-
