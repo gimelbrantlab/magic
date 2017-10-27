@@ -60,7 +60,7 @@ getAnalysisFile <- reactive({
 
 
 
-shinyDirChoose(input, 'modelDir', roots = c(home = '~'), filetypes = c('', 'txt','bigWig',"tsv","csv","bw"))
+shinyDirChoose(input, 'modelDir', roots = c(home = '~'), filetypes = c('', 'txt','bigWig',"tsv","csv","bw","rds"))
 modelDir <- reactive(input$modelDir)
 output$modelDir <- renderPrint(modelDir())
 
