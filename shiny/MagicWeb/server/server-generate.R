@@ -34,6 +34,23 @@
 # GENERATE NEW MODEL
 ###############
 
+# sets output path
+shinyDirChoose(input, 'generateOutput', roots = c(home = '~'), filetypes = c('', 'txt','bigWig',"tsv","csv","bw"))
+generateOutput <- reactive(input$generateOutput)
+output$generateOutput <- renderPrint(generateOutput())
+
+observeEvent(
+  ignoreNULL = TRUE,
+  eventExpr = {
+    input$generateOutput
+  },
+  handlerExpr = {
+    home <- normalizePath("~")
+    output_generate <<- file.path(home, paste(unlist(generateOutput()$path[-1]), collapse = .Platform$file.sep))
+    print(output_generate)
+  }
+)
+
 # Gets uploaded training file
 getAnalysisFile <- reactive({
   if(!is.null(input$trainingFile)) { 
@@ -41,18 +58,35 @@ getAnalysisFile <- reactive({
   }
 })
 
+
+
+shinyDirChoose(input, 'modelDir', roots = c(home = '~'), filetypes = c('', 'txt','bigWig',"tsv","csv","bw"))
+modelDir <- reactive(input$modelDir)
+output$modelDir <- renderPrint(modelDir())
+
 observeEvent(
   ignoreNULL = TRUE,
   eventExpr = {
     input$modelDir
   },
   handlerExpr = {
-    # prevent launching directoryInput at app start
-    if (input$dataDirectory){
-      model_dir <<- choose.dir(default = readDirectoryInput(session, 'dataDirectory'))
-    }
+    home <- normalizePath("~")
+    model_dir <<- file.path(home, paste(unlist(modelDir()$path[-1]), collapse = .Platform$file.sep))
   }
 )
+
+# observeEvent(
+#   ignoreNULL = TRUE,
+#   eventExpr = {
+#     input$modelDir
+#   },
+#   handlerExpr = {
+#     # prevent launching directoryInput at app start
+#     if (!is.null(input$trainingFile)){
+#       model_dir <<- choose.dir(default = readDirectoryInput(session, 'dataDirectory'))
+#     }
+#   }
+# )
 
 # observeEvent(
 #   eventExpr = {
@@ -97,7 +131,7 @@ observeEvent(input$generateModelsButton, {
     generate_cmd <- paste("Rscript")
     args <- paste(generate_file,
                   "-i", input$trainingFile$datapath,
-                  "-o", paste(output_path, "model_output", sep=""),
+                  "-o", paste(output_generate, "/model_output", sep=""),
                   "-m", input$metric,
                   "-s", input$samplingMethod,
                   "-r", input$selectionRule,
@@ -139,11 +173,10 @@ output$generateText <- renderUI({
 observeEvent(input$plotModelsButton, {
 # if (file.exists(paste(output_path, "model_ouput", sep=""))){
 
-  modelTable <- load_data(paste(output_path, "model_output/summary_models.tsv", sep=""))
+  modelTable <- load_data(paste(generate_output, "/model_output/summary_models.tsv", sep=""))
   output$modelTbl <- renderDataTable(
     modelTable
   )
-
 
 
   # #### Precision Recall Curve ######
