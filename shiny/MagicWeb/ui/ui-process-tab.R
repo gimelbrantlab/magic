@@ -196,10 +196,6 @@ tabPanel(value = "process",
                                            NULL
                                          )
                                 )
-                               ),
-                               tabPanel(
-                                 title = "Input distribution",
-                                 imageOutput("inputHist")
                                )
                               )
              )
@@ -217,3 +213,4 @@ tabPanel(value = "process",
       # )
       
 )
+
