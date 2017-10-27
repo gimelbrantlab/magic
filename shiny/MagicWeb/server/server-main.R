@@ -44,7 +44,7 @@ observeEvent(
   input$get_started,
   {updateTabsetPanel(session = session, 
                      inputId = "main_panel", 
-                     selected = "input")}
+                     selected = "process")}
 )
 
 observeEvent(
