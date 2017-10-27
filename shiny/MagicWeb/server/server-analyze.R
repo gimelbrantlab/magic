@@ -104,9 +104,7 @@ if (!is.null(output_generate)){
                     "-o", paste(output_analyze, "/analysis_output", sep=""),
                     "-p", "MAE")
       if(!is.null(input$exModels)) {args <- paste(args, "-ex", input$exModels)}
-      if(!is.null(input$expression_filter)) { 
-        args <- paste(args, "-f", input$expressionData) 
-      } else { args <- paste(args, "-f", "NULL")}
+      if(!is.null(input$expression_filter)) { args <- paste(args, "-f", input$expressionData) }
       if(!is.null(input$expression_filter)) { args <- paste(args, "-l", input$lengthFilter) }
       analyze_output <- capture.output(tryCatch(
         system2(analyze_cmd, args), error = function(e) e))
