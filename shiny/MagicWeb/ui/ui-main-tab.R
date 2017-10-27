@@ -42,12 +42,33 @@ tabPanel(value = "main_panel",
                to generate educated inferences on monoallelic state of genes within a polyclonal sample via
                statistical learning methods and monoclonal allelic bias determination.")),
              p(),
-             h4(
-               HTML("Now, choose a format to provide MaGIC with your data. <br>")
+             h3(
+               HTML("How to provide MaGIC with your data. <br>")
                ),
                  tags$p(HTML("<b>Files</b> takes a correctly formatted '.txt' or '.tsv' file with names of chromatin marks
-                  and control files and automatically selects the correct files from the input directory. <br><br>
-                  <b>Fields</b> creates fields for inputting mark names into the interface.")
+                  and control files and automatically selects the correct files from the input directory."),
+                        p(HTML("To use this method input a file following the format below with fields seperated by tabs
+                     in a text file format:<br>
+                               <table style='width:100%'>
+                               <tr>
+                               <th>mark name</th>
+                               <th>mark file</th>
+                               <th>control file</th>
+                               </tr>
+                               <tr>
+                               <td>mark1</td>
+                               <td>input_dir/sample_mark1.bigWig</td>
+                               <td>input_dir/control_mark1.bigWig</td>
+                               </tr>
+                               <tr>
+                               <td>mark2</td>
+                               <td>input_dir/sample_mark2.bigWig</td>
+                               <td>input_dir/sample_mark2.bigWig</td>
+                               </tr>
+                               </table>")),
+                        br(),
+                        p("The program will now automatically pick the filenames you provided when you
+                          move to the processing tab.")
                ),
              h3(
                HTML("MaGIC offers three distinct functionalities: <br>")
