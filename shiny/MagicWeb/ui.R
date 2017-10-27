@@ -29,7 +29,7 @@ library(shiny)
 library(markdown)
 library(shinythemes)
 library(GGally)
-library(rlist)
+library(shinyFiles)
 
 ######
 ### UI GLOBALS
@@ -53,7 +53,7 @@ selection_rules <- c("best", "oneSE", "tolerance")
 metric_names <- c("Kappa", "Accuracy", "ROC")
 sampling_method_names <- c("none", "down", "up")
 positive_classes <- c("MAE", "BAE", "other")
-model_list <- c("ada", "svmPoly", "rf", "nnet")
+model_list <- c("ada", "svmPoly", "rf", "nnet", "gmlboost", "rpart", "mlpML", "knn", "evtree", "glmStepAIC")
 filtering <- c("olfactory genes", "sex chromosomes", "imprinted genes")
 
 source("../../src/utils.R", local=TRUE)
@@ -76,7 +76,7 @@ shinyUI(
     
      # source tabPanels
      source("ui/ui-main-tab.R", local=TRUE)$value,
-     source("ui/ui-input-tab.R", local=TRUE)$value,
+     # source("ui/ui-input-tab.R", local=TRUE)$value,
      source("ui/ui-process-tab.R", local=TRUE)$value,
      source("ui/ui-generate-tab.R", local=TRUE)$value,
      source("ui/ui-analyze-tab.R", local=TRUE)$value,
@@ -540,3 +540,4 @@ shinyUI(
 #                   )
 #            )
 #          )
+
