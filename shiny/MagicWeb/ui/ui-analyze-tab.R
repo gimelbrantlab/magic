@@ -28,6 +28,10 @@ tabPanel(value = "analyze",
          title = "Analyze",
          sidebarLayout(
            sidebarPanel(
+             tags$h4(HTML("<u>Select model output directory</u>")),
+             shinyDirButton("analyzeOutput", "Choose output directory", "Upload"),
+             br(),
+             br(),
              fileInput('analysisFile', 'Upload processed TSV file',
                        accept = acceptable_file_types
                        ),
@@ -65,3 +69,5 @@ tabPanel(value = "analyze",
            ))
            )
 )
+
+
