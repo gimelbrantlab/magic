@@ -28,6 +28,77 @@ tabPanel(value = "process",
         title = "Process",
          sidebarLayout(
            sidebarPanel = sidebarPanel(
+                               # tabPanel("Option 1: File",
+                               #                 sidebarLayout(
+                               #                     mainPanel(
+                               #                       tags$h3(HTML("<u>Input to Processing</u>")),
+                               #                       p(HTML("To use this method input a file following the format below with fields seperated by tabs
+                               #                              in a text file format:<br>
+                               #                              <table style='width:100%'>
+                               #                              <tr>
+                               #                              <th>mark name</th>
+                               #                              <th>mark file</th>
+                               #                              <th>control file</th>
+                               #                              </tr>
+                               #                              <tr>
+                               #                              <td>mark1</td>
+                               #                              <td>input_dir/sample_mark1.bigWig</td>
+                               #                              <td>input_dir/control_mark1.bigWig</td>
+                               #                              </tr>
+                               #                              <tr>
+                               #                              <td>mark2</td>
+                               #                              <td>input_dir/sample_mark2.bigWig</td>
+                               #                              <td>input_dir/sample_mark2.bigWig</td>
+                               #                              </tr>
+                               #                              </table>")),
+                               #                       br(),
+                               #                       p("The program will now automatically pick the filenames you provided when you
+                               #                         move to the processing tab."),
+                               #                       width = 9
+                               #                       ),
+                               #                   fluidRow(
+                               #                     sidebarPanel(
+                               #                         textInput(
+                               #                           'fileInput',
+                               #                           label = h5("Fill in the text field below with the name of the text file with names of marks. Ex. 'input.txt'"),
+                               #                           value = NULL
+                               #                         ),
+                               #                       width = 9
+                               #                     )
+                               #                   ))),
+              tags$h3(HTML("<u>Input to Processing</u>")),                 
+              h4( HTML("First, set a path to where your data lives.")),
+              shinyDirButton("dir", "Chose input directory", "Upload"),
+              h4( HTML("Now choose your output folder")),
+              shinyDirButton("outputPath", "Chose output directory", "Upload"),
+              p(HTML("To use this method input a file following the format below with fields seperated by tabs
+                     in a text file format:<br>
+                     <table style='width:100%'>
+                     <tr>
+                     <th>mark name</th>
+                     <th>mark file</th>
+                     <th>control file</th>
+                     </tr>
+                     <tr>
+                     <td>mark1</td>
+                     <td>input_dir/sample_mark1.bigWig</td>
+                     <td>input_dir/control_mark1.bigWig</td>
+                     </tr>
+                     <tr>
+                     <td>mark2</td>
+                     <td>input_dir/sample_mark2.bigWig</td>
+                     <td>input_dir/sample_mark2.bigWig</td>
+                     </tr>
+                     </table>")),
+              br(),
+              p("The program will now automatically pick the filenames you provided when you
+                                                       move to the processing tab."),
+              textInput(
+                'fileInput',
+                label = h5("Fill in the text field below with the name of the text file with names of marks. Ex. 'input.txt'"),
+                value = NULL
+              ),
+              br(),
              selectizeInput(
                'organism', 'Model organism',
                choices = organism,
@@ -38,7 +109,7 @@ tabPanel(value = "process",
                                selected = "hg19"),
              conditionalPanel("input.assembly == 'other",
                               fileInput("bed",
-                                        label = "Choose a bed file of assembly",
+                                        label = "If you don't use an assembly above, you can upload a .bed file of your assembly (optional)",
                                         accept = c(".bed")
                                         )
                               ),
@@ -66,19 +137,19 @@ tabPanel(value = "process",
              #     )
              #   )
              # ),
-             numericInput("promoterLength", "Promoter Length:", 5000, min = 0,
+             numericInput("promoterLength", "Select fixed promoter length:", 5000, min = 0,
                           step = 100),
              selectizeInput("enableFilters",
-                           "Choose filters",
+                           "Choose filters (gene groups to remove from analysis)",
                             choices = filtering,
                             multiple=TRUE),
              checkboxInput("noOverlap",
-                           "Disable overlap calculation?",
+                           "Disable overlap of promoter and gene body?",
                            value = FALSE),
-             sliderInput("dropPercent", "Drop percent:", 0.01,
+             sliderInput("dropPercent", "Choose the bottom percentile of genes to drop (to eliminate genes with low input):", 0.01,
                          min = 0, max = 0.80, step = 0.01),
              selectizeInput("cores",
-                            "Number of cores:",
+                            "Number of cores to run process with:",
                              choices = c(1:12)
              ),
              actionButton("processDataButton", 
@@ -93,26 +164,16 @@ tabPanel(value = "process",
                                tabPanel("Tables",
                                         sidebarLayout(
                                           mainPanel(
-                                            radioButtons("normPercTable",
-                                                         "Raw normalized table or Percentile ranked table",
-                                                         choices = c("Normalized", "Percentile ranked")),
-                                            conditionalPanel("normPercTable == 'Percentile ranked",
-                                                             dataTableOutput("perc_table")),
-                                            conditionalPanel("normPercTable == 'Normalized",
-                                                             dataTableOutput("norm_table"))
+                                                dataTableOutput("norm_table")
                                           ),
                                           mainPanel(
-                                            actionButton("reProcess",
-                                                         "Redo processing with new parameters")
+                                            NULL
                                           )
                                         )
                                ),
                                tabPanel("ChIP QC",
                                        sidebarLayout(
                                          mainPanel(
-                                              radioButtons("normPerc",
-                                                           "Raw normalized plot or Percentile ranked plot",
-                                                           choices = c("Normalized", "Percentile ranked")),
                                               conditionalPanel(
                                                 condition = "input.normPerc == 'Normalized'",
                                                 plotOutput("chipQCnorm",
@@ -140,14 +201,11 @@ tabPanel(value = "process",
                                  title = "Input distribution",
                                  imageOutput("inputHist")
                                )
-                              ),
-               conditionalPanel(condition = "input.processDataButton",
-                                downloadButton("downloadProcessButton",
-                                               "Download processed data")) 
+                              )
              )
              
-             )# end of conditionalPanel
-             
+             ), # end of conditionalPanel
+             fluid = TRUE
      
       )
       # conditionalPanel(condition = "input.downloadProcessButton",
@@ -159,5 +217,3 @@ tabPanel(value = "process",
       # )
       
 )
-
-
