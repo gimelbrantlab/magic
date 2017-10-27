@@ -63,10 +63,11 @@ observeEvent(input$processDataButton,
     
   # Builds command to run process.R and executes it
   if (!is.null(input$fileInput)) {
+    cat(output_path)
     process_output <- NULL
     process_running <- TRUE
     args <- paste(process_file,
-                  "-i", paste(datapath, input$fileInput, sep = ""),
+                  "-i", paste(datapath, "/", input$fileInput, sep = ""),
                   "-o", paste(output_path),
                   "-p", input$promoterLength,
                   "-d", input$dropPercent,
@@ -150,16 +151,6 @@ observeEvent(input$processDataButton,
 )
 
 
-output$inputHist <- renderImage({
-  # filename <- normalizePath(paste(output_path, "input_body_hist.png", sep = ""))
-  files <- list.files(pattern = "\\.png$")
-  for (filename in files){
-    list(src = filename,
-       alt = "input histogram")
-  }
-  }, deleteFile = FALSE
-)
-
 
 # Handler for processed data downloa
 output$downloadProcessButton <- downloadHandler(
@@ -171,11 +162,5 @@ output$downloadProcessButton <- downloadHandler(
     write.table(df, file, sep = "\t", row.names = FALSE, quote = FALSE)
   }
 )  
-
-
-
-
-
-
 
 
