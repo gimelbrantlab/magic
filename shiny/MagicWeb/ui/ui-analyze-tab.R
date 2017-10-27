@@ -63,11 +63,10 @@ tabPanel(value = "analyze",
                               actionButton("analyzeTableButton", "Generate model plots and tables", width = "100%")
              )
            ), mainPanel(tabsetPanel(id = "outputPlot",
-                          tabPanel(id = "tbl",
+                          tabPanel("Table",
                             dataTableOutput("predTbl")
            )
            ))
            )
 )
-
 
