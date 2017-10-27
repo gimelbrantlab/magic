@@ -35,7 +35,7 @@
 ###############
 
 # sets output path
-shinyDirChoose(input, 'generateOutput', roots = c(home = '~'), filetypes = c('', 'txt','bigWig',"tsv","csv","bw"))
+shinyDirChoose(input, 'generateOutput', roots = c(home = '~'), filetypes = c('', 'txt','bigWig',"tsv","csv","bw", "rds"))
 generateOutput <- reactive(input$generateOutput)
 output$generateOutput <- renderPrint(generateOutput())
 
