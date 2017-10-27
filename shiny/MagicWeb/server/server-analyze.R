@@ -24,6 +24,22 @@
 # ANALYZE SERVER
 ################
 
+# sets output path
+shinyDirChoose(input, 'analyzeOutput', roots = c(home = '~'), filetypes = c('', 'txt','bigWig',"tsv","csv","bw"))
+analyzeOutput <- reactive(input$analyzeOutput)
+output$analyzeOutput <- renderPrint(analyzeOutput())
+
+observeEvent(
+  ignoreNULL = TRUE,
+  eventExpr = {
+    input$analyzeOutput
+  },
+  handlerExpr = {
+    home <- normalizePath("~")
+    output_analyze <<- file.path(home, paste(unlist(analyzeOutput()$path[-1]), collapse = .Platform$file.sep))
+    print(output_analyze)
+  }
+)
 
 
 ### DATA ANALYSIS
@@ -32,7 +48,6 @@
 getAnalysisFile <- reactive({
   if(!is.null(input$analysisFile)) { 
     analysis_file_path <<- input$analysisFile$datapath 
-    print(output_path)
   }
 })
 
@@ -55,7 +70,9 @@ observeEvent(input$analyzeDataButton,
                  }
                  
                  done = FALSE
-if (dir.exists(paste(output_path, "model_output", sep=""))){
+
+if (!is.null(output_generate)){
+  if(dir.exists(paste(output_generate, "/model_output", sep=""))){
   print("a")
   # Builds command to run analyze.R and executes it
     analyze_output <- NULL
@@ -63,8 +80,8 @@ if (dir.exists(paste(output_path, "model_output", sep=""))){
     analyze_cmd <- paste("Rscript")
     args <- paste(analyze_file,
                   "-i", input$analysisFile$datapath,
-                  "-m", paste(output_path, "model_output", sep=""),
-                  "-o", paste(output_path, "analysis_output", sep=""),
+                  "-m", paste(output_generate, "/model_output", sep=""),
+                  "-o", paste(output_analyze, "/analysis_output", sep=""),
                   "-p", "MAE")
     if(!is.null(input$exModels)) {args <- paste(args, "-ex", input$exModels)}
     if(input$expression_filter == TRUE) { args <- paste(args, "-f", input$expressionData) }
@@ -72,7 +89,9 @@ if (dir.exists(paste(output_path, "model_output", sep=""))){
     print(paste(analyze_cmd, args))
     analyze_output <- capture.output(tryCatch(
     system2(analyze_cmd, args), error = function(e) e))
-}else if(file.exists(input$modelDir)){
+  }
+} else if(!is.null(model_dir)){
+    if(dir.exists(paste(model_dir))){
     print("b")
     # Builds command to run analyze.R and executes it
       analyze_output <- NULL
@@ -81,7 +100,7 @@ if (dir.exists(paste(output_path, "model_output", sep=""))){
       args <- paste(analyze_file,
                     "-i", input$analysisFile$datapath,
                     "-m", paste(model_dir),
-                    "-o", paste(output_path, "analysis_output"),
+                    "-o", paste(output_analyze, "/analysis_output"),
                     "-p", "MAE")
       if(!is.null(input$exModels)) {args <- paste(args, "-ex", input$exModels)}
       if(!is.null(input$expression_filter)) { 
@@ -90,6 +109,7 @@ if (dir.exists(paste(output_path, "model_output", sep=""))){
       if(!is.null(input$expression_filter)) { args <- paste(args, "-l", input$lengthFilter) }
       analyze_output <- capture.output(tryCatch(
         system2(analyze_cmd, args), error = function(e) e))
+    }
 } else {
     # Builds command to run analyze.R and executes it
       analyze_output <- NULL
@@ -98,7 +118,7 @@ if (dir.exists(paste(output_path, "model_output", sep=""))){
       args <- paste(analyze_file,
                     "-i", input$analysisFile$datapath,
                     "-m", models_folder,
-                    "-o", paste(output_path, "analysis_output", sep=""),
+                    "-o", paste(output_analyze, "/analysis_output", sep=""),
                     "-p", "MAE")
       if(!is.null(input$exModels)) {args <- paste(args, "-ex", input$exModels)}
       if(!is.null(input$expression_filter)) { args <- paste(args, "-f", input$expressionData) }
@@ -112,22 +132,26 @@ if (dir.exists(paste(output_path, "model_output", sep=""))){
   
 })
 # Handler for analyzed data download
-output$downloadAnalyzeButton <- downloadHandler(
-  filename = function() { paste("analyzedData.txt") } ,
-  content <- function(file) {
-    df <- read.csv(paste(output_path, "analysis_output/all_predictions.tsv"),
-                   sep = "\t")
-    write.table(df, file, sep = "\t", row.names = FALSE, quote = FALSE)
-  }
-)
+# output$downloadAnalyzeButton <- downloadHandler(
+#   filename = function() { paste("analyzedData.txt") } ,
+#   content <- function(file) {
+#     df <- read.csv(paste(output_path, "analysis_output/all_predictions.tsv"),
+#                    sep = "\t")
+#     write.table(df, file, sep = "\t", row.names = FALSE, quote = FALSE)
+#   }
+# )
 
-observeEvent(input$analyzeTableButton, {
-if(file.exists(paste(output_path, "analysis_output/all_predictions.tsv"))){
-  predictTable <- load_data(paste(output_path, "analysis_output/all_predictions.tsv", sep=""))
-  output$predTbl <- renderDataTable(
-    predictTable
-  )
-}
-})
+observeEvent(
+    ignoreNULL = TRUE,
+    eventExpr = {
+      input$analyzeTableButton
+    },
+    handlerExpr = {
+        predictTable <- load_data(paste(output_analyze, "/analysis_output/all_predictions.tsv", sep=""))
+        output$predTbl <- renderDataTable(
+          predictTable
+        )
 
+    }
+    )
 
