@@ -71,28 +71,6 @@ tabPanel(value = "process",
               shinyDirButton("dir", "Chose input directory", "Upload"),
               h4( HTML("Now choose your output folder")),
               shinyDirButton("outputPath", "Chose output directory", "Upload"),
-              p(HTML("To use this method input a file following the format below with fields seperated by tabs
-                     in a text file format:<br>
-                     <table style='width:100%'>
-                     <tr>
-                     <th>mark name</th>
-                     <th>mark file</th>
-                     <th>control file</th>
-                     </tr>
-                     <tr>
-                     <td>mark1</td>
-                     <td>input_dir/sample_mark1.bigWig</td>
-                     <td>input_dir/control_mark1.bigWig</td>
-                     </tr>
-                     <tr>
-                     <td>mark2</td>
-                     <td>input_dir/sample_mark2.bigWig</td>
-                     <td>input_dir/sample_mark2.bigWig</td>
-                     </tr>
-                     </table>")),
-              br(),
-              p("The program will now automatically pick the filenames you provided when you
-                                                       move to the processing tab."),
               textInput(
                 'fileInput',
                 label = h5("Fill in the text field below with the name of the text file with names of marks. Ex. 'input.txt'"),
@@ -213,4 +191,3 @@ tabPanel(value = "process",
       # )
       
 )
-
