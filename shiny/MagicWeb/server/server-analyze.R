@@ -25,7 +25,7 @@
 ################
 
 # sets output path
-shinyDirChoose(input, 'analyzeOutput', roots = c(home = '~'), filetypes = c('', 'txt','bigWig',"tsv","csv","bw"))
+shinyDirChoose(input, 'analyzeOutput', roots = c(home = '~'), filetypes = c('', 'txt','bigWig',"tsv","csv","bw", "rds"))
 analyzeOutput <- reactive(input$analyzeOutput)
 output$analyzeOutput <- renderPrint(analyzeOutput())
 
@@ -93,6 +93,7 @@ if (!is.null(output_generate)){
 } else if(!is.null(model_dir)){
     if(dir.exists(paste(model_dir))){
     print("b")
+      print(output_analyze)
     # Builds command to run analyze.R and executes it
       analyze_output <- NULL
       analyze_running <- TRUE
@@ -100,7 +101,7 @@ if (!is.null(output_generate)){
       args <- paste(analyze_file,
                     "-i", input$analysisFile$datapath,
                     "-m", paste(model_dir),
-                    "-o", paste(output_analyze, "/analysis_output"),
+                    "-o", paste(output_analyze, "/analysis_output", sep=""),
                     "-p", "MAE")
       if(!is.null(input$exModels)) {args <- paste(args, "-ex", input$exModels)}
       if(!is.null(input$expression_filter)) { 
@@ -109,6 +110,7 @@ if (!is.null(output_generate)){
       if(!is.null(input$expression_filter)) { args <- paste(args, "-l", input$lengthFilter) }
       analyze_output <- capture.output(tryCatch(
         system2(analyze_cmd, args), error = function(e) e))
+      cat(args)
     }
 } else {
     # Builds command to run analyze.R and executes it
