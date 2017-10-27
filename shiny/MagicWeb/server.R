@@ -25,11 +25,6 @@
 ### SERVER LIBRARIES AND SCRIPTS
 ######
 
-library(shiny)
-library(ggplot2)
-library(plyr)
-library(dplyr)
-
 
 ######
 ### SERVER GLOBALS
@@ -89,32 +84,72 @@ shinyServer(function(input, output, session) {
   excluded_models <- reactive({ paste(model_names[!(model_names %in% input$models)],
                                       sep = ",", collapse = "") })
   
-  # get data path for passing to process.R
+  
+  # example shinyFiles
+  shinyDirChoose(input, 'dir', roots = c(home = '~'), filetypes = c('', 'txt','bigWig',"tsv","csv","bw"))
+  dir <- reactive(input$dir)
+  output$dir <- renderPrint(dir())
+  
+  # path
+  # datapath <<- reactive({
+  #   home <- normalizePath("~")
+  #   file.path(home, paste(unlist(dir()$path[-1]), collapse = .Platform$file.sep))
+  # })
+  
   observeEvent(
     ignoreNULL = TRUE,
     eventExpr = {
-      input$dataDirectory
+      input$dir
     },
     handlerExpr = {
-      # prevent launching directoryInput at app start
-      if (input$dataDirectory){
-        datapath <<- choose.dir(default = readDirectoryInput(session, 'dataDirectory'))
-      }
+        home <- normalizePath("~")
+        datapath <<- file.path(home, paste(unlist(dir()$path[-1]), collapse = .Platform$file.sep))
     }
   )
   
+  # get data path for passing to process.R
+  # observeEvent(
+  #   ignoreNULL = TRUE,
+  #   eventExpr = {
+  #     input$dataDirectory
+  #   },
+  #   handlerExpr = {
+  #     # prevent launching directoryInput at app start
+  #     if (input$dataDirectory){
+  #       datapath <<- choose.dir(default = readDirectoryInput(session, 'dataDirectory'))
+  #     }
+  #   }
+  # )
+  
   # get output path for passing to  process.R
+  # observeEvent(
+  #   ignoreNULL = TRUE,
+  #   eventExpr = {
+  #     input$outputDirectory
+  #   },
+  #   handlerExpr = {
+  #     if (input$outputDirectory){
+  #       output_path <<- choose.dir(default = readDirectoryInput(session, "outputDirectory"))
+  #       
+  #     }
+  #   }
+  # )
+  
+  shinyDirChoose(input, 'outputPath', roots = c(home = '~'), filetypes = c('', 'txt','bigWig',"tsv","csv","bw","rds"))
+  outputPath <- reactive(input$outputPath)
+  output$outputPath <- renderPrint(outputPath())
+  
   observeEvent(
     ignoreNULL = TRUE,
     eventExpr = {
-      input$outputDirectory
+      input$outputPath
     },
     handlerExpr = {
-      if (input$outputDirectory){
-        output_path <<- choose.dir(default = readDirectoryInput(session, "outputDirectory"))
-      }
+        home <- normalizePath("~")
+        output_path <<- file.path(home, paste(unlist(outputPath()$path[-1]), collapse = .Platform$file.sep))
     }
   )
+  
 
   
   source("server/server-main.R", local=TRUE)$value
