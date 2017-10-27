@@ -42,6 +42,7 @@ load_shiny_libraries <- function(){
   get_package("shinythemes")
   get_package("GGally")
   get_package("PRROC")
+  get_package("shinyFiles")
 }
 
 # Loads or installs all required packages for analysis
