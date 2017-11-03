@@ -33,9 +33,10 @@
 ###############
 # GENERATE NEW MODEL
 ###############
-
+output_generate <<- NULL
+model_dir <<- NULL
 # sets output path
-shinyDirChoose(input, 'generateOutput', roots = c(home = '~'), filetypes = c('', 'txt','bigWig',"tsv","csv","bw", "rds"))
+shinyDirChoose(input, 'generateOutput', roots = c(home = '~'), filetypes = c('', 'txt','bigWig',"tsv","csv","bw",".rds"))
 generateOutput <- reactive(input$generateOutput)
 output$generateOutput <- renderPrint(generateOutput())
 
@@ -173,7 +174,7 @@ output$generateText <- renderUI({
 observeEvent(input$plotModelsButton, {
 # if (file.exists(paste(output_path, "model_ouput", sep=""))){
 
-  modelTable <- load_data(paste(generate_output, "/model_output/summary_models.tsv", sep=""))
+  modelTable <- load_data(paste(output_generate, "/model_output/summary_models.tsv", sep=""))
   output$modelTbl <- renderDataTable(
     modelTable
   )
