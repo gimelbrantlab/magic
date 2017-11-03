@@ -71,7 +71,8 @@ observeEvent(input$processDataButton,
                   "-o", paste(output_path),
                   "-p", input$promoterLength,
                   "-d", input$dropPercent,
-                  "-r", input$assembly)
+                  "-r", input$assembly,
+                  "-e")
     if(input$cores > 1) { args <- paste(args, "-s", input$cores) }
     if (input$noOverlap == TRUE) { args <- paste(args, "-l") }
     if (!"olfactory genes" %in% input$enableFilters) { args <- paste(args, "-f") }
@@ -97,9 +98,9 @@ observeEvent(input$processDataButton,
 
   ########################## Data plotting #############################
   
-  if (file.exists(paste(output_path, "joined_scores_percentile.txt", sep = ""))){
-    joined_scores_percentile <- load_data(paste(output_path, "joined_scores_percentile.txt", sep = ""))
-    joined_scores_norm <- load_data(paste(output_path, "joined_scores_norm.txt", sep = ""))
+  if (file.exists(paste(output_path, "/joined_scores_percentile.txt", sep = ""))){
+    joined_scores_percentile <- load_data(paste(output_path, "/joined_scores_percentile.txt", sep = ""))
+    joined_scores_norm <- load_data(paste(output_path, "/joined_scores_norm.txt", sep = ""))
     
     if ("status" %in% colnames(joined_scores_percentile)){
       output$chipQCnorm <- renderPlot ({
@@ -138,11 +139,6 @@ observeEvent(input$processDataButton,
                 axis.line = element_line(colour = "black"))
       })
     }
-    
-      output$norm_table <- renderDataTable(
-        joined_scores_norm
-      )
-      
       output$perc_table <- renderDataTable(
         joined_scores_percentile
       )
@@ -150,17 +146,5 @@ observeEvent(input$processDataButton,
   }
 )
 
-
-
-# Handler for processed data downloa
-output$downloadProcessButton <- downloadHandler(
-  filename = function() { paste("processedData.txt") } ,
-  content <- function(file) {
-    df <- read.csv(paste(output_path, 
-                             "joined_scores_percentile.txt"),
-                   sep = "\t")
-    write.table(df, file, sep = "\t", row.names = FALSE, quote = FALSE)
-  }
-)  
 
 
