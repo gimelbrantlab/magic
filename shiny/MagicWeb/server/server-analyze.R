@@ -61,7 +61,7 @@ observeEvent(input$analyzeDataButton,
                     "Determining status...", "Making coffee...", "Moving to America...",
                     "Starting an italian restaurant...", "Having first child...", "Starting postdoc...",
                     "Starting second postdoc...", "Applying for K99...", "Reapplying for K99",
-                    "Developing ulcers", "Faculty?","Running process.R")
+                    "Developing ulcers", "Faculty?","Running analyze.R")
   withProgress(value = 0, 
                {
                  for (i in 1:length(message_list)){
@@ -84,8 +84,8 @@ if (!is.null(output_generate)){
                   "-o", paste(output_analyze, "/analysis_output", sep=""),
                   "-p", "MAE")
     if(!is.null(input$exModels)) {args <- paste(args, "-ex", input$exModels)}
-    if(input$expression_filter == TRUE) { args <- paste(args, "-f", input$expressionData) }
-    if(input$expression_filter == FALSE) { args <- paste(args, "-l", input$lengthFilter) }
+    if(!is.null(input$expression_filter)) { args <- paste(args, "-f", input$expressionData) }
+    if(!is.null(input$expression_filter)) { args <- paste(args, "-l", input$lengthFilter) }
     print(paste(analyze_cmd, args))
     analyze_output <- capture.output(tryCatch(
     system2(analyze_cmd, args), error = function(e) e))
