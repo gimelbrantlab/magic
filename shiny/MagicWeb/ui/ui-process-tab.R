@@ -28,44 +28,6 @@ tabPanel(value = "process",
         title = "Process",
          sidebarLayout(
            sidebarPanel = sidebarPanel(
-                               # tabPanel("Option 1: File",
-                               #                 sidebarLayout(
-                               #                     mainPanel(
-                               #                       tags$h3(HTML("<u>Input to Processing</u>")),
-                               #                       p(HTML("To use this method input a file following the format below with fields seperated by tabs
-                               #                              in a text file format:<br>
-                               #                              <table style='width:100%'>
-                               #                              <tr>
-                               #                              <th>mark name</th>
-                               #                              <th>mark file</th>
-                               #                              <th>control file</th>
-                               #                              </tr>
-                               #                              <tr>
-                               #                              <td>mark1</td>
-                               #                              <td>input_dir/sample_mark1.bigWig</td>
-                               #                              <td>input_dir/control_mark1.bigWig</td>
-                               #                              </tr>
-                               #                              <tr>
-                               #                              <td>mark2</td>
-                               #                              <td>input_dir/sample_mark2.bigWig</td>
-                               #                              <td>input_dir/sample_mark2.bigWig</td>
-                               #                              </tr>
-                               #                              </table>")),
-                               #                       br(),
-                               #                       p("The program will now automatically pick the filenames you provided when you
-                               #                         move to the processing tab."),
-                               #                       width = 9
-                               #                       ),
-                               #                   fluidRow(
-                               #                     sidebarPanel(
-                               #                         textInput(
-                               #                           'fileInput',
-                               #                           label = h5("Fill in the text field below with the name of the text file with names of marks. Ex. 'input.txt'"),
-                               #                           value = NULL
-                               #                         ),
-                               #                       width = 9
-                               #                     )
-                               #                   ))),
               tags$h3(HTML("<u>Input to Processing</u>")),                 
               h4( HTML("First, set a path to where your data lives.")),
               shinyDirButton("dir", "Chose input directory", "Upload"),
@@ -77,11 +39,6 @@ tabPanel(value = "process",
                 value = NULL
               ),
               br(),
-             selectizeInput(
-               'organism', 'Model organism',
-               choices = organism,
-               selected = "human"
-             ),
              selectizeInput('assembly', 'Assembly',
                                choices = c(assembly, "other"),
                                selected = "hg19"),
@@ -91,30 +48,6 @@ tabPanel(value = "process",
                                         accept = c(".bed")
                                         )
                               ),
-             # conditionalPanel(
-             #   condition = "input.organism == 'mouse'",
-             #   selectizeInput('assembly', 'Assembly',
-             #                  choices = mouse_refseq_reference,
-             #                  selected = "mm9")
-             #   ),
-             # conditionalPanel(
-             #   condition = "input.organism == 'human'",
-             #   selectizeInput("assembly", 'Assembly',
-             #                  choices = human_refseq_reference,
-             #                  selected = "hg19")
-             # ),
-             # conditionalPanel(
-             #   condition = "input.organism == 'other'",
-             #   fileInput(
-             #     'assembly',
-             #     label = h5("Upload file"),
-             #     accept = c(
-             #       'text/comma-separated-values',
-             #       'text/tab-separated-values',
-             #       '.tsv'
-             #     )
-             #   )
-             # ),
              numericInput("promoterLength", "Select fixed promoter length:", 5000, min = 0,
                           step = 100),
              selectizeInput("enableFilters",
@@ -142,7 +75,7 @@ tabPanel(value = "process",
                                tabPanel("Tables",
                                         sidebarLayout(
                                           mainPanel(
-                                                dataTableOutput("norm_table")
+                                                dataTableOutput("perc_table")
                                           ),
                                           mainPanel(
                                             NULL
@@ -182,12 +115,8 @@ tabPanel(value = "process",
              fluid = TRUE
      
       )
-      # conditionalPanel(condition = "input.downloadProcessButton",
-      #                  fluidRow(column(12,
-      #                                  actionButton("next_generate", "Next"),
-      #                                  tags$style(type="text/css", "#next_generate { width:10%; margin-left: 1000px;}")
-      #                  )
-      #                  )
-      # )
       
+)
+
+
 )
