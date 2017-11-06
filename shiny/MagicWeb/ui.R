@@ -40,7 +40,7 @@ organism <- c("human", "mouse", "other")
 assembly <- c("mm9","mm10", "other")
 assembly <- c(assembly, "hg19", "hg38", "other")
 tg_names <- get_names(reference_folder, pattern = "*_tg.tsv")
-tg_names <- c(tg_names, "none", "other")
+tg_names <- c("human", "mouse", "none", "other")
 model_names <- get_names(models_folder, pattern = "*_model.rds")
 acceptable_file_types <- c("text/plain",
   "text/csv",
