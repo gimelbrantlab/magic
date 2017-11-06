@@ -137,11 +137,10 @@ observeEvent(input$processDataButton,
       # }
       input_files <- list.files(output_path, pattern = "_input", full.names = TRUE)
       input_scores <- lapply(input_files, load_data)
-      detach("package:MASS", unload=TRUE)
       plotList <- list()
       for (i in 1:length(input_scores)){
         df <- data.frame(input_scores[i])
-        df %>% select(mean) -> df_culled
+        df %>% dplyr::select(mean) -> df_culled
         df_small <- reshape2::melt(df_culled)
         p <- ggplot(df_small, aes(x=variable, y=value)) + geom_violin() + ylim(0,2) + xlab("Input") + ggtitle(paste(input_files[i]))
         assign(paste("plot",i,sep=""), p)
