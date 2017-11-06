@@ -95,7 +95,8 @@ tabPanel(value = "generate",
                selectizeInput(
                  'crossValidation',
                  "Number of cross-validations",
-                 choices=c(1:20)
+                 choices=c(2:20),
+                 selected=5
                ),
                actionButton("generateModelsButton", "Generate models", width = "100%"),
                br(),
