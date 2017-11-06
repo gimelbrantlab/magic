@@ -134,7 +134,7 @@ observeEvent(input$generateModelsButton, {
                   "-s", input$samplingMethod,
                   "-r", input$selectionRule,
                   "-t", input$targetFeature,
-                  "-l", input$modelList,
+                  "-l", paste(unlist(input$modelList), collapse=','),
                   "-p", input$trainingPercent,
                   "-c", input$crossValidation
                   )
