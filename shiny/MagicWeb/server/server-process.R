@@ -42,6 +42,7 @@
 ###################################################################################################
 ###################################################################################################
 # Processes data on button press
+
 observeEvent(input$processDataButton, 
   {
   message_list <- c("Preparing process command","Downloading binaries...", "Compiling arguments...", "Mining gold ore",
@@ -102,28 +103,12 @@ observeEvent(input$processDataButton,
     joined_scores_percentile <- load_data(paste(output_path, "/joined_scores_percentile.txt", sep = ""))
     joined_scores_norm <- load_data(paste(output_path, "/joined_scores_norm.txt", sep = ""))
     
-    if ("status" %in% colnames(joined_scores_percentile)){
-      output$chipQCnorm <- renderPlot ({
-        ggpairs(joined_scores_norm, 
-                columns = 3:ncol(joined_scores_percentile)) +
-          theme(panel.grid.major = element_blank(), 
-                panel.grid.minor = element_blank(), 
-                panel.background = element_blank(), 
-                axis.line = element_line(colour = "black"))
-      })
-      
-      output$chipQC <- renderPlot ({
-        ggpairs(joined_scores_percentile, 
-                columns = 3:ncol(joined_scores_percentile)) +
-          theme(panel.grid.major = element_blank(), 
-                panel.grid.minor = element_blank(), 
-                panel.background = element_blank(), 
-                axis.line = element_line(colour = "black"))
-      })
-    } else {
+    
       output$chipQCnorm <- renderPlot ({
         ggpairs(joined_scores_norm,
-                columns = 3:ncol(joined_scores_percentile)) +
+                columns = 3:ncol(joined_scores_percentile),
+                upper = "blank",
+                diag = NULL) +
           theme(panel.grid.major = element_blank(), 
                 panel.grid.minor = element_blank(), 
                 panel.background = element_blank(), 
@@ -132,19 +117,46 @@ observeEvent(input$processDataButton,
       
       output$chipQC <- renderPlot ({
         ggpairs(joined_scores_percentile, 
-                columns = 3:ncol(joined_scores_percentile)) +
+                columns = 3:ncol(joined_scores_percentile),
+                upper = "blank",
+                diag = NULL) +
           theme(panel.grid.major = element_blank(), 
                 panel.grid.minor = element_blank(), 
                 panel.background = element_blank(), 
                 axis.line = element_line(colour = "black"))
       })
-    }
+      
       output$perc_table <- renderDataTable(
         joined_scores_percentile
       )
+      
+      # if(input$promoterLength > 0){
+      #   inputFiles <- list.files()
+      # } else{
+      #   inputFiles <- lapply(Sys.glob("*input*.txt"), read.csv)
+      # }
+      input_files <- list.files(output_path, pattern = "_input", full.names = TRUE)
+      input_scores <- lapply(input_files, load_data)
+      detach("package:MASS", unload=TRUE)
+      plotList <- list()
+      for (i in 1:length(input_scores)){
+        df <- data.frame(input_scores[i])
+        df %>% select(mean) -> df_culled
+        df_small <- reshape2::melt(df_culled)
+        p <- ggplot(df_small, aes(x=variable, y=value)) + geom_violin() + ylim(0,2) + xlab("Input") + ggtitle(paste(input_files[i]))
+        assign(paste("plot",i,sep=""), p)
+        plotList[[i]] <- p
+      }
+      output$inputDist <- renderPlot({
+        ggmatrix(plotList, nrow=2, ncol=length(plotList), 
+                 yAxisLabels = "Mean input", 
+                 xAxisLabels = input_files) +
+          theme(panel.grid.major = element_blank(), 
+                panel.grid.minor = element_blank(), 
+                axis.line = element_line(colour = "black"))
+      })
   }
   }
 )
-
 
 
