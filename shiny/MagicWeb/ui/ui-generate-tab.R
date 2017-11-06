@@ -67,7 +67,9 @@ tabPanel(value = "generate",
                  accept = acceptable_file_types
                ),
                textInput('targetFeature', "Target Feature (the name of the column with class labels, normally 'status'",
-                         placeholder = 'Enter name of target column'),
+                         placeholder = 'Enter name of target column',
+                        value="status"
+                        ),
                numericInput("trainingPercent",
                             "Fraction of Data to use for Training:", 80,
                             min = 0, max = 100, step = 10),
@@ -78,7 +80,8 @@ tabPanel(value = "generate",
                  multiple=TRUE
                ), 
                textInput("positiveClass",
-                           label = "Enter positive class (the class label being predicted, normally 'MAE')"
+                          label = "Enter positive class (the class label being predicted, normally 'MAE')",
+                          value="MAE"
                ), 
                selectizeInput(
                  'metric', 'Select Loss Function',
