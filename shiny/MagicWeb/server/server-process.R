@@ -47,10 +47,7 @@ observeEvent(input$processDataButton,
   {
   message_list <- c("Preparing process command","Downloading binaries...", "Compiling arguments...", "Mining gold ore",
                     "Merging annotation for gene intervals...", "Creating magic genie...",
-                    "Calculating enrichment...", "Making coffee...", "Moving to America...",
-                    "Starting an italian restaurant...", "Having first child...", "Starting postdoc...",
-                    "Starting second postdoc...", "Applying for K99...", "Reapplying for K99",
-                    "Developing ulcers", "Faculty?","Running process.R")
+                    "Calculating enrichment...", "Making coffee...", "Running process.R")
   done = FALSE
   withProgress(value = 0, 
                {
