@@ -107,10 +107,7 @@ observeEvent(input$generateModelsButton, {
   
   message_list <- c("Preparing generate command","Downloading binaries...", "Compiling arguments...", "Mining gold ore",
                     "Merging annotation for gene intervals...", "Creating magic genie...",
-                    "Training models", "Making coffee...", "Moving to America...",
-                    "Starting an italian restaurant...", "Having first child...", "Starting postdoc...",
-                    "Starting second postdoc...", "Applying for K99...", "Reapplying for K99",
-                    "Developing ulcers", "Faculty?","Running generate.R")
+                    "Training models", "Making coffee...", "Running generate.R")
   
   # model_string <- as.list(input$modelList)
   # model_string <<- gsub(" ", "", model_string)
