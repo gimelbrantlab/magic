@@ -148,14 +148,12 @@ observeEvent(
       input$analyzeTableButton
     },
     handlerExpr = {
-        detach("package:MASS", unload=TRUE)
         predictTable <- load_data(paste(output_analyze, "/analysis_output/all_predictions.tsv", sep=""))
-        predictTable %>% select(name, grep("_predictions", colnames(predictTable))) -> predictTable
+        predictTable %>% dplyr::select(name, grep("_predictions", colnames(predictTable))) -> predictTable
         output$predTbl <- renderDataTable(
           predictTable
         )
 
     }
     )
-
 
