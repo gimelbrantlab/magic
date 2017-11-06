@@ -58,10 +58,7 @@ observeEvent(input$analyzeDataButton,
              {
   message_list <- c("Preparing analyze command","Downloading binaries...", "Compiling arguments...", "Mining gold ore",
                     "Merging annotation for gene intervals...", "Creating magic genie...",
-                    "Determining status...", "Making coffee...", "Moving to America...",
-                    "Starting an italian restaurant...", "Having first child...", "Starting postdoc...",
-                    "Starting second postdoc...", "Applying for K99...", "Reapplying for K99",
-                    "Developing ulcers", "Faculty?","Running analyze.R")
+                    "Determining status...", "Making coffee...","Running analyze.R")
   withProgress(value = 0, 
                {
                  for (i in 1:length(message_list)){
