@@ -60,7 +60,7 @@ tabPanel(value = "analyze",
              br(),
              h4( HTML("Now, to visualize your results, press the button below.")),
              conditionalPanel("input.analyzeDataButton",
-                              actionButton("analyzeTableButton", "Generate model plots and tables", width = "100%")
+                              actionButton("analyzeTableButton", "Show table of prediction results", width = "100%")
              )
            ), mainPanel(tabsetPanel(id = "outputPlot",
                           tabPanel("Table",
