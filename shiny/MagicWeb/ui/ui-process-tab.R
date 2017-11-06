@@ -36,7 +36,7 @@ tabPanel(value = "process",
               textInput(
                 'fileInput',
                 label = h5("Fill in the text field below with the name of the text file with names of marks. Ex. 'input.txt'"),
-                value = NULL
+                value = "input.txt"
               ),
               br(),
              selectizeInput('assembly', 'Assembly',
