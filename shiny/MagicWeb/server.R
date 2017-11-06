@@ -85,7 +85,6 @@ shinyServer(function(input, output, session) {
                                       sep = ",", collapse = "") })
   
   
-  # example shinyFiles
   shinyDirChoose(input, 'dir', roots = c(home = '~'), filetypes = c('', 'txt','bigWig',"tsv","csv","bw"))
   dir <- reactive(input$dir)
   output$dir <- renderPrint(dir())
