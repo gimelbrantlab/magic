@@ -85,29 +85,33 @@ tabPanel(value = "process",
                                tabPanel("ChIP QC",
                                        sidebarLayout(
                                          mainPanel(
-                                              conditionalPanel(
-                                                condition = "input.normPerc == 'Normalized'",
-                                                plotOutput("chipQCnorm",
-                                                           height = 480,
-                                                           width = 700
-                                                           )
-                                              ),
-                                              conditionalPanel(
-                                                condition = "input.normPerc == 'Percentile ranked'",
                                                 plotOutput("chipQC",
-                                                           height = 480,
-                                                           width = 700,
+                                                           height = 600,
+                                                           width = 900,
                                                            click = "plot1_click",
                                                            brush = brushOpts(
                                                              id = "plot1_brush")
                                                 )
-                                              )
                                          ), 
                                          mainPanel(
                                            NULL
                                          )
                                 )
-                               )
+                               ),
+                               tabPanel("Input distribution",
+                                        sidebarLayout(
+                                          mainPanel(
+                                            plotOutput("inputDist",
+                                                       height = 600,
+                                                       width = 900
+                                                       )
+                                              
+                                            ),
+                                          mainPanel(
+                                            NULL
+                                          )
+                                          )
+                                        )
                               )
              )
              
@@ -118,5 +122,3 @@ tabPanel(value = "process",
       
 )
 
-
-)
