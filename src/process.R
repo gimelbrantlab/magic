@@ -555,7 +555,7 @@ options = list(
               help="upstream promoter region length [default= %default]"),
   make_option(c("-d", "--drop_percent"), type="double", default=0.01, 
               help="bottom enrichment percentile of genes to drop [default= %default]"),
-  make_option(c("-a", "--drop_absolute"), type="double", default=0.0,
+  make_option(c("-a", "--drop_absolute"), type="double", default=1.0,
               help="bottom absolute mean value of genes to drop [default=%default]"),
   make_option(c("-e", "--no_clean_intermediate"), action="store_false", default=TRUE, 
               help="leave intermediate files [default= %default]"),
