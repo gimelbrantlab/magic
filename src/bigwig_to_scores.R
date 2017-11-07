@@ -27,8 +27,9 @@
 filter_counts <- function(counts, bed, imprinted_file,
                           filter_olf, filter_chroms, filter_imprinted) {
   
+  counts <- remove_extra_chroms(counts)
   if (filter_olf) { counts <- remove_olfactory(counts) }
-  if (filter_chroms) { counts <- remove_extra_chroms(counts) }
+  if (filter_chroms) { counts <- remove_sex_chroms(counts) }
   if (filter_imprinted) { counts <- remove_imprinted(counts, imprinted_file) }
   
   # Explicitly returns filtered counts
@@ -56,9 +57,22 @@ remove_extra_chroms <- function(counts) {
   chrom_list <- c("chr1", "chr2", "chr3", "chr4", "chr5",
                   "chr6", "chr7", "chr8", "chr9", "chr10",
                   "chr11", "chr12", "chr13", "chr14", "chr15",
-                  "chr16", "chr17", "chr18", "chr19")
+                  "chr16", "chr17", "chr18", "chr19", "chr20", "chr21", "chr22", "chrX", "chrY")
   
-  # Removes sex-linked, partially assembled and extra chromosomes
+  # Removes partially assembled and extra chromosomes
+  counts <- counts %>% filter(chrom %in% chrom_list)
+  return(counts)
+}
+
+remove_sex_chroms <- function(counts) {
+  
+  # List of chromosomes to keep
+  chrom_list <- c("chr1", "chr2", "chr3", "chr4", "chr5",
+                  "chr6", "chr7", "chr8", "chr9", "chr10",
+                  "chr11", "chr12", "chr13", "chr14", "chr15",
+                  "chr16", "chr17", "chr18", "chr19", "chr20", "chr21", "chr22")
+  
+  # Removes sex-linked chromosomes
   counts <- counts %>% filter(chrom %in% chrom_list)
   return(counts)
 }
