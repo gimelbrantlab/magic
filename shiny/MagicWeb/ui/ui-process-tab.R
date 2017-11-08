@@ -30,12 +30,12 @@ tabPanel(value = "process",
            sidebarPanel = sidebarPanel(
               tags$h3(HTML("<u>Input to Processing</u>")),                 
               h4( HTML("First, set a path to where your data lives.")),
-              shinyDirButton("dir", "Chose input directory", "Upload"),
+              shinyDirButton("dir", "Choose input directory", "Upload"),
               h4( HTML("Now choose your output folder")),
-              shinyDirButton("outputPath", "Chose output directory", "Upload"),
+              shinyDirButton("outputPath", "Choose output directory", "Upload"),
               textInput(
                 'fileInput',
-                label = h5("Fill in the text field below with the name of the text file with names of marks. Ex. 'input.txt'"),
+                label = h5("Text file with names of marks (e.g.,'input.txt'):"),
                 value = "input.txt"
               ),
               br(),
@@ -132,3 +132,4 @@ tabPanel(value = "process",
       )
       
 )
+
