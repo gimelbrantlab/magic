@@ -73,7 +73,7 @@ observeEvent(input$processDataButton,
                   "-e")
     if(input$cores > 1) { args <- paste(args, "-s", input$cores) }
     if (input$noOverlap == TRUE) { args <- paste(args, "-l") }
-    if (!"olfactory genes" %in% input$enableFilters) { args <- paste(args, "-f") }
+    if (!"olfactory receptor genes" %in% input$enableFilters) { args <- paste(args, "-f") }
     if (!"sex chromosomes" %in% input$enableFilters) { args <- paste(args, "-c") }
     if (!"imprinted genes" %in% input$enableFilters) { args <- paste(args, "-m") }
     cat("\n", args, "\n\n")
