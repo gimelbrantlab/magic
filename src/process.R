@@ -435,7 +435,24 @@ process_main <- function(current_folder, input_file, output_folder,
   # Gets reference, output files and scripts based on position in program directory
   reference_folder <- file.path(dirname(current_folder), "reference")
   bin_folder <- file.path(dirname(current_folder), "bin")
-  imprinted_file <- file.path(reference_folder, "imprinted_genes.tsv")
+  if (grepl("hg", refseq_file, fixed=TRUE) | grepl("human", refseq_file, fixed=TRUE)) { 
+    imprinted_file <- file.path(reference_folder, "imprinted_genes_human.tsv")
+  }
+  else if (grepl("mm", refseq_file, fixed=TRUE) | grepl("mouse", refseq_file, fixed=TRUE)) { 
+    imprinted_file <- file.path(reference_folder, "imprinted_genes_mouse.tsv")
+  }
+  else {
+    if (!is.null(bed_file)) {
+      if (grepl("hg", bed_file, fixed=TRUE) | grepl("human", bed_file, fixed=TRUE))  {
+        imprinted_file <- file.path(reference_folder, "imprinted_genes_human.tsv")
+      }
+      else if (grepl("mm", bed_file, fixed=TRUE) | grepl("mouse", bed_file, fixed=TRUE) ) {
+        imprinted_file <- file.path(reference_folder, "imprinted_genes_mouse.tsv")
+      }
+    }
+    warning("Unknown genome, using human list of imprinted genes")
+    imprinted_file <- file.path(reference_folder, "imprinted_genes_human.tsv")
+  }
   bwtool_folder <- file.path(bin_folder, "bwtool")
   dropped_file <- file.path(output_folder, "dropped_genes.tsv")
   
