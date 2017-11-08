@@ -57,7 +57,7 @@ tabPanel(value = "process",
              checkboxInput("noOverlap",
                            "Disable overlap of promoter and gene body?",
                            value = FALSE),
-             sliderInput("dropPercent", "Choose the bottom percentile of genes to drop (to eliminate genes with low input):", 0.01,
+             sliderInput("dropPercent", "Choose the bottom percentile of genes to drop (to eliminate genes with low input):", 0.05,
                          min = 0, max = 0.80, step = 0.01),
              selectizeInput("cores",
                             "Number of cores to run process with:",
@@ -72,7 +72,7 @@ tabPanel(value = "process",
                condition = "input.processDataButton",
                               tabsetPanel(
                                id = "processPlots",
-                               tabPanel("Tables",
+                               tabPanel("Processed Data Table",
                                         sidebarLayout(
                                           mainPanel(
                                                 dataTableOutput("perc_table")
@@ -85,27 +85,38 @@ tabPanel(value = "process",
                                tabPanel("ChIP QC",
                                        sidebarLayout(
                                          mainPanel(
-                                                plotOutput("chipQC",
-                                                           height = 600,
-                                                           width = 900,
+                                                h3("Density plots for chromatin marks, normalized values:"),
+                                                plotOutput("chipQC_density",
+                                                           height = 500,
+                                                           width = 800,
                                                            click = "plot1_click",
                                                            brush = brushOpts(
                                                              id = "plot1_brush")
+                                                ),
+                                                h3("Scatterplots for chromatin marks, quantiles:"),
+                                                plotOutput("chipQC",
+                                                           height = 600,
+                                                           width = 600,
+                                                           click = "plot2_click",
+                                                           brush = brushOpts(
+                                                             id = "plot2_brush")
                                                 )
                                          ), 
                                          mainPanel(
                                            NULL
                                          )
                                 )
-                               ),
+                               )
+                               ,
                                tabPanel("Input distribution",
                                         sidebarLayout(
                                           mainPanel(
+                                            h3("Density plots for input values, gene body and promoter (if selected):"),
                                             plotOutput("inputDist",
                                                        height = 600,
                                                        width = 900
                                                        )
-                                              
+
                                             ),
                                           mainPanel(
                                             NULL
@@ -121,4 +132,3 @@ tabPanel(value = "process",
       )
       
 )
-
