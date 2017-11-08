@@ -54,7 +54,7 @@ metric_names <- c("Kappa", "Accuracy", "ROC")
 sampling_method_names <- c("none", "down", "up")
 positive_classes <- c("MAE", "BAE", "other")
 model_list <- c("ada", "svmPoly", "rf", "nnet", "gmlboost", "rpart", "mlpML", "knn", "evtree", "glmStepAIC")
-filtering <- c("olfactory genes", "sex chromosomes", "imprinted genes")
+filtering <- c("olfactory receptor genes", "sex chromosomes", "imprinted genes")
 
 source("../../src/utils.R", local=TRUE)
 load_process_libraries()
