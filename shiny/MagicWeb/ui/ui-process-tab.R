@@ -35,7 +35,7 @@ tabPanel(value = "process",
               shinyDirButton("outputPath", "Choose output directory", "Upload"),
               textInput(
                 'fileInput',
-                label = h5("Text file with names of marks (e.g.,'input.txt'):"),
+                label = h5("Text file with names of marks (e.g., 'input.txt'):"),
                 value = "input.txt"
               ),
               br(),
