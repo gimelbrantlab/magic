@@ -81,6 +81,7 @@ load_process_libraries <- function() {
   get_package("diptest")
   get_package("doMC", repos = "http://R-Forge.R-project.org")
   get_package("e1071")
+  get_package("gridExtra")
 }
 
 # Sources all scripts required for processing
