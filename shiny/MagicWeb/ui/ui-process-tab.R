@@ -48,7 +48,7 @@ tabPanel(value = "process",
                                         accept = c(".bed")
                                         )
                               ),
-             numericInput("promoterLength", "Select fixed promoter length:", 5000, min = 0,
+             numericInput("promoterLength", "Select promoter length:", 0, min = 0,
                           step = 100),
              selectizeInput("enableFilters",
                            "Choose filters (gene groups to remove from analysis)",
