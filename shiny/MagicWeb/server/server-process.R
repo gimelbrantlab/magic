@@ -86,13 +86,6 @@ observeEvent(input$processDataButton,
     
   ###################################################################################################
   ###################################################################################################
-  ###################################################################################################
-  ###################################################################################################
-  ###################################################################################################
-  ###################################################################################################
-  ###################################################################################################
-  ###################################################################################################
-  ###################################################################################################
 
   ########################## Data plotting #############################
   
@@ -101,58 +94,48 @@ observeEvent(input$processDataButton,
     joined_scores_norm <- load_data(paste(output_path, "/joined_scores_norm.txt", sep = ""))
     
     
-      output$chipQCnorm <- renderPlot ({
-        ggpairs(joined_scores_norm,
-                columns = 3:ncol(joined_scores_percentile),
-                upper = "blank",
-                diag = NULL) +
-          theme(panel.grid.major = element_blank(), 
-                panel.grid.minor = element_blank(), 
-                panel.background = element_blank(), 
-                axis.line = element_line(colour = "black"))
+      output$chipQC_density <- renderPlot ({
+        ggplot(data = melt(joined_scores_norm), mapping = aes(x = value)) + geom_density() + scale_x_log10() + theme_bw() + facet_wrap(~variable, scales = 'free_x')
       })
       
       output$chipQC <- renderPlot ({
-        ggpairs(joined_scores_percentile, 
-                columns = 3:ncol(joined_scores_percentile),
-                upper = "blank",
-                diag = NULL) +
-          theme(panel.grid.major = element_blank(), 
-                panel.grid.minor = element_blank(), 
-                panel.background = element_blank(), 
-                axis.line = element_line(colour = "black"))
+        marks <- colnames(joined_scores_percentile[,3:dim(joined_scores_percentile)[2]])
+        marks_comb <- combn(marks, 2)
+        makePlot <- function(x) {
+          ggplot(joined_scores_percentile, aes_string(x=x[1], y=x[2])) + geom_point(size=0.3) + theme_bw() 
+        }
+        pltList <- list()
+        pltList <- apply(marks_comb,2,makePlot)
+        grid.arrange(grobs = pltList)
       })
       
       output$perc_table <- renderDataTable(
         joined_scores_percentile
       )
       
-      # if(input$promoterLength > 0){
-      #   inputFiles <- list.files()
-      # } else{
-      #   inputFiles <- lapply(Sys.glob("*input*.txt"), read.csv)
-      # }
+      
+      output$inputDist <- renderPlot({
+      if(input$promoterLength > 0){
+        inputFiles <- list.files()
+      } else{
+        inputFiles <- lapply(Sys.glob("*input*.txt"), read.csv)
+      }
       input_files <- list.files(output_path, pattern = "_input", full.names = TRUE)
       input_scores <- lapply(input_files, load_data)
+      input_scores <- unique(input_scores)
       plotList <- list()
-      for (i in 1:length(input_scores)){
-        df <- data.frame(input_scores[i])
-        df %>% dplyr::select(mean) -> df_culled
-        df_small <- reshape2::melt(df_culled)
-        p <- ggplot(df_small, aes(x=variable, y=value)) + geom_violin() + ylim(0,2) + xlab("Input") + ggtitle(paste(input_files[i]))
-        assign(paste("plot",i,sep=""), p)
-        plotList[[i]] <- p
+      makePlotInput <- function(x) {
+        df <- data.frame(x)
+        p <- ggplot(df, aes(mean)) + 
+          geom_density() + 
+          xlab("Input") + 
+          scale_x_log10() +
+          theme_bw()
+        p
       }
-      output$inputDist <- renderPlot({
-        ggmatrix(plotList, nrow=2, ncol=length(plotList), 
-                 yAxisLabels = "Mean input", 
-                 xAxisLabels = input_files) +
-          theme(panel.grid.major = element_blank(), 
-                panel.grid.minor = element_blank(), 
-                axis.line = element_line(colour = "black"))
-      })
+      plotList <- lapply(input_scores, makePlotInput)
+      grid.arrange(grobs = plotList)
+    })
   }
   }
 )
-
-
