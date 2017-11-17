@@ -1,3 +1,3 @@
 #mark name	mark file	control file
-h3k27me3	H3k27me3.bigWig	Control.bigWig
-h3k36me3	H3k36me3.bigWig	Control.bigWig
+h3k27me3	H3k27me3_subset.bigWig	Control_subset.bigWig
+h3k36me3	H3k36me3_subset.bigWig	Control_subset.bigWig
