@@ -176,54 +176,114 @@ observeEvent(input$plotModelsButton, {
     modelTable
   )
 
-
   # #### Precision Recall Curve ######
   # #### Get validation set
-  # validation <- input$validationSet
-  # #### get names of models
-  # model_names <- get_names(paste(output_path, "model_output", sep=""), pattern = "*_model.rds")
-  # # model_list <- list()
-  # for (name in model_names){
-  #   name_string <- as.name(name)
-  #   print(name_string)
-  #   model <- readRDS(paste(output_path, "model_output/", name, "_model.rds", sep = ""))
-  #   model_list <- c(model_list, name_string = model)
-  # }
-  # #print(model_list)
-  # # apply calc_auprc to testing data
-  # model_list_pr <- model_list %>% lapply(calc_auprc, data = validation)
-  # model_list_pr %>% lapply(function(the_mod) the_mod$auc.integral)
-  # 
-  # results_list_pr <- list(NA)
-  # index <- 1
-  # 
-  # # cycle through outputs of pr.curve abd store in a dataframe
-  # for(the_pr in model_list_pr){
-  #   results_list_pr[[index]] <-
-  #     data_frame(recall = the_pr$curve[, 1],
-  #                precision = the_pr$curve[, 2],
-  #                model = names(model_list_pr)[index])
-  #   index <- index + 1
-  # }
-  # 
-  # # bind results into table
-  # results_df_pr <- bind_rows(results_list_pr)
-  # 
-  # # my beautiful colors, these are the best colors
-  # # custom_col <- c("#00a703", "#0002fe", "#000000")
-  # 
-  # 
-  # ouput$modelPlots <- renderPlot({
-  #   # create plot
-  #   ggplot(aes(x = recall, y = precision, group = model),
-  #          data = results_df_pr) +
-  #     geom_line(aes(color = model), size = 1) +
-  #     #scale_color_manual(values = custom_col) +
-  #     theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(),
-  #           axis.line = element_line(colour = "black"), legend.key=element_blank()) + ylim(0,1)
-  # 
-  # })
+  validation <- load_data(input$validationSet$datapath)
+  #### get names of models
+  model_names <- list.files(paste(output_generate, "/model_output", sep=""), pattern = "*_model.rds")
+  model_list <- list()
+  # assign models to r environment variables
+  for (i in 1:length(model_names)){
+    name_string <- as.character(model_names[i])
+    assign(name_string, readRDS(paste(output_generate, "/model_output/", model_names[i], sep = "")))
+  }
+  # make a list of models 
+  model_list <- list()
+  for (i in 1:length(model_names)){
+    model_list <- c(model_list, mget(as.character(model_names[i])))
+  }
+  
+  # apply calc_auprc to testing data
+  model_list_pr <- model_list %>% lapply(calc_auprc, data = validation, status = input$targetFeature)
+  model_list_pr %>% lapply(function(the_mod) the_mod$auc.integral)
+
+  results_list_pr <- list(NA)
+  index <- 1
+
+  # cycle through outputs of pr.curve abd store in a dataframe
+  for(the_pr in model_list_pr){
+    results_list_pr[[index]] <-
+      data_frame(recall = the_pr$curve[, 1],
+                 precision = the_pr$curve[, 2],
+                 model = names(model_list_pr)[index])
+    index <- index + 1
+  }
+
+  # bind results into table
+  results_df_pr <- bind_rows(results_list_pr)
+
+  # my beautiful colors, these are the best colors
+  # custom_col <- c("#00a703", "#0002fe", "#000000")
+
+
+  output$modelPlots <- renderPlot({
+    # create plot
+    ggplot(aes(x = recall, y = precision, group = model),
+           data = results_df_pr) +
+      geom_line(aes(color = model), size = 1) +
+      #scale_color_manual(values = custom_col) +
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(),
+            axis.line = element_line(colour = "black"), legend.key=element_blank()) + ylim(0,1)
+  })
 
 
 })
 
+
+
+
+
+
+##########################
+# USE THIS IN CASE PRECISION-RECALL PLOTS BREAK
+##########################
+
+# # #### Get validation set
+# validation <- load_data("./magic/reference/Nag2015HUMAN/testing_human_2015.tsv")
+# #### get names of models
+# model_names <- list.files(paste("~/Desktop/", "model_output", sep=""), pattern = "*_model.rds")
+# model_list <- list()
+# # make environment variables from names
+# for (i in 1:length(model_names)){
+#   name_string <- as.character(model_names[i])
+#   print(name_string)
+#   assign(name_string, readRDS(paste("~/Desktop/", "model_output/", model_names[i], sep = "")))
+#   # assign(model_list[i], name_string)
+#   # model <- readRDS(paste("./output/", "model_output/", name, sep = ""))
+#   # model_list <- c(model_list, name_string = model)
+#   # model_list[[name_string]] <- name_string
+# }
+# # store models in a list
+# model_list <- list()
+# for (i in 1:length(model_names)){
+#   model_list <- c(model_list, mget(as.character(model_names[i])))
+# }
+# 
+# # apply calc_auprc function from fig2a_script.R to testing data
+# model_list_pr <- model_list %>% lapply(calc_auprc, data = validation, status = "status")
+# model_list_pr %>% lapply(function(the_mod) the_mod$auc.integral)
+# 
+# results_list_pr <- list(NA)
+# index <- 1
+# for(the_pr in model_list_pr){
+#   results_list_pr[[index]] <-
+#     data_frame(recall = the_pr$curve[, 1],
+#                precision = the_pr$curve[, 2],
+#                model = names(model_list_pr)[index])
+#   index <- index + 1
+# }
+# #
+# # cycle through outputs of pr.curve abd store in a dataframe
+# 
+# # bind results into table
+# results_df_pr <- bind_rows(results_list_pr)
+# 
+# # my beautiful colors, these are the best colors
+# # custom_col <- c("#00a703", "#0002fe", "#000000")
+# 
+# ggplot(aes(x = recall, y = precision, group = model),
+#        data = results_df_pr) +
+#   geom_line(aes(color = model), size = 1) +
+#   #scale_color_manual(values = custom_col) +
+#   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(),
+#         axis.line = element_line(colour = "black"), legend.key=element_blank()) + ylim(0,1)
