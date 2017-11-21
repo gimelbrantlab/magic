@@ -33,14 +33,14 @@ tabPanel(value = "generate",
               id = "generatePlots",
                          tabPanel("Summary Table",
                                 dataTableOutput("modelTbl")
-                         )
-                         # tabPanel("Precision-recall plot",
-                         #              plotOutput("modelPlot",
-                         #                         height = 480,
-                         #                         width = 700
-                         #              )
-                         #              
-                         #            )
+                         ),
+                         tabPanel("Precision-recall plot",
+                                      plotOutput("modelPlots",
+                                                 height = 480,
+                                                 width = 700
+                                      )
+
+                                    )
               )
               ),
               sidebarPanel = sidebarPanel(
