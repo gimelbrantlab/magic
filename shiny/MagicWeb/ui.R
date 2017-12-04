@@ -84,6 +84,7 @@ shinyUI(
      
      # Additional information about the program
      navbarMenu("More",
+     source("ui/ui-doc-tab.R", local=TRUE)$value,
      source("ui/ui-cmd-tab.R", local=TRUE)$value,
      source("ui/ui-about-tab.R", local=TRUE)$value
      )
