@@ -52,20 +52,36 @@ tabPanel(value = "generate",
                br(),
                br(),
                fileInput('trainingFile', 'Upload Processed ChIP-seq TSV File',
-                         accept = acceptable_file_types),
+                         accept = acceptable_file_types) %>% 
+                 shinyInput_label_embed(
+                   icon("info") %>%
+                     bs_embed_tooltip(title = "In most cases, it is joined_scores_percentile.txt in your output folder")
+                 ),
                fileInput('validationSet', 'Upload an external validation set if you have one (optional):',
-                         accept = acceptable_file_types),
+                         accept = acceptable_file_types) %>% 
+                 shinyInput_label_embed(
+                   icon("info") %>%
+                     bs_embed_tooltip(title = "Please see documentation for the file format")
+                 ),
                selectizeInput(
                  inputId = 'tg', 
                  label = 'Select training genes',
                  choices = tg_names,
                  selected = 'none'
-               ),
+               ) %>% 
+                 shinyInput_label_embed(
+                   icon("info") %>%
+                     bs_embed_tooltip(title = "If you want to train model with our MAE/BAE classification, select human or mouse option")
+                 ),
                fileInput(
                  inputId = 'tg2',
                  label = "Alternatively, select a training file not packaged with MaGIC",
                  accept = acceptable_file_types
-               ),
+               ) %>% 
+                 shinyInput_label_embed(
+                   icon("info") %>%
+                     bs_embed_tooltip(title = "If you have your own MAE/BAE classification for training, select this file here, see documentation for the file format")
+                 ),
                textInput('targetFeature', "Target Feature (the name of the column with class labels, normally 'status'",
                          placeholder = 'Enter name of target column',
                         value="status"
@@ -78,7 +94,11 @@ tabPanel(value = "generate",
                  "Select models to train",
                  choices = model_list,
                  multiple=TRUE
-               ), 
+               ) %>% 
+                 shinyInput_label_embed(
+                   icon("info") %>%
+                     bs_embed_tooltip(title = "Please select at least one")
+                 ), 
                textInput("positiveClass",
                           label = "Enter positive class (the class label being predicted, normally 'MAE')",
                           value="MAE"

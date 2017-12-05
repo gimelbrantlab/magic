@@ -30,6 +30,7 @@ library(markdown)
 library(shinythemes)
 library(GGally)
 library(shinyFiles)
+library(bsplus)
 
 ######
 ### UI GLOBALS
@@ -88,7 +89,11 @@ shinyUI(
      source("ui/ui-cmd-tab.R", local=TRUE)$value,
      source("ui/ui-about-tab.R", local=TRUE)$value
      )
-  )
+  ),
+  # activate tooltips, popovers, and MathJax
+  use_bs_tooltip(),
+  use_bs_popover(),
+  withMathJax()
 )
 )
 

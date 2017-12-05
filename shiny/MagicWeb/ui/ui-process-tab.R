@@ -49,19 +49,27 @@ tabPanel(value = "process",
                                         )
                               ),
              numericInput("promoterLength", "Select promoter length:", 0, min = 0,
-                          step = 100),
+                          step = 100) %>% 
+             shinyInput_label_embed(
+               icon("info") %>%
+                 bs_embed_tooltip(title = "If you want to include promoters into analysis, please specify promoter length (greater than 0)")
+             ),
              selectizeInput("enableFilters",
                            "Choose filters (gene groups to remove from analysis)",
                             choices = filtering,
                             multiple=TRUE),
              checkboxInput("noOverlap",
                            "Disable overlap of promoter and gene body?",
-                           value = FALSE),
+                           value = FALSE)%>% 
+               shinyInput_label_embed(
+                 icon("info") %>%
+                   bs_embed_tooltip(title = "Add")
+               ),
              sliderInput("dropPercent", "Choose the bottom percentile of genes to drop (to eliminate genes with low input):", 0.05,
                          min = 0, max = 0.80, step = 0.01),
              selectizeInput("cores",
                             "Number of cores to run process with:",
-                             choices = c(1:12)
+                             choices = c(1:8)
              ),
              actionButton("processDataButton", 
                           "Process data", 
