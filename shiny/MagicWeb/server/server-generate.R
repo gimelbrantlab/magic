@@ -60,7 +60,6 @@ getAnalysisFile <- reactive({
 })
 
 
-
 shinyDirChoose(input, 'modelDir', roots = c(home = '~'), filetypes = c('', 'txt','bigWig',"tsv","csv","bw","rds"))
 modelDir <- reactive(input$modelDir)
 output$modelDir <- renderPrint(modelDir())
@@ -178,7 +177,15 @@ observeEvent(input$plotModelsButton, {
 
   # #### Precision Recall Curve ######
   # #### Get validation set
-  validation <- load_data(input$validationSet$datapath)
+  if (!is.null(input$validationSet$datapath)) {
+    validation <- load_data(input$validationSet$datapath)
+  } else {
+    training_set <- load_data(input$trainingFile$datapath)
+    cutoff <- createDataPartition(as.matrix(training_set[input$targetFeature]), p = ((100-input$trainingPercent)/100),
+                                  list = FALSE, times = 1)
+    validation <- training_set[-cutoff,]
+  }
+ 
   #### get names of models
   model_names <- list.files(paste(output_generate, "/model_output", sep=""), pattern = "*_model.rds")
   model_list <- list()
@@ -239,7 +246,7 @@ observeEvent(input$plotModelsButton, {
 ##########################
 
 # # #### Get validation set
-# validation <- load_data("./magic/reference/Nag2015HUMAN/testing_human_2015.tsv")
+#validation <- load_data("./magic/reference/Nag2015HUMAN/testing_human_2015.tsv")
 # #### get names of models
 # model_names <- list.files(paste("~/Desktop/", "model_output", sep=""), pattern = "*_model.rds")
 # model_list <- list()
