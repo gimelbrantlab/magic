@@ -57,7 +57,7 @@ positive_classes <- c("MAE", "BAE", "other")
 model_list <- c("ada", "svmPoly", "rf", "nnet", "gmlboost", "rpart", "mlpML", "knn", "evtree", "glmStepAIC")
 filtering <- c("olfactory receptor genes", "sex chromosomes", "imprinted genes")
 
-source("../../src/utils.R", local=TRUE)
+source("utils.R", local=TRUE)
 load_process_libraries()
 load_analyze_libraries()
 load_generate_libraries()

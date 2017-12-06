@@ -78,7 +78,10 @@ observeEvent(input$processDataButton,
     if (!"imprinted genes" %in% input$enableFilters) { args <- paste(args, "-m") }
     cat("\n", args, "\n\n")
     process_output <- capture.output(tryCatch(
-      system2("Rscript", args))) # error = function(e) e))
+      { system2("Rscript", args)}, error=function(err){
+        traceback()
+      })
+      ) # error = function(e) e))
     
   }
    
