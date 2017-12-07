@@ -179,11 +179,61 @@ observeEvent(input$plotModelsButton, {
   # #### Get validation set
   if (!is.null(input$validationSet$datapath)) {
     validation <- load_data(input$validationSet$datapath)
+    validation[[input$targetFeature]] <- sub(input$positiveClass, "MAE", validation[[input$targetFeature]])
   } else {
     training_set <- load_data(input$trainingFile$datapath)
-    cutoff <- createDataPartition(as.matrix(training_set[input$targetFeature]), p = ((100-input$trainingPercent)/100),
+    if (input$tg == "human"){
+        print("Using human training genes.")
+        # attach ids
+        training_set$id <- tolower(paste(training_set$name, training_set$chrom, sep = "_"))
+        training_set <- training_set[order(training_set$id),]
+        # load training genes, attach ids
+        training_genes <- load_data(paste(reference_folder, "/human_tg.tsv", sep=""))
+        training_genes$id <- tolower(paste(training_genes$gene, training_genes$chrom, sep = "_"))
+        ids_to_keep <- intersect(training_genes$id, training_set$id)
+        training_set <- training_set[training_set$id %in% ids_to_keep, ]
+        training_genes <- training_genes[training_genes$id %in% ids_to_keep, ]
+        # Appends training genes to modified df
+        validation <- training_set[order(training_set$id),]
+        training_genes <- training_genes[order(training_genes$id),]
+        validation$status <- training_genes$status
+        validation[["status"]] <- sub(input$positiveClass, "MAE", validation[["status"]])
+    } else if (input$tg == "mouse"){
+        print("Using mouse training genes.")
+        # attach ids
+        training_set$id <- tolower(paste(training_set$name, training_set$chrom, sep = "_"))
+        training_set <- training_set[order(training_set$id),]
+        # load training genes, attach ids
+        training_genes <- load_data(paste(reference_folder, "/mouse_tg.tsv", sep=""))
+        training_genes$id <- tolower(paste(training_genes$gene, training_genes$chrom, sep = "_"))
+        ids_to_keep <- intersect(training_genes$id, training_set$id)
+        training_set <- training_set[training_set$id %in% ids_to_keep, ]
+        training_genes <- training_genes[training_genes$id %in% ids_to_keep, ]
+        # Appends training genes to modified df
+        validation <- training_set[order(training_set$id),]
+        training_genes <- training_genes[order(training_genes$id),]
+        validation$status <- training_genes$status
+        validation[["status"]] <- sub(input$positiveClass, "MAE", validation[["status"]])
+    } else if (!is.null(input$tg2$datapath) & is.null(input$validationSet$datapath)){
+        print("Using external training dataset.")
+        # attach ids
+        training_set$id <- tolower(paste(training_set$name, training_set$chrom, sep = "_"))
+        training_set <- training_set[order(training_set$id),]
+        training_genes <- load_data(input$tg2$datapath)
+        training_genes$id <- tolower(paste(training_genes$gene, training_genes$chrom, sep = "_"))
+        ids_to_keep <- intersect(training_genes$id, training_set$id)
+        training_set <- training_set[training_set$id %in% ids_to_keep, ]
+        training_genes <- training_genes[training_genes$id %in% ids_to_keep, ]
+        # Appends training genes to modified df
+        validation <- training_set[order(training_set$id),]
+        training_genes <- training_genes[order(training_genes$id),]
+        validation$status <- training_genes$status
+        validation[[input$targetFeature]] <- sub(input$positiveClass, "MAE", validation[[input$targetFeature]])
+    }
+    
+    cutoff <- createDataPartition(validation$status, p = ((100-input$trainingPercent)/100),
                                   list = FALSE, times = 1)
-    validation <- training_set[-cutoff,]
+    validation <- validation[-cutoff,]
   }
  
   #### get names of models
