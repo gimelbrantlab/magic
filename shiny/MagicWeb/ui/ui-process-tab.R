@@ -28,17 +28,17 @@ tabPanel(value = "process",
         title = "Process",
          sidebarLayout(
            sidebarPanel = sidebarPanel(
-              tags$h3(HTML("<u>Input to Processing</u>")),                 
-              h4( HTML("First, set a path to where your data lives.")),
-              shinyDirButton("dir", "Choose input directory", "Upload"),
-              h4( HTML("Now choose your output folder")),
-              shinyDirButton("outputPath", "Choose output directory", "Upload"),
+              #tags$h4(HTML("<u>Input to Processing</u>")),                 
+              tags$p(HTML("<b>First, set a path to where your data lives</b>")),
+              shinyDirButton("dir", "Input directory", "Upload"),
               textInput(
                 'fileInput',
                 label = h5("Text file with names of marks (e.g., 'input.txt'):"),
                 value = "input.txt"
               ),
-              br(),
+              tags$p(HTML("<b>Select output directory</b>")),
+              shinyDirButton("outputPath", "Output directory", "Upload"),
+              tags$p(HTML("<br>")),
              selectizeInput('assembly', 'Assembly',
                                choices = c(assembly, "other"),
                                selected = "hg19"),
@@ -60,11 +60,7 @@ tabPanel(value = "process",
                             multiple=TRUE),
              checkboxInput("noOverlap",
                            "Disable overlap of promoter and gene body?",
-                           value = FALSE)%>% 
-               shinyInput_label_embed(
-                 icon("info") %>%
-                   bs_embed_tooltip(title = "Add")
-               ),
+                           value = FALSE),
              sliderInput("dropPercent", "Choose the bottom percentile of genes to drop (to eliminate genes with low input):", 0.05,
                          min = 0, max = 0.80, step = 0.01),
              selectizeInput("cores",

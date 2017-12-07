@@ -81,7 +81,7 @@ observeEvent(input$processDataButton,
       { system2("Rscript", args)}, error=function(err){
         traceback()
       })
-      ) # error = function(e) e))
+      ) 
     
   }
    

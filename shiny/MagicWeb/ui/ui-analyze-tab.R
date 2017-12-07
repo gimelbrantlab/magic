@@ -28,11 +28,11 @@ tabPanel(value = "analyze",
          title = "Analyze",
          sidebarLayout(
            sidebarPanel(
-             tags$h4(HTML("<u>Select model output directory</u>")),
-             shinyDirButton("analyzeOutput", "Choose output directory", "Upload"),
+             tags$p(HTML("<br><b>Select output directory</b>")),
+             shinyDirButton("analyzeOutput", "Output directory", "Upload"),
              br(),
              br(),
-             fileInput('analysisFile', 'Upload processed TSV file',
+             fileInput('analysisFile', 'Upload file with processed chromatin data',
                        accept = acceptable_file_types
                        ) %>% 
                shinyInput_label_embed(
@@ -40,7 +40,7 @@ tabPanel(value = "analyze",
                    bs_embed_tooltip(title = "In most cases, it is joined_scores_percentile.txt in your output folder")
                ),
              fileInput('expressionData', 
-                       label = "Input expression and length file if available") %>% 
+                       label = "Upload file with gene lengths and expression (if available)") %>% 
                shinyInput_label_embed(
                  icon("info") %>%
                    bs_embed_tooltip(title = "Please see readme for the file format")
@@ -74,7 +74,7 @@ tabPanel(value = "analyze",
                ),
              actionButton("analyzeDataButton", "Analyze data", width = "100%"),
              br(),
-             h4( HTML("Now, to visualize your results, press the button below.")),
+             tags$p(HTML("<br><b>Now, to visualize your results, press the button below:</b>")),
              conditionalPanel("input.analyzeDataButton",
                               actionButton("analyzeTableButton", "Show table of prediction results", width = "100%")
              )

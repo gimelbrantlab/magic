@@ -5,9 +5,9 @@ rm(list=ls())
 # VARIABLES
 ######
 
-src_folder <- file.path("..", "..", "src")
-models_folder <- file.path("..", "..", "models")
-reference_folder <- file.path("..", "..", "reference")
+src_folder <- file.path("src")
+models_folder <- file.path("models")
+reference_folder <- file.path("reference")
 
 ######
 # LIBRARIES AND SCRIPTS

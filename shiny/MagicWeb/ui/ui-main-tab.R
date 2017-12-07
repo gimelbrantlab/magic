@@ -38,12 +38,12 @@ tabPanel(value = "main_panel",
              h4(HTML("<u>Overview</u>")),
              tags$p(HTML(
               "A large fraction of human and mouse genes is subject to a regulatory mechanism that controls 
-              allele-specific and monoallelic expression (MAE). Its detection is challenging; at the same time, 
+              allele-specific and <b> monoallelic expression (MAE)</b>. MAE detection is challenging; at the same time, 
               it is highly tissue-specific, and being able to detect it in multiple cell and tissue types is 
               necessary to understand and map it.  We have previously reported that a specific and sensitive 
-              gene-body chromatin signature can identify MAE genes in a sequence-independent way in 
-              multiple tissue types. Here we present a robust and convenient pipeline for monoallelic gene 
-              inference from chromatin (MaGIC). It uses histone mark signature within gene bodies to 
+              gene-body <b>chromatin signature</b> can identify MAE genes in a sequence-independent way in 
+              multiple tissue types. Here we present a robust and convenient pipeline for <b>monoallelic gene 
+              inference from chromatin (MaGIC)</b>. It uses histone mark signature to 
               predict monoallelic versus biallelic gene expression and can be used via command line or 
               Shiny web application.")),
              h4(HTML("<u>The pipeline</u>")),
