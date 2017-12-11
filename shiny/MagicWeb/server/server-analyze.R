@@ -27,7 +27,7 @@
 # sets output path
 shinyDirChoose(input, 'analyzeOutput', roots = c(home = '~'), filetypes = c('', 'txt','bigWig',"tsv","csv","bw", "rds"))
 analyzeOutput <- reactive(input$analyzeOutput)
-output$analyzeOutput <- renderPrint(analyzeOutput())
+output$analyzeOutput <- renderText({parseDirPath(c(home = '~'), analyzeOutput())})
 
 observeEvent(
   ignoreNULL = TRUE,
@@ -80,7 +80,7 @@ if (!is.null(output_generate)){
                   "-m", paste(output_generate, "/model_output", sep=""),
                   "-o", paste(output_analyze, "/analysis_output", sep=""),
                   "-p", "MAE")
-    if(!is.null(input$exModels)) {args <- paste(args, "-ex", input$exModels)}
+    if(!is.null(input$exModels)) {args <- paste(args, "-ex", paste(unlist(input$exModels), collapse=','))}
     if(!is.null(input$expression_filter)) { args <- paste(args, "-f", input$expressionData) }
     if(!is.null(input$expression_filter)) { args <- paste(args, "-l", input$lengthFilter) }
     print(paste(analyze_cmd, args))
@@ -100,7 +100,7 @@ if (!is.null(output_generate)){
                     "-m", paste(model_dir),
                     "-o", paste(output_analyze, "/analysis_output", sep=""),
                     "-p", "MAE")
-      if(!is.null(input$exModels)) {args <- paste(args, "-ex", input$exModels)}
+      if(!is.null(input$exModels)) {args <- paste(args, "-ex", paste(unlist(input$exModels), collapse=','))}
       if(!is.null(input$expression_filter)) { args <- paste(args, "-f", input$expressionData) }
       if(!is.null(input$expression_filter)) { args <- paste(args, "-l", input$lengthFilter) }
       analyze_output <- capture.output(tryCatch(
@@ -117,7 +117,7 @@ if (!is.null(output_generate)){
                     "-m", models_folder,
                     "-o", paste(output_analyze, "/analysis_output", sep=""),
                     "-p", "MAE")
-      if(!is.null(input$exModels)) {args <- paste(args, "-ex", input$exModels)}
+      if(!is.null(input$exModels)) {args <- paste(args, "-ex", paste(unlist(input$exModels), collapse=','))}
       if(!is.null(input$expression_filter)) { args <- paste(args, "-f", input$expressionData) }
       if(!is.null(input$expression_filter)) { args <- paste(args, "-l", input$lengthFilter) }
       analyze_output <- capture.output(tryCatch(

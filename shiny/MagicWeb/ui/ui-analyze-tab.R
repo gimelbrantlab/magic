@@ -30,6 +30,8 @@ tabPanel(value = "analyze",
            sidebarPanel(
              tags$p(HTML("<br><b>Select output directory</b>")),
              shinyDirButton("analyzeOutput", "Output directory", "Upload"),
+             verbatimTextOutput("analyzeOutput", placeholder = TRUE),
+             #verbatimTextOutput("outputPath", placeholder = TRUE),
              br(),
              br(),
              fileInput('analysisFile', 'Upload file with processed chromatin data',

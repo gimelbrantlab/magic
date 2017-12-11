@@ -38,7 +38,9 @@ model_dir <<- NULL
 # sets output path
 shinyDirChoose(input, 'generateOutput', roots = c(home = '~'), filetypes = c('', 'txt','bigWig',"tsv","csv","bw",".rds"))
 generateOutput <- reactive(input$generateOutput)
-output$generateOutput <- renderPrint(generateOutput())
+output$generateOutput <- renderText({parseDirPath(c(home = '~'), generateOutput())})
+
+
 
 observeEvent(
   ignoreNULL = TRUE,

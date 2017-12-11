@@ -87,7 +87,8 @@ shinyServer(function(input, output, session) {
   
   shinyDirChoose(input, 'dir', roots = c(home = '~'), filetypes = c('', 'txt','bigWig',"tsv","csv","bw"))
   dir <- reactive(input$dir)
-  output$dir <- renderPrint(dir())
+  #output$dir <- renderPrint(dir())
+  output$dir <- renderText({parseDirPath(c(home = '~'), dir())})
   
   # path
   # datapath <<- reactive({
@@ -108,7 +109,8 @@ shinyServer(function(input, output, session) {
   
   shinyDirChoose(input, 'outputPath', roots = c(home = '~'), filetypes = c('', 'txt','bigWig',"tsv","csv","bw","rds"))
   outputPath <- reactive(input$outputPath)
-  output$outputPath <- renderPrint(outputPath())
+  #output$outputPath <- renderPrint(outputPath())
+  output$outputPath <- renderText({parseDirPath(c(home = '~'), outputPath())})
   
   observeEvent(
     ignoreNULL = TRUE,

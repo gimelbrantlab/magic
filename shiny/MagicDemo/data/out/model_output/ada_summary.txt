@@ -1,0 +1,37 @@
+ada summary
+
+
+[1] "ada time taken: 36.5964269638062"
+Boosted Classification Trees 
+
+1014 samples
+   4 predictor
+   2 classes: 'BAE', 'MAE' 
+
+No pre-processing
+Resampling: Cross-Validated (5 fold) 
+Summary of sample sizes: 811, 812, 811, 811, 811 
+Resampling results across tuning parameters:
+
+  maxdepth  iter  Accuracy   Kappa    
+  1          50   0.9043457  0.6931074
+  1         100   0.9033605  0.6909926
+  1         150   0.9033605  0.6899731
+  2          50   0.8994196  0.6784693
+  2         100   0.9033605  0.6888468
+  2         150   0.9033605  0.6897537
+  3          50   0.9063259  0.7004703
+  3         100   0.9043603  0.6952095
+  3         150   0.9043603  0.6952095
+
+Tuning parameter 'nu' was held constant at a value of 0.1
+Kappa was used to select the optimal model using  the largest value.
+The final values used for the model were iter = 50, maxdepth = 3 and nu = 0.1.
+
+
+ Accuracy     Kappa 
+0.9011858 0.6713432 
+sensitivity: 0.666666666666667 
+
+specificity: 0.96039603960396 
+
