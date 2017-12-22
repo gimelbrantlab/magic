@@ -123,17 +123,44 @@ install_generate_libraries <- function(lib = NA) {
   cat("finished installing generate.R libraries\n")
 }
 
+# Installs bwtool from source
+install_bwtool <- function(bin) {
+   prev_wd <- getwd()
+   setwd(bin)
+   system2("git", args = c("clone", "https://github.com/CRG-Barcelona/libbeato.git"))
+   system2("git", args = c("clone", "https://github.com/CRG-Barcelona/bwtool.git"))
+   setwd("libbeato/")
+   system2("./configure", args = c("--prefix=$HOME", "CFLAGS=\"-g -O0 -I${HOME}/include\"", 
+								   "LDFLAGS=-L${HOME}/lib"))
+   system2("make")
+   system2("make", args = c("install"))
+   setwd("../bwtool/")
+   system2("./configure", args = c("--prefix=$HOME", "CFLAGS=\"-g -O0 -I${HOME}/include\"", 
+								   "LDFLAGS=-L${HOME}/lib"))
+   system2("make")
+   system2("make", args = c("install"))
+   setwd(prev_wd)
+}
+
 # Installs all required packages to the specified folder and adds folder to known library trees
-magic_install <- function(lib) {
+magic_install <- function(lib, bin) {
+
+  # Installs libraries
   get_package("optparse", lib = lib)
   install_process_libraries(lib)
   install_generate_libraries(lib)
   install_analyze_libraries(lib)
   install_shiny_libraries(lib)
   newLibPaths <- paste(".libPaths(\"", lib, "\")", sep = "")
+  
+  # Adds folder to local Rprofile
   f <- file(file.path(getwd(), ".Rprofile"))
   writeLines(newLibPaths, f)
   close(f)
+  
+  # Installs bwtool
+  install_bwtool(bin)
+  cat("finished installing bwtool\n")
 }
 
 
@@ -141,21 +168,28 @@ magic_install <- function(lib) {
 # COMMAND LINE INTERFACE
 ######
 
+# Suppressingfire's SO solution to get executing script.
+# Found at https://stackoverflow.com/questions/1815606/rscript-determine-path-of-the-executing-script/36777602
+args <- commandArgs(trailingOnly=FALSE)
+current_folder <- dirname(sub("--file=", "", args[grep("--file=", args)]))
+args <- args[match("--args", args):length(args)]
 
-# Gets options and checks arguments
-args <- commandArgs(trailingOnly=TRUE)
+# Gets path to bin folder 
+bin_folder <- file.path(current_folder, "..", "bin")
+
+# Checks arguments
 lib <- NA
-if (length(args) == 1) {
-  lib <- args[1]
+if (length(args) == 2) {
+  lib <- args[2]
   if(!dir.exists(lib)) {
     cat("creating given package installation directory...\n")
     dir.create(lib)
   }
-} else if (length(args) > 1) {
+} else if (length(args) > 2) {
   stop("too many args, only arg is an optional path to a package install directory")
 }
 
 # Installs all required packages
-magic_install(lib)
+magic_install(lib, bin_folder)
 
 
