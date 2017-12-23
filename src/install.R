@@ -57,6 +57,7 @@ install_shiny_libraries <- function(lib = NA) {
   get_package("GGally", lib = lib)
   get_package("PRROC", lib = lib)
   get_package("shinyFiles", lib = lib)
+  get_package("bsplus", lib = lib)
   cat("finished installing shiny libraries\n")
 }
 
