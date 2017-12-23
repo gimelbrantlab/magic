@@ -172,20 +172,24 @@ magic_install <- function(lib, bin) {
 # Found at https://stackoverflow.com/questions/1815606/rscript-determine-path-of-the-executing-script/36777602
 args <- commandArgs(trailingOnly=FALSE)
 current_folder <- dirname(sub("--file=", "", args[grep("--file=", args)]))
-args <- args[match("--args", args):length(args)]
+num_args <- 1
+if (!is.na(match("--args", args))) {
+   args <- args[match("--args", args):length(args)]
+   num_args <- length(args)
+}
 
 # Gets path to bin folder 
 bin_folder <- file.path(current_folder, "..", "bin")
 
 # Checks arguments
 lib <- NA
-if (length(args) == 2) {
+if (num_args == 2) {
   lib <- args[2]
   if(!dir.exists(lib)) {
     cat("creating given package installation directory...\n")
     dir.create(lib)
   }
-} else if (length(args) > 2) {
+} else if (num_args > 2) {
   stop("too many args, only arg is an optional path to a package install directory")
 }
 
