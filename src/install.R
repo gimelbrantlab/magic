@@ -178,8 +178,11 @@ if (!is.na(match("--args", args))) {
    num_args <- length(args)
 }
 
-# Gets path to bin folder 
+# Gets path to bin folder and creates it if it doesn't exist
 bin_folder <- file.path(current_folder, "..", "bin")
+if (!dir.exists(bin_folder)) {
+   dir.create(bin_folder)
+}
 
 # Checks arguments
 lib <- NA
