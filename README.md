@@ -19,9 +19,8 @@ Rscript src/install.R
 ```
 To run the Shiny app:
 ```
-R -e "shiny::runApp('shiny/MagicWeb/')"
+R -e "shiny::runApp('shiny/MagicWeb/', launch.browser = T)"
 ```
-And then open http://127.0.0.1:3502 in your browser.
 
 Mac users will need to install xcode before running install.R:
 ```
