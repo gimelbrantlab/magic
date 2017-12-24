@@ -5,9 +5,27 @@ a set of chromatin marks. Primarily based on the work of the [Gimelbrant lab](ht
 
 ## Requirements
 
-Linux machine with updated R (~3.3.1), the Rscript utility, and a variety of different R packages.
-When you run the program, predict_mae.R, you will be asked if you want to install packages you're 
-missing.
+Linux/Mac machine with updated R (~3.3.1), the Rscript utility, and a variety of different R packages that will be installed when you run install.R. install.R will also install [bwtool](https://github.com/CRG-Barcelona/bwtool/wiki) for you. 
+
+## Installation
+
+Installing MaGIC should just be a matter of a few commands, hopefully.  [bwtool](https://github.com/CRG-Barcelona/bwtool/wiki) is the only requirement.
+
+To install MaGIC system-wide (i.e. with root/sudo access): 
+```
+https://github.com/gimelbrantlab/magic.git
+cd magic
+Rscript src/install.R
+```
+To run the Shiny app:
+```
+R -e "shiny::runApp('shiny/MagicWeb/', launch.browser = T)"
+```
+
+Mac users will need to install xcode before running install.R:
+```
+xcode-select --install
+```
 
 ## Process
 
