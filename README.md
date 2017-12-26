@@ -13,7 +13,7 @@ Installing MaGIC should just be a matter of a few commands, hopefully.  [bwtool]
 
 To install MaGIC system-wide (i.e. with root/sudo access): 
 ```
-https://github.com/gimelbrantlab/magic.git
+git clone https://github.com/gimelbrantlab/magic.git
 cd magic
 Rscript src/install.R
 ```
