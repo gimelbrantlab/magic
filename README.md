@@ -9,7 +9,7 @@ Linux/Mac machine with updated R (~3.3.1), the Rscript utility, and a variety of
 
 ## Installation
 
-Installing MaGIC should just be a matter of a few commands, hopefully.  [bwtool](https://github.com/CRG-Barcelona/bwtool/wiki) is the only requirement.
+Installing MaGIC should just be a matter of a few commands.  [bwtool](https://github.com/CRG-Barcelona/bwtool/wiki) is the only requirement.
 
 To install MaGIC system-wide (i.e. with root/sudo access): 
 ```
@@ -17,7 +17,8 @@ git clone https://github.com/gimelbrantlab/magic.git
 cd magic
 Rscript src/install.R
 ```
-To run the Shiny app:
+This command will install MaGIC to run with command line. For visualization purposes, we also developed Shiny App that can be run with the following command: 
+
 ```
 R -e "shiny::runApp('shiny/MagicWeb/', launch.browser = T)"
 ```
@@ -29,11 +30,11 @@ xcode-select --install
 
 ## Process
 
-This script processes ChIP-Seq/MBD-seq/etc. data from .bigWig/bw file format to informative tables primed for analyze.R or generate.R.
+This script processes ChIP-Seq data from .bigWig/bw file format to informative tables primed for analyze.R or generate.R.
 
-*Input file*: contains pathnames of mark and control files in the bigWig file format (.bigWig or .bw). Mark
-files contain chromatin mark enrichment data across an organism's genome, generally ChIP-Seq,
-and control (otherwise known as input) files contain baseline data for the same experiment. The format for the input file is as follows, with values separated by tabs and comments indicated by "#":
+### Input
+
+*Input* is bigWig files with chromatin marks data (and control file if available) and text input file containing pathnames of mark and control files. The format for the *input file* is as follows, with values separated by tabs and comments indicated by "#":
 
 | mark name 	| mark file                      	| control file                        	|
 |-----------	|--------------------------------	|-------------------------------------	|
@@ -46,13 +47,13 @@ and control (otherwise known as input) files contain baseline data for the same 
 ### Example command line usage
 
 *Minimum*:
-    Rscript process.R -i input\_file -r "mm9"
+    Rscript process.R -i data/input.txt -r "mm9"
     
 *Human genome*:
-    Rscript process.R -i input\_file -o output -r "hg19"
+    Rscript process.R -i data/input.txt -o output -r "hg19"
     
 *Mouse genome with many options*:
-    Rscript process.R -i input\_file -o output -r "mm9" -f -p 2500 -d 0.01 -e -l -m -s 3
+    Rscript process.R -i data/input.txt -o output -r "mm9" -f -p 2500 -d 0.01 -e -l -m -s 3
     
 ### Arguments
 
