@@ -1,0 +1,4 @@
+Model	Sensitivity	Specificity	PPV	NPV	F1	Kappa	Accuracy	Balanced_Accuracy
+ada	1	1	1	1	1	1	1	1
+svmPoly	1	1	1	1	1	1	1	1
+rf	1	0.833	0.5	1	0.667	0.588	0.857	0.917
