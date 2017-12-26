@@ -1,7 +1,7 @@
 # MaGIC 2.0
 
-This software generates predictions or classifiers for gene expression patterns (MAE or BAE) from
-a set of chromatin marks. Primarily based on the work of the [Gimelbrant lab](https://gimelbrantlab.dfci.harvard.edu/). 
+This software generates predictions or classifiers for monoallelic gene expression (MAE) from
+chromatin mark enrichment data. It is primarily based on the work of the [Gimelbrant lab](https://gimelbrantlab.dfci.harvard.edu/).
 
 ## Requirements
 
