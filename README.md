@@ -62,6 +62,7 @@ Rscript src/process.R -i data/input.txt -o data/output -r "hg19" -p 0 -s 3
 You will get joint_scores_percentile.txt in your output folder, and this file will be used for further analysis.
 
 *Generate.R*
+
 Generate.R script will train model using pre-processed data from joint_scores_percentile_full_dataset.txt file packaged with installation. Run the following command to train ada, SVM and random forest model using 80% percent of the data for training and 20% for testing:
 
 ```
@@ -70,6 +71,7 @@ Rscript src/generate.R -i data/joined_scores_percentile.txt -o data/classifiers 
 The output folder will contain model_output folder with summary_models.tsv file describing key metrics of the models' performance. 
 
 *Analyze.R*
+
 Finally, you will call analyze.R, using the joined_scores_percentile.txt (output from process.R) and the default classifiers that are packaged with MaGIC 2.0 as inputs.
 ```
 Rscript src/analyze.R -i data/joined_scores_percentile.txt -o data/output -m models
