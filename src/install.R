@@ -57,7 +57,6 @@ install_shiny_libraries <- function(lib = NA) {
   get_package("GGally", lib = lib)
   get_package("PRROC", lib = lib)
   get_package("shinyFiles", lib = lib)
-  get_package("bsplus", lib = lib)
   cat("finished installing shiny libraries\n")
 }
 
@@ -78,7 +77,6 @@ install_analyze_libraries <- function(lib = NA) {
   get_package("nnet", lib = lib)
   get_package("lattice", lib = lib)
   get_package("optparse", lib = lib)
-  get_package("partykit", lib = lib)
   get_package("evtree", lib = lib)
   get_package("MASS", lib = lib)
   get_package("dplyr", lib = lib)
@@ -119,7 +117,6 @@ install_generate_libraries <- function(lib = NA) {
   get_package("lattice", lib = lib)
   get_package("optparse", lib = lib)
   get_package("dplyr", lib = lib)
-  get_package("partykit", lib = lib)
   get_package("evtree", lib = lib)
   get_package("MASS", lib = lib)
   get_package("e1071", lib = lib)

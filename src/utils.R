@@ -37,6 +37,7 @@ load_data <- function(training_path){
 
 # load shiny libraries
 load_shiny_libraries <- function(lib.loc = NULL) {
+  library(methods)
   library(shiny, lib.loc = lib.loc)
   library(markdown, lib.loc = lib.loc)
   library(shinythemes, lib.loc = lib.loc)
@@ -47,6 +48,7 @@ load_shiny_libraries <- function(lib.loc = NULL) {
 
 # Loads or installs all required packages for analysis
 load_analyze_libraries <- function(lib.loc = NULL) {
+  library(methods)
   library(ggplot2, lib.loc = lib.loc)
   library(scales, lib.loc = lib.loc)
   library(randomForest, lib.loc = lib.loc)
@@ -60,23 +62,28 @@ load_analyze_libraries <- function(lib.loc = NULL) {
   library(randomForest, lib.loc = lib.loc)
   library(RSNNS, lib.loc = lib.loc)
   library(nnet, lib.loc = lib.loc)
-  library(lattice, lib.loc = lib.loc)
   library(optparse, lib.loc = lib.loc)
   library(evtree, lib.loc = lib.loc)
   library(MASS, lib.loc = lib.loc)
   library(dplyr, lib.loc = lib.loc)
+  library(foreach, lib.loc = lib.loc)
+  library(iterators, lib.loc = lib.loc)
   library(parallel, lib.loc = lib.loc)
   library(e1071, lib.loc = lib.loc)
 }
 
 # Loads or installs all required packages for processing
 load_process_libraries <- function(lib.loc = NULL) {
+  library(methods)
   library(plyr, lib.loc = lib.loc)
   library(dplyr, lib.loc = lib.loc)
   library(reshape2, lib.loc = lib.loc)
   library(kernlab, lib.loc = lib.loc)
+  library(ggplot2, lib.loc = lib.loc)
   library(caret, lib.loc = lib.loc)
   library(lattice, lib.loc = lib.loc)
+  library(foreach, lib.loc = lib.loc)
+  library(iterators, lib.loc = lib.loc)
   library(parallel, lib.loc = lib.loc)
   library(diptest, lib.loc = lib.loc)
   library(doMC, lib.loc = lib.loc)
@@ -86,6 +93,7 @@ load_process_libraries <- function(lib.loc = NULL) {
 
 # Loads or installs all required packages for machine learning
 load_generate_libraries <- function(lib.loc = NULL) {
+  library(methods)
   library(scales, lib.loc = lib.loc)
   library(ggplot2, lib.loc = lib.loc)
   library(caret, lib.loc = lib.loc)
@@ -125,7 +133,6 @@ get_install_dir <- function(main_folder) {
   install_data <- file.path(main_folder, "install_data.txt")
   if (file.exists(install_data)) {
     lib <- readLines(install_data)[1]
-	print(lib)
 	return(lib)
   } else {
     return(NULL)
