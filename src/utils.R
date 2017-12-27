@@ -120,6 +120,19 @@ load_generate_scripts <- function(src_folder) {
   source(file.path(src_folder, "compare_ml.R"))
 }
 
+# Loads in packages from custom install directory if saved via install.R
+get_install_dir <- function(main_folder) {
+  install_data <- file.path(main_folder, "install_data.txt")
+  if (file.exists(install_data)) {
+    lib <- readLines(install_data)[1]
+	print(lib)
+	return(lib)
+  } else {
+    return(NULL)
+  }
+}
+
+
 ######
 # UTILITY FUNCTIONS
 ######
@@ -130,8 +143,8 @@ cat_f <- function(s, file, append = TRUE) {
 }
 
 # Loads all required packages for argument parsing
-load_initial_libraries <- function() {
-  library(optparse)
+load_initial_libraries <- function(lib.loc = NULL) {
+  library(optparse, lib.loc = lib.loc)
 }
 
 # Loads all file names matching a given pattern, with a name

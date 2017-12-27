@@ -150,10 +150,11 @@ validation <- function(model_name, output_folder, validation_set) {
 generate_main <- function(current_folder, input_file, output_folder,
                           sampling_method, selection_rule, target_feature,
                           training_genes_file, p, metric, 
-                          cv, model_string, validation_file) {
+                          cv, model_string, validation_file,
+						  lib) {
   
   # Loads required scripts and libraries
-  load_generate_libraries()
+  load_generate_libraries(lib)
   load_generate_scripts(current_folder)
   
   # Gets reference folder based on location of executing script
@@ -211,8 +212,11 @@ current_folder <- dirname(sub("--file=", "", args[grep("--file=", args)]))
 models_folder <- file.path(current_folder, "..", "models")
 source(file.path(current_folder, "utils.R"))
 
+# Gets custom install directory if used in install.R
+lib <- get_install_dir(file.path(current_folder, ".."))
+
 # Loads optparse
-load_initial_libraries()
+load_initial_libraries(lib)
 
 # Builds option list using optparse
 options = list(
@@ -267,10 +271,12 @@ if (!quiet) {
   invisible(generate_main(current_folder, input_file, output_folder, 
                           sampling_method, selection_rule, target_feature,
                           training_genes_file, p, metric, 
-                          cv, model_string, validation_file))
+                          cv, model_string, validation_file,
+						  lib))
 } else {
   generate_main(current_folder, input_file, output_folder, 
                 sampling_method, selection_rule, target_feature,
                 training_genes_file, p, metric, 
-                cv, model_string, validation_file)
+                cv, model_string, validation_file,
+				lib)
 }

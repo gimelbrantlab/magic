@@ -154,10 +154,11 @@ filter_genes <- function(df, filter_file, filter_length) {
 
 # Analyzes given dataset
 analyze_main <- function(current_folder, input_file, models_folder, 
-                         output_folder, excluded_models, positive_class, filter_file, filter_length) {
+                         output_folder, excluded_models, positive_class, 
+						 filter_file, filter_length, lib) {
   
   # Loads required libraries
-  load_analyze_libraries()
+  load_analyze_libraries(lib)
   
   # Reads input file into df and removes NA values
   df <- read.csv(input_file, sep = "\t")
@@ -191,8 +192,11 @@ current_folder <- dirname(sub("--file=", "", args[grep("--file=", args)]))
 models_folder <- file.path(current_folder, "..", "models")
 source(file.path(current_folder, "utils.R"))
 
+# Gets custom install directory if used in install.R
+lib <- get_install_dir(file.path(current_folder, ".."))
+
 # Loads optparse
-load_initial_libraries()
+load_initial_libraries(lib)
 
 # Builds option list using optparse
 options = list(
@@ -235,8 +239,10 @@ filter_length <- opt$f_length
 # Calls main function, disabling output if running in quiet mode
 if (!quiet) {
   invisible(analyze_main(current_folder, input_file, models_folder, 
-                         output_folder, excluded_models, positive_class, filter_file, filter_length))
+                         output_folder, excluded_models, positive_class, 
+						 filter_file, filter_length, lib))
 } else {
   analyze_main(current_folder, input_file, models_folder, 
-               output_folder, excluded_models, positive_class, filter_file, filter_length)
+               output_folder, excluded_models, positive_class, 
+			   filter_file, filter_length, lib)
 }
