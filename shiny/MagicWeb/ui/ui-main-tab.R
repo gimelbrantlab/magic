@@ -52,8 +52,7 @@ tabPanel(value = "main_panel",
                Generate.R trains classifiers using ChIP-seq enrichment and true MAE/BAE calls. 
                Analyze.R uses classifiers to predict MAE/BAE gene status from ChIP-seq data. "
              )),
-             tags$img(HTML("<img src = \"images/pipeline_Magic.pdf\", height = 384, width = 512>")),
-             #tags$p(img(src = "images/pipeline_Magic.pdf")),
+             tags$img(HTML("<img src = \"images/pipeline_Magic.png\", height = 384, width = 512>")),
              width = 12
              ),
            mainPanel(NULL)

@@ -36,52 +36,74 @@ load_data <- function(training_path){
 }
 
 # load shiny libraries
-load_shiny_libraries <- function(){
-  get_package("shiny")
-  get_package("markdown")
-  get_package("shinythemes")
-  get_package("GGally")
-  get_package("PRROC")
-  get_package("shinyFiles")
+load_shiny_libraries <- function(lib.loc = NULL) {
+  library(shiny, lib.loc = lib.loc)
+  library(markdown, lib.loc = lib.loc)
+  library(shinythemes, lib.loc = lib.loc)
+  library(GGally, lib.loc = lib.loc)
+  library(PRROC, lib.loc = lib.loc)
+  library(shinyFiles, lib.loc = lib.loc)
 }
 
 # Loads or installs all required packages for analysis
-load_analyze_libraries <- function() {
-  get_package("ggplot2")
-  get_package("scales")
-  get_package("randomForest")
-  get_package("kernlab")
-  get_package("caret")
-  get_package("lattice")
-  get_package("pROC")
-  get_package("ada")
-  get_package("fastAdaboost")
-  get_package("mboost")
-  get_package("randomForest")
-  get_package("RSNNS")
-  get_package("nnet")
-  get_package("lattice")
-  get_package("optparse")
-  get_package("evtree")
-  get_package("MASS")
-  get_package("dplyr")
-  get_package("parallel")
-  get_package("e1071")
+load_analyze_libraries <- function(lib.loc = NULL) {
+  library(ggplot2, lib.loc = lib.loc)
+  library(scales, lib.loc = lib.loc)
+  library(randomForest, lib.loc = lib.loc)
+  library(kernlab, lib.loc = lib.loc)
+  library(caret, lib.loc = lib.loc)
+  library(lattice, lib.loc = lib.loc)
+  library(pROC, lib.loc = lib.loc)
+  library(ada, lib.loc = lib.loc)
+  library(fastAdaboost, lib.loc = lib.loc)
+  library(mboost, lib.loc = lib.loc)
+  library(randomForest, lib.loc = lib.loc)
+  library(RSNNS, lib.loc = lib.loc)
+  library(nnet, lib.loc = lib.loc)
+  library(lattice, lib.loc = lib.loc)
+  library(optparse, lib.loc = lib.loc)
+  library(evtree, lib.loc = lib.loc)
+  library(MASS, lib.loc = lib.loc)
+  library(dplyr, lib.loc = lib.loc)
+  library(parallel, lib.loc = lib.loc)
+  library(e1071, lib.loc = lib.loc)
 }
 
 # Loads or installs all required packages for processing
-load_process_libraries <- function() {
-  get_package("plyr")
-  get_package("dplyr")
-  get_package("reshape2")
-  get_package("kernlab")
-  get_package("caret", dependencies = TRUE)
-  get_package("lattice")
-  get_package("parallel")
-  get_package("diptest")
-  get_package("doMC", repos = "http://R-Forge.R-project.org")
-  get_package("e1071")
-  get_package("gridExtra")
+load_process_libraries <- function(lib.loc = NULL) {
+  library(plyr, lib.loc = lib.loc)
+  library(dplyr, lib.loc = lib.loc)
+  library(reshape2, lib.loc = lib.loc)
+  library(kernlab, lib.loc = lib.loc)
+  library(caret, lib.loc = lib.loc)
+  library(lattice, lib.loc = lib.loc)
+  library(parallel, lib.loc = lib.loc)
+  library(diptest, lib.loc = lib.loc)
+  library(doMC, lib.loc = lib.loc)
+  library(e1071, lib.loc = lib.loc)
+  library(gridExtra, lib.loc = lib.loc)
+}
+
+# Loads or installs all required packages for machine learning
+load_generate_libraries <- function(lib.loc = NULL) {
+  library(scales, lib.loc = lib.loc)
+  library(ggplot2, lib.loc = lib.loc)
+  library(caret, lib.loc = lib.loc)
+  library(doMC, lib.loc = lib.loc)
+  library(pROC, lib.loc = lib.loc)
+  library(ada, lib.loc = lib.loc)
+  library(fastAdaboost, lib.loc = lib.loc)
+  library(mboost, lib.loc = lib.loc)
+  library(randomForest, lib.loc = lib.loc)
+  library(RSNNS, lib.loc = lib.loc)
+  library(nnet, lib.loc = lib.loc)
+  library(kernlab, lib.loc = lib.loc)
+  library(lattice, lib.loc = lib.loc)
+  library(optparse, lib.loc = lib.loc)
+  library(dplyr, lib.loc = lib.loc)
+  library(evtree, lib.loc = lib.loc)
+  library(MASS, lib.loc = lib.loc)
+  library(e1071, lib.loc = lib.loc)
 }
 
 # Sources all scripts required for processing
@@ -90,28 +112,6 @@ load_process_scripts <- function(src_folder) {
   source(file.path(src_folder, "bigwig_to_scores.R"))
   source(file.path(src_folder, "normalize_scores.R"))
   source(file.path(src_folder, "join_input.R"))
-}
-
-# Loads or installs all required packages for machine learning
-load_generate_libraries <- function() {
-  get_package("scales", dependencies = TRUE)
-  get_package("ggplot2", dependencies = TRUE)
-  get_package("caret", dependencies = TRUE)
-  get_package("doMC", repos = "http://R-Forge.R-project.org")
-  get_package("pROC")
-  get_package("ada")
-  get_package("fastAdaboost")
-  get_package("mboost")
-  get_package("randomForest")
-  get_package("RSNNS")
-  get_package("nnet")
-  get_package("kernlab")
-  get_package("lattice")
-  get_package("optparse")
-  get_package("dplyr")
-  get_package("evtree")
-  get_package("MASS")
-  get_package("e1071")
 }
 
 # Sources all scripts required for machine learning
@@ -124,32 +124,14 @@ load_generate_scripts <- function(src_folder) {
 # UTILITY FUNCTIONS
 ######
 
-
-# Checks if a package is installed, and installs it if specified.
-# Also loads the package
-get_package <- function(package_name, repos = "http://cran.us.r-project.org", 
-                        dependencies = NA) {
-  if(!is.element(package_name, installed.packages()[,1])) {
-    print(package_name)
-    if (repos == "") {
-      install.packages(pkgs = package_name, dependencies = dependencies)
-    } else {
-      install.packages(pkgs = package_name, repos = repos)
-    }
-  }
-  if(!suppressMessages(require(package_name, character.only = TRUE))) {
-    stop(paste("Cannot load package", package_name))
-  }
-}
-
 # Wrapper for cat to write to output file
 cat_f <- function(s, file, append = TRUE) {
   cat(s, file = file, sep = "\n", append = append)
 }
 
-# Loads or installs all required packages for argument parsing
+# Loads all required packages for argument parsing
 load_initial_libraries <- function() {
-  get_package("optparse")
+  library(optparse)
 }
 
 # Loads all file names matching a given pattern, with a name
