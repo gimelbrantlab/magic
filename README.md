@@ -5,23 +5,7 @@ chromatin mark enrichment data. It is primarily based on the work of the [Gimelb
 
 ## Requirements
 
-Linux/Mac machine with updated R (~3.4.x), the Rscript utility, git.
-Run this commands to install R and git if you don't have them yet, on a Linux machine:
-```
-sudo apt install git
-sudo apt-get update
-sudo apt-get install r-base
-```
-
-And the same for Mac users. If you still don't have [brew](https://brew.sh/), please install it, it's what you want:
-```
-# /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-```
-And now install git and R: 
-```
-brew install git
-brew install r
-```
+Linux/Mac machine with updated R (~3.4.x) and git. Please see the [instructions](https://github.com/gimelbrantlab/magic/blob/master/Installation.md) if you don't have git or R installed. 
 
 ## MaGIC installation
 
@@ -48,7 +32,7 @@ rm -r magic
 
 ## Quick start
 
-The easiest way to test MaGIC is to run the Shiny app (see [Tutorial](https://github.com/gimelbrantlab/magic/Tutorial.md) for help). 
+The easiest way to test MaGIC is to run the Shiny app (see [Tutorial](https://github.com/gimelbrantlab/magic/blob/master/Tutorial.md) for help). 
 To run MaGIC in command you will run the following commands.
 
 *Process.R*
