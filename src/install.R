@@ -153,9 +153,11 @@ magic_install <- function(lib, bin) {
   install_shiny_libraries(lib)
   
   # Adds folder to local Rprofile
-  f <- file(file.path(getwd(), "install_data.txt"))
-  writeLines(lib, f)
-  close(f)
+  if(!is.na(lib)) {
+    f <- file(file.path(getwd(), "install_data.txt"))
+    writeLines(lib, f)
+    close(f)
+  }
   
   # Installs bwtool
   install_bwtool(bin)
