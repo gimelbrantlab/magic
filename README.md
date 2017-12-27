@@ -5,9 +5,25 @@ chromatin mark enrichment data. It is primarily based on the work of the [Gimelb
 
 ## Requirements
 
-Linux/Mac machine with updated R (~3.3.1), the Rscript utility, and a variety of different R packages that will be installed when you run install.R. install.R will also install [bwtool](https://github.com/CRG-Barcelona/bwtool/wiki) for you. 
+Linux/Mac machine with updated R (~3.4.x), the Rscript utility, git.
+Run this commands to install R and git if you don't have them yet, on a Linux machine:
+```
+sudo apt install git
+sudo apt-get update
+sudo apt-get install r-base
+```
 
-## Installation
+And the same for Mac users. If you still don't have [brew](https://brew.sh/), please install it, it's what you want:
+```
+# /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+```
+And now install git and R: 
+```
+brew install git
+brew install r
+```
+
+## MaGIC installation
 
 Installing MaGIC should just be a matter of a few commands.  [bwtool](https://github.com/CRG-Barcelona/bwtool/wiki) is the only requirement.
 
@@ -22,11 +38,13 @@ This command will install MaGIC to run with command line. For visualization purp
 ```
 R -e "shiny::runApp('shiny/MagicWeb/', launch.browser = T)"
 ```
+If you change your mind and want to uninstall MaGIC, you can just delete the whole folder:
 
-Mac users will need to install xcode before running install.R:
 ```
-xcode-select --install
+cd ..
+rm -r magic
 ```
+
 
 ## Process
 
