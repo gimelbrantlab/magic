@@ -535,9 +535,9 @@ process_main <- function(current_folder, input_file, output_folder,
                   percentile_output_file, norm_output_file, promoter_length)
   
   # Only generates histograms if input files exist
-  if(!all(is.na(input_df$input_files))) {
-    generate_histograms(input_df, output_folder, promoter_length)
-  }
+  # if(!all(is.na(input_df$input_files))) {
+  #   generate_histograms(input_df, output_folder, promoter_length)
+  # }
   
   # Removes intermediate files from output folder if specified
   if (clean) {
