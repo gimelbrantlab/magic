@@ -41,6 +41,22 @@ observeEvent(
   }
 )
 
+shinyDirChoose(input, 'modelFolder', roots = c(home = '~'), filetypes = c('', 'txt','rds'))
+modelFolder <- reactive(input$modelFolder)
+output$modelFolder <- renderText({parseDirPath(c(home = '~'), modelFolder())})
+
+observeEvent(
+  ignoreNULL = TRUE,
+  eventExpr = {
+    input$modelFolder
+  },
+  handlerExpr = {
+    home <- normalizePath("~")
+    models_folder <<- file.path(home, paste(unlist(modelFolder()$path[-1]), collapse = .Platform$file.sep))
+    print(models_folder)
+  }
+)
+
 
 ### DATA ANALYSIS
 
@@ -65,68 +81,44 @@ observeEvent(input$analyzeDataButton,
                                 incProgress(1/length(message_list), detail = paste(message_list[i]))
                                 Sys.sleep(0.25)
                               }
-
-                              done = FALSE
-
-                              if (!is.null(output_generate)){
-                                if(dir.exists(paste(output_generate, "/model_output", sep=""))){
-                                  print("a")
+                              if(dir.exists(paste(models_folder))){
+                                filenames <- Sys.glob(file.path(models_folder, "*_model.rds"))
+                                if (length(filenames)>0) {
                                   # Builds command to run analyze.R and executes it
                                   analyze_output <- NULL
                                   analyze_running <- TRUE
                                   analyze_cmd <- paste("Rscript")
                                   args <- paste(analyze_file,
                                                 "-i", input$analysisFile$datapath,
-                                                "-m", paste(output_generate, "/model_output", sep=""),
+                                                "-m", paste(models_folder),
                                                 "-o", paste(output_analyze, "/analysis_output", sep=""),
                                                 "-p", "MAE")
-                                  if(!is.null(input$expression_filter)) { args <- paste(args, "-f", input$expressionData) }
-                                  if(!is.null(input$expression_filter)) { args <- paste(args, "-l", input$lengthFilter) }
-                                  print(paste(analyze_cmd, args))
-                                  analyze_output <- capture.output(tryCatch(
-                                    system2(analyze_cmd, args), error = function(e) e))
-                                }
-                              } else if(!is.null(model_dir)){
-                                if(dir.exists(paste(model_dir))){
-                                  print("b")
-                                  print(output_analyze)
-                                  # Builds command to run analyze.R and executes it
-                                  analyze_output <- NULL
-                                  analyze_running <- TRUE
-                                  analyze_cmd <- paste("Rscript")
-                                  args <- paste(analyze_file,
-                                                "-i", input$analysisFile$datapath,
-                                                "-m", paste(model_dir),
-                                                "-o", paste(output_analyze, "/analysis_output", sep=""),
-                                                "-p", "MAE")
-                                  if(!is.null(input$expression_filter)) { args <- paste(args, "-f", input$expressionData) }
-                                  if(!is.null(input$expression_filter)) { args <- paste(args, "-l", input$lengthFilter) }
-                                  analyze_output <- capture.output(tryCatch(
-                                    system2(analyze_cmd, args), error = function(e) e))
+                                  #if(!is.null(input$expression_filter)) { args <- paste(args, "-f", input$expressionData) }
+                                  #if(!is.null(input$lengthFilter)) { args <- paste(args, "-l", input$lengthFilter) }
                                   cat(args)
+                                  analyze_output <- capture.output(tryCatch(
+                                    system2(analyze_cmd, args), error = function(e) e))
+                                  predictTable <- load_data(paste(output_analyze, "/analysis_output/all_predictions.tsv", sep=""))
+                                  predictTable %>% dplyr::select(name, grep("_predictions", colnames(predictTable))) -> predictTable
+                                  output$predTbl <- renderDataTable(
+                                    predictTable
+                                  )
                                 }
-                              } else {
-                                # Builds command to run analyze.R and executes it
-                                analyze_output <- NULL
-                                analyze_running <- TRUE
-                                analyze_cmd <- paste("Rscript")
-                                args <- paste(analyze_file,
-                                              "-i", input$analysisFile$datapath,
-                                              "-m", models_folder,
-                                              "-o", paste(output_analyze, "/analysis_output", sep=""),
-                                              "-p", "MAE")
-                                if(!is.null(input$expression_filter)) { args <- paste(args, "-f", input$expressionData) }
-                                if(!is.null(input$expression_filter)) { args <- paste(args, "-l", input$lengthFilter) }
-                                analyze_output <- capture.output(tryCatch(
-                                  system2(analyze_cmd, args), error = function(e) e))
+                                else {
+                                  showModal(modalDialog(
+                                    title = "Error",
+                                    "Your model folder doesn't contain any models (named *_model.rds), please select folder with models and rerun",
+                                    easyClose = TRUE
+                                  ))
+                                }
                               }
-                              predictTable <- load_data(paste(output_analyze, "/analysis_output/all_predictions.tsv", sep=""))
-                              predictTable %>% dplyr::select(name, grep("_predictions", colnames(predictTable))) -> predictTable
-                              output$predTbl <- renderDataTable(
-                                predictTable
-                              )
+                              else {
+                                showModal(modalDialog(
+                                  title = "Error",
+                                  "Your model folder doesn't exist, please select folder with models and rerun",
+                                  easyClose = TRUE
+                                ))
+                              }
                             })
-
-
              })
 

@@ -44,6 +44,7 @@ load_shiny_libraries <- function(lib.loc = NULL) {
   library(GGally, lib.loc = lib.loc)
   library(PRROC, lib.loc = lib.loc)
   library(shinyFiles, lib.loc = lib.loc)
+  library(shinyBS, lib.loc = lib.loc)
 }
 
 # Loads or installs all required packages for analysis

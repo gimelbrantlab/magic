@@ -8,12 +8,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -26,7 +26,7 @@
 
 
 # Installs a package into the given directory if not installed there
-get_package <- function(package_name, repos = "http://cran.us.r-project.org", 
+get_package <- function(package_name, repos = "http://cran.us.r-project.org",
                         dependencies = NA, lib = NULL) {
   if(is.na(lib)) {
     lib = .libPaths()[1]
@@ -57,6 +57,7 @@ install_shiny_libraries <- function(lib = NA) {
   get_package("GGally", lib = lib)
   get_package("PRROC", lib = lib)
   get_package("shinyFiles", lib = lib)
+  get_package("shinyBS", lib = lib)
   cat("finished installing shiny libraries\n")
 }
 
@@ -130,12 +131,12 @@ install_bwtool <- function(bin) {
    system2("git", args = c("clone", "https://github.com/CRG-Barcelona/libbeato.git"))
    system2("git", args = c("clone", "https://github.com/CRG-Barcelona/bwtool.git"))
    setwd("libbeato/")
-   system2("./configure", args = c("--prefix=$HOME", "CFLAGS=\"-g -O0 -I${HOME}/include\"", 
+   system2("./configure", args = c("--prefix=$HOME", "CFLAGS=\"-g -O0 -I${HOME}/include\"",
 								   "LDFLAGS=-L${HOME}/lib"))
    system2("make")
    system2("make", args = c("install"))
    setwd("../bwtool/")
-   system2("./configure", args = c("--prefix=$HOME", "CFLAGS=\"-g -O0 -I${HOME}/include\"", 
+   system2("./configure", args = c("--prefix=$HOME", "CFLAGS=\"-g -O0 -I${HOME}/include\"",
 								   "LDFLAGS=-L${HOME}/lib"))
    system2("make")
    system2("make", args = c("install"))
@@ -151,14 +152,14 @@ magic_install <- function(lib, bin) {
   install_generate_libraries(lib)
   install_analyze_libraries(lib)
   install_shiny_libraries(lib)
-  
+
   # Adds folder to local Rprofile
   if(!is.na(lib)) {
     f <- file(file.path(getwd(), "install_data.txt"))
     writeLines(lib, f)
     close(f)
   }
-  
+
   # Installs bwtool
   install_bwtool(bin)
   cat("finished installing bwtool\n")

@@ -28,6 +28,9 @@ tabPanel(value = "analyze",
          title = "Analyze",
          sidebarLayout(
            sidebarPanel(
+             tags$p(HTML("<br><b>Select folder with models</b>")),
+             shinyDirButton("modelFolder", "Model directory", "Upload"),
+             verbatimTextOutput("modelFolder", placeholder = TRUE),
              tags$p(HTML("<br><b>Select output directory</b>")),
              shinyDirButton("analyzeOutput", "Output directory", "Upload"),
              verbatimTextOutput("analyzeOutput", placeholder = TRUE),
