@@ -1,1 +1,2 @@
 load("/Users/svetlana/Downloads/magic/shiny/MagicWeb/models/ada_model.rds")
+load("/Users/svetlana/Documents/work/tools/magic/shiny/MagicWeb/models/adaHuman_model.rds")
