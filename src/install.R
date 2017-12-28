@@ -54,6 +54,7 @@ install_shiny_libraries <- function(lib = NA) {
   get_package("shiny", lib = lib)
   get_package("markdown", lib = lib)
   get_package("shinythemes", lib = lib)
+  get_package("bsplus", lib = lib)
   get_package("GGally", lib = lib)
   get_package("PRROC", lib = lib)
   get_package("shinyFiles", lib = lib)
