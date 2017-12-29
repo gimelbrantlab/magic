@@ -425,12 +425,12 @@ process_main <- function(current_folder, input_file, output_folder,
   load_process_scripts(current_folder)
   
   # Checks that a reasonable number of cores was specified
-  if (cores < 0) {
+  if (cores <= 0) {
 	stop("please specify 1 or more cores, e.g. with -s 2")
   } else if (is.na(detectCores())) {
     cat("cannot determine system's max cores, double-check that you entered a valid number of cores")
-  } else if (cores >= detectCores()) {
-	stop(paste("please specify fewer cores than your max of ", detectCores(), sep = ""))
+  } else if (cores > detectCores()) {
+	stop(paste("please specify fewer or equal cores to your max of ", detectCores(), sep = ""))
   }
   
   # Parses input folder into dataframe with marks and files after
