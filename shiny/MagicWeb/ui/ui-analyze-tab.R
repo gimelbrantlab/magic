@@ -73,13 +73,12 @@ tabPanel(value = "analyze",
                  )),
              actionButton("analyzeDataButton", "Analyze data", width = "100%")
            ), mainPanel(
-             #tabsetPanel(id = "outputPlot",
-             #                       tabPanel("Table",
-              #                       #        dataTableOutput("predTbl")
-            #                        )
-           #)
-         NULL
-         )
+             tabsetPanel(id = "outputPlot",
+                         tabPanel("Table",
+                                  dataTableOutput("predTbl")
+                         )
+             )
+           )
          )
 )
 

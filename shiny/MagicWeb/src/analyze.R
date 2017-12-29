@@ -40,7 +40,6 @@ join_prediction_sets <- function(df, predictions_folder) {
   sets_files <- list.files(predictions_folder, pattern = "*_predictions.tsv", recursive = FALSE)
   for (file in sets_files) {
     p_set <- read.csv(file.path(predictions_folder, file), sep = "\t")
-
     # Adds id col to set
     p_set$id <- 1:nrow(p_set)
 

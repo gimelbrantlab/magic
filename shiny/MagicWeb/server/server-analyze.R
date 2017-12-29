@@ -124,13 +124,24 @@ observeEvent(input$analyzeDataButton, {
         cat(args)
         analyze_output <- capture.output(tryCatch(
           system2(analyze_cmd, args), error = function(e) e))
-        filesPredictions <- Sys.glob(file.path(models_folder, "*_predictions.tsv"))
-        #predictTable <- load_data(paste(output_analyze, "/analysis_output/all_predictions.tsv", sep=""))
-        #predictTable <- load_data(paste(output_analyze, "/analysis_output/glmStepAIC.human_predictions.tsv", sep=""))
-        #predictTable %>% dplyr::select(name, grep("_predictions", colnames(predictTable))) -> predictTable
-        #output$predTbl <- renderDataTable(
-        #  predictTable
-        #)
+        sets_files <- list.files(paste(output_analyze, "/analysis_output", sep=""), pattern = "*_predictions.tsv", recursive = FALSE)
+        i <- 0
+        for (file in sets_files) {
+          p_set <- read.csv(file.path(paste(output_analyze, "/analysis_output", sep=""), file), sep = "\t")
+          pr_name <- gsub('.{4}$', '', file)
+          colnames(p_set)[5] = pr_name
+          if (i == 0) {
+            df <- p_set
+          }
+          else {
+            df <- merge(df, p_set, by.x="name", "name")
+          }
+          i <- i+1
+        }
+        df <- df %>% dplyr::select(name, grep("_predictions", colnames(df)))
+        output$predTbl <- renderDataTable(
+          df
+        )
       }
       else {
         showModal(modalDialog(
