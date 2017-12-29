@@ -41,6 +41,7 @@ observeEvent(
   }
 )
 
+# sets models folder path
 shinyDirChoose(input, 'modelFolder', roots = c(home = '~'), filetypes = c('', 'txt','rds'))
 modelFolder <- reactive(input$modelFolder)
 output$modelFolder <- renderText({parseDirPath(c(home = '~'), modelFolder())})
@@ -67,14 +68,44 @@ getAnalysisFile <- reactive({
   }
 })
 
+# Gets expression filter file
+# getExpressionFile <- reactive({
+#   if(!is.null(input$expressionData)) {
+#     if (input$filterFile == 'custom') {
+#       expression_file_path <<- input$expressionData$datapath
+#     }
+#     else {
+#       if (input$filterFile == 'human') {
+#         expression_file_path <<- paste0(reference_folder,"hg19_length.txt")
+#       }
+#       if (input$filterFile == 'mouse') {
+#         expression_file_path <<- paste0(reference_folder,"mm10_length.txt")
+#       }
+#     }
+#   }
+#   else {
+#     if (input$filterFile == 'human') {
+#       expression_file_path <<- paste0(reference_folder,"hg19_length.txt")
+#     }
+#     if (input$filterFile == 'mouse') {
+#       expression_file_path <<- paste0(reference_folder,"mm10_length.txt")
+#     }
+#     if (input$filterFile == 'custom') {
+#       showModal(modalDialog(
+#         title = "Error",
+#         "Please, upload file with expression and/or lengths, or select human or mouse",
+#         easyClose = TRUE
+#       ))
+#     }
+#   }
+# })
+
 # Analyzes data on button press
 
 
 observeEvent(input$analyzeDataButton,
              {
-               message_list <- c("Preparing analyze command","Downloading binaries...", "Compiling arguments...", "Mining gold ore",
-                                 "Merging annotation for gene intervals...", "Creating magic genie...",
-                                 "Determining status...", "Making coffee...","Running analyze.R")
+               message_list <- c("Preparing analyze command","Loading files","Running analyze.R")
                withProgress(value = 0,
                             {
                               for (i in 1:length(message_list)){
@@ -84,6 +115,37 @@ observeEvent(input$analyzeDataButton,
                               if(dir.exists(paste(models_folder))){
                                 filenames <- Sys.glob(file.path(models_folder, "*_model.rds"))
                                 if (length(filenames)>0) {
+                                  # get filter file
+                                  if(!is.null(input$expressionData)) {
+                                    if (input$filterFile == 'custom') {
+                                      expression_file_path <- input$expressionData$datapath
+                                    }
+                                    else {
+                                      if (input$filterFile == 'human') {
+                                        expression_file_path <- paste0(reference_folder,"/hg19_length.txt")
+                                      }
+                                      if (input$filterFile == 'mouse') {
+                                        expression_file_path <- paste0(reference_folder,"/mm10_length.txt")
+                                      }
+                                    }
+                                  }
+                                  else {
+                                    print("here we are")
+                                    if (input$filterFile == 'human') {
+                                      expression_file_path <- paste0(reference_folder,"/hg19_length.txt")
+                                    }
+                                    if (input$filterFile == 'mouse') {
+                                      expression_file_path <- paste0(reference_folder,"/mm10_length.txt")
+                                    }
+                                    if (input$filterFile == 'custom') {
+                                      showModal(modalDialog(
+                                        title = "Error",
+                                        "Please, upload file with expression and/or lengths, or select human or mouse",
+                                        easyClose = TRUE
+                                      ))
+                                    }
+                                    print(expression_file_path)
+                                  }
                                   # Builds command to run analyze.R and executes it
                                   analyze_output <- NULL
                                   analyze_running <- TRUE
@@ -93,8 +155,8 @@ observeEvent(input$analyzeDataButton,
                                                 "-m", paste(models_folder),
                                                 "-o", paste(output_analyze, "/analysis_output", sep=""),
                                                 "-p", "MAE")
-                                  #if(!is.null(input$expression_filter)) { args <- paste(args, "-f", input$expressionData) }
-                                  #if(!is.null(input$lengthFilter)) { args <- paste(args, "-l", input$lengthFilter) }
+                                  if((!is.null(input$exprFilt))|(!is.null(input$lengthFilt))) { args <- paste(args, "-f", expression_file_path) }
+                                  if(!is.null(input$lengthFilt)) { args <- paste(args, "-l", input$lengthFilter) }
                                   cat(args)
                                   analyze_output <- capture.output(tryCatch(
                                     system2(analyze_cmd, args), error = function(e) e))

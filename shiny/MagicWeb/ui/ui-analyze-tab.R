@@ -28,51 +28,54 @@ tabPanel(value = "analyze",
          title = "Analyze",
          sidebarLayout(
            sidebarPanel(
-             tags$p(HTML("<br><b>Select folder with models</b>")),
+             tags$p(HTML("<b>Select folder with models</b>")),
              shinyDirButton("modelFolder", "Model directory", "Upload"),
              verbatimTextOutput("modelFolder", placeholder = TRUE),
-             tags$p(HTML("<br><b>Select output directory</b>")),
+             tags$p(HTML("<b>Select output directory</b>")),
              shinyDirButton("analyzeOutput", "Output directory", "Upload"),
              verbatimTextOutput("analyzeOutput", placeholder = TRUE),
-             #verbatimTextOutput("outputPath", placeholder = TRUE),
-             br(),
              br(),
              fileInput('analysisFile', 'Upload file with processed chromatin data',
                        accept = acceptable_file_types
-                       ) %>%
+             ) %>%
                shinyInput_label_embed(
                  icon("info") %>%
                    bs_embed_tooltip(title = "In most cases, it is joined_scores_percentile.txt in your output folder")
                ),
-             fileInput('expressionData',
-                       label = "Upload file with gene lengths and expression (if available)") %>%
-               shinyInput_label_embed(
-                 icon("info") %>%
-                   bs_embed_tooltip(title = "Please see readme for the file format")
-               ),
              textInput("positiveClass", "Positive class:",
                        value = "MAE"),
-             # checkboxInput("expression_filter",
-             #               label = "Filter genes by expression and/or length?",
-             #               value = FALSE),
-                              # conditionalPanel(
-                              #   condition = "input.expression_filter == TRUE",
-                              #   fileInput('expressionData',
-                              #     label = "Input RNA-Seq file")
-                              # ),
-             numericInput("lengthFilter",
-                         "Set length filter",
-                         value=2500) %>%
-               shinyInput_label_embed(
-                 icon("info") %>%
-                   bs_embed_tooltip(title = "Set length lower threshold here, if you want to filter out shorter genes")
-               ),
+             # Filtering part
+             tags$p(HTML("<b>Filtering</b>")),
+             checkboxInput("lengthFilt", "Filter by length", FALSE),
+             conditionalPanel(
+               condition = "input.lengthFilt",
+               numericInput("lengthFilter",
+                            "Set length filter",
+                            value=2500) %>%
+                 shinyInput_label_embed(
+                   icon("info") %>%
+                     bs_embed_tooltip(title = "Set length lower threshold here, if you want to filter out shorter genes")
+                 )),
+             checkboxInput("exprFilt", "Filter by expression", FALSE),
+             selectInput(
+               "filterFile", "Expression and/or length file",
+               c("human",
+                 "mouse",
+                 "custom"),selected='human'),
+             conditionalPanel(
+               condition = "input.filterFile == 'custom' ",
+               fileInput('expressionData',
+                         label = "Upload file with gene expression levels and/or gene lengths") %>%
+                 shinyInput_label_embed(
+                   icon("info") %>%
+                     bs_embed_tooltip(title = "Please see readme for the file format")
+                 )),
              actionButton("analyzeDataButton", "Analyze data", width = "100%")
            ), mainPanel(tabsetPanel(id = "outputPlot",
-                          tabPanel("Table",
-                            dataTableOutput("predTbl")
-           )
+                                    tabPanel("Table",
+                                             dataTableOutput("predTbl")
+                                    )
            ))
-           )
+         )
 )
 

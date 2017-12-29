@@ -80,9 +80,7 @@ observeEvent(
 # Generates models on button press
 observeEvent(input$generateModelsButton, {
 
-  message_list <- c("Preparing generate command","Downloading binaries...", "Compiling arguments...", "Mining gold ore",
-                    "Merging annotation for gene intervals...", "Creating magic genie...",
-                    "Training models", "Making coffee...", "Running generate.R")
+  message_list <- c("Preparing generate command","Loading files", "Running generate.R")
 
   withProgress(value = 0,
                {

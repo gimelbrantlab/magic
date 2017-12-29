@@ -48,8 +48,6 @@ tabPanel(value = "generate",
              tags$p(HTML("<br><b>Select model output directory</b>")),
              shinyDirButton("generateOutput", "Output directory", "Upload"),
              verbatimTextOutput("generateOutput", placeholder = TRUE),
-             #verbatimTextOutput("outputPath", placeholder = TRUE),
-             br(),
              br(),
              fileInput('trainingFile', 'Upload file with processed chromatin data',
                        accept = acceptable_file_types) %>%
