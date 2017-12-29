@@ -164,6 +164,13 @@ magic_install <- function(lib, bin) {
   # Installs bwtool
   install_bwtool(bin)
   cat("finished installing bwtool\n")
+  
+  # Copies bwtool folder to Shiny subdirectory
+  shiny_bin <- file.path(bin, "..", "shiny", "MagicWeb", "bin")
+  if (!dir.exists(shiny_bin)) {
+    dir.create(shiny_bin)
+  }
+  file.copy(bin, file.path(shiny_bin, ".."), recursive = TRUE)
 }
 
 
