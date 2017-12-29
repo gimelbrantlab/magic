@@ -418,14 +418,20 @@ process_main <- function(current_folder, input_file, output_folder,
                          promoter_length, drop_percent, drop_abs, 
                          clean, overlap, refseq_file,
                          bed_file, filter_olf, filter_chroms, 
-                         filter_imprinted, cores) {
+                         filter_imprinted, cores, lib) {
   
   # Loads required scripts and libraries
-  load_process_libraries()
+  load_process_libraries(lib)
   load_process_scripts(current_folder)
   
   # Checks that a reasonable number of cores was specified
-  if ((cores < 0) || (cores >= detectCores())) { stop("invalid number of cores given") }
+  if (cores < 0) {
+	stop("please specify 1 or more cores, e.g. with -s 2")
+  } else if (is.na(detectCores())) {
+    cat("cannot determine system's max cores, double-check that you entered a valid number of cores")
+  } else if (cores >= detectCores()) {
+	stop(paste("please specify fewer cores than your max of ", detectCores(), sep = ""))
+  }
   
   # Parses input folder into dataframe with marks and files after
   # converting input file to absolute pathname
@@ -535,9 +541,9 @@ process_main <- function(current_folder, input_file, output_folder,
                   percentile_output_file, norm_output_file, promoter_length)
   
   # Only generates histograms if input files exist
-  if(!all(is.na(input_df$input_files))) {
-    generate_histograms(input_df, output_folder, promoter_length)
-  }
+  # if(!all(is.na(input_df$input_files))) {
+  #   generate_histograms(input_df, output_folder, promoter_length)
+  # }
   
   # Removes intermediate files from output folder if specified
   if (clean) {
@@ -559,8 +565,11 @@ current_folder <- dirname(sub("--file=", "", args[grep("--file=", args)]))
 models_folder <- file.path(current_folder, "..", "models")
 source(file.path(current_folder, "utils.R"))
 
+# Gets custom install directory if used in install.R
+lib <- get_install_dir(file.path(current_folder, ".."))
+
 # Loads optparse
-load_initial_libraries()
+load_initial_libraries(lib)
 
 # Builds option list using optparse
 options = list(
@@ -621,11 +630,13 @@ if (!quiet) {
                          promoter_length, drop_percent, drop_abs, 
                          clean, overlap, refseq_file,
                          bed_file, filter_olf, filter_chroms, 
-                         filter_imprinted, cores))
+                         filter_imprinted, cores,
+						 lib))
 } else {
   process_main(current_folder, input_file, output_folder,
                promoter_length, drop_percent, drop_abs, 
                clean, overlap, refseq_file,
                bed_file, filter_olf, filter_chroms, 
-               filter_imprinted, cores)
+               filter_imprinted, cores,
+			   lib)
 }

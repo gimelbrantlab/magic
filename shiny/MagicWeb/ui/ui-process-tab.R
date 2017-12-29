@@ -4,12 +4,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -28,18 +28,17 @@ tabPanel(value = "process",
         title = "Process",
          sidebarLayout(
            sidebarPanel = sidebarPanel(
-              #tags$h4(HTML("<u>Input to Processing</u>")),                 
               tags$p(HTML("<b>First, set a path to where your data lives</b>")),
-              shinyDirButton("dir", "Input directory", "Upload"),
-              verbatimTextOutput("dir", placeholder = TRUE),
+              shinyDirButton("processInput", "Input directory", "Upload"),
+              verbatimTextOutput("processInput", placeholder = TRUE),
               textInput(
                 'fileInput',
                 label = h5("Text file with names of marks (e.g., 'input.txt'):"),
                 value = "input.txt"
               ),
               tags$p(HTML("<b>Select output directory</b>")),
-              shinyDirButton("outputPath", "Output directory", "Upload"),
-              verbatimTextOutput("outputPath", placeholder = TRUE),
+              shinyDirButton("processOutput", "Output directory", "Upload"),
+              verbatimTextOutput("processOutput", placeholder = TRUE),
               tags$p(HTML("<br>")),
              selectizeInput('assembly', 'Assembly',
                                choices = c(assembly, "other"),
@@ -51,7 +50,7 @@ tabPanel(value = "process",
                                         )
                               ),
              numericInput("promoterLength", "Select promoter length:", 0, min = 0,
-                          step = 100) %>% 
+                          step = 100) %>%
              shinyInput_label_embed(
                icon("info") %>%
                  bs_embed_tooltip(title = "If you want to include promoters into analysis, please specify promoter length (greater than 0)")
@@ -69,8 +68,8 @@ tabPanel(value = "process",
                             "Number of cores to run process with:",
                              choices = c(1:8)
              ),
-             actionButton("processDataButton", 
-                          "Process data", 
+             actionButton("processDataButton",
+                          "Process data",
                           width = "100%")
            ),
            mainPanel = mainPanel(
@@ -107,7 +106,7 @@ tabPanel(value = "process",
                                                            brush = brushOpts(
                                                              id = "plot2_brush")
                                                 )
-                                         ), 
+                                         ),
                                          mainPanel(
                                            NULL
                                          )
@@ -131,11 +130,11 @@ tabPanel(value = "process",
                                         )
                               )
              )
-             
+
              ), # end of conditionalPanel
              fluid = TRUE
-     
+
       )
-      
+
 )
 

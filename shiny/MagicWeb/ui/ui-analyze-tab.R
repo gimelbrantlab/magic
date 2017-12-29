@@ -30,7 +30,8 @@ tabPanel(value = "analyze",
            sidebarPanel(
              tags$p(HTML("<b>Select folder with models</b>")),
              shinyDirButton("modelFolder", "Model directory", "Upload"),
-             verbatimTextOutput("modelFolder", placeholder = TRUE),
+             #models_folder_def <- file.path(current_folder, "/models")
+             verbatimTextOutput("modelFolder"), #placeholder = models_folder_def),
              tags$p(HTML("<b>Select output directory</b>")),
              shinyDirButton("analyzeOutput", "Output directory", "Upload"),
              verbatimTextOutput("analyzeOutput", placeholder = TRUE),
@@ -71,11 +72,14 @@ tabPanel(value = "analyze",
                      bs_embed_tooltip(title = "Please see readme for the file format")
                  )),
              actionButton("analyzeDataButton", "Analyze data", width = "100%")
-           ), mainPanel(tabsetPanel(id = "outputPlot",
-                                    tabPanel("Table",
-                                             dataTableOutput("predTbl")
-                                    )
-           ))
+           ), mainPanel(
+             #tabsetPanel(id = "outputPlot",
+             #                       tabPanel("Table",
+              #                       #        dataTableOutput("predTbl")
+            #                        )
+           #)
+         NULL
+         )
          )
 )
 

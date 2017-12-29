@@ -13,7 +13,7 @@ reference_folder <- file.path("reference")
 # LIBRARIES AND SCRIPTS
 ######
 
-source('directoryInput.R')
+#source('directoryInput.R')
 source("utils.R")
 source("fig2a_script.R")
 

@@ -68,119 +68,85 @@ getAnalysisFile <- reactive({
   }
 })
 
-# Gets expression filter file
-# getExpressionFile <- reactive({
-#   if(!is.null(input$expressionData)) {
-#     if (input$filterFile == 'custom') {
-#       expression_file_path <<- input$expressionData$datapath
-#     }
-#     else {
-#       if (input$filterFile == 'human') {
-#         expression_file_path <<- paste0(reference_folder,"hg19_length.txt")
-#       }
-#       if (input$filterFile == 'mouse') {
-#         expression_file_path <<- paste0(reference_folder,"mm10_length.txt")
-#       }
-#     }
-#   }
-#   else {
-#     if (input$filterFile == 'human') {
-#       expression_file_path <<- paste0(reference_folder,"hg19_length.txt")
-#     }
-#     if (input$filterFile == 'mouse') {
-#       expression_file_path <<- paste0(reference_folder,"mm10_length.txt")
-#     }
-#     if (input$filterFile == 'custom') {
-#       showModal(modalDialog(
-#         title = "Error",
-#         "Please, upload file with expression and/or lengths, or select human or mouse",
-#         easyClose = TRUE
-#       ))
-#     }
-#   }
-# })
-
 # Analyzes data on button press
-
-
-observeEvent(input$analyzeDataButton,
-             {
-               message_list <- c("Preparing analyze command","Loading files","Running analyze.R")
-               withProgress(value = 0,
-                            {
-                              for (i in 1:length(message_list)){
-                                incProgress(1/length(message_list), detail = paste(message_list[i]))
-                                Sys.sleep(0.25)
-                              }
-                              if(dir.exists(paste(models_folder))){
-                                filenames <- Sys.glob(file.path(models_folder, "*_model.rds"))
-                                if (length(filenames)>0) {
-                                  # get filter file
-                                  if(!is.null(input$expressionData)) {
-                                    if (input$filterFile == 'custom') {
-                                      expression_file_path <- input$expressionData$datapath
-                                    }
-                                    else {
-                                      if (input$filterFile == 'human') {
-                                        expression_file_path <- paste0(reference_folder,"/hg19_length.txt")
-                                      }
-                                      if (input$filterFile == 'mouse') {
-                                        expression_file_path <- paste0(reference_folder,"/mm10_length.txt")
-                                      }
-                                    }
-                                  }
-                                  else {
-                                    print("here we are")
-                                    if (input$filterFile == 'human') {
-                                      expression_file_path <- paste0(reference_folder,"/hg19_length.txt")
-                                    }
-                                    if (input$filterFile == 'mouse') {
-                                      expression_file_path <- paste0(reference_folder,"/mm10_length.txt")
-                                    }
-                                    if (input$filterFile == 'custom') {
-                                      showModal(modalDialog(
-                                        title = "Error",
-                                        "Please, upload file with expression and/or lengths, or select human or mouse",
-                                        easyClose = TRUE
-                                      ))
-                                    }
-                                    print(expression_file_path)
-                                  }
-                                  # Builds command to run analyze.R and executes it
-                                  analyze_output <- NULL
-                                  analyze_running <- TRUE
-                                  analyze_cmd <- paste("Rscript")
-                                  args <- paste(analyze_file,
-                                                "-i", input$analysisFile$datapath,
-                                                "-m", paste(models_folder),
-                                                "-o", paste(output_analyze, "/analysis_output", sep=""),
-                                                "-p", "MAE")
-                                  if((!is.null(input$exprFilt))|(!is.null(input$lengthFilt))) { args <- paste(args, "-f", expression_file_path) }
-                                  if(!is.null(input$lengthFilt)) { args <- paste(args, "-l", input$lengthFilter) }
-                                  cat(args)
-                                  analyze_output <- capture.output(tryCatch(
-                                    system2(analyze_cmd, args), error = function(e) e))
-                                  predictTable <- load_data(paste(output_analyze, "/analysis_output/all_predictions.tsv", sep=""))
-                                  predictTable %>% dplyr::select(name, grep("_predictions", colnames(predictTable))) -> predictTable
-                                  output$predTbl <- renderDataTable(
-                                    predictTable
-                                  )
-                                }
-                                else {
-                                  showModal(modalDialog(
-                                    title = "Error",
-                                    "Your model folder doesn't contain any models (named *_model.rds), please select folder with models and rerun",
-                                    easyClose = TRUE
-                                  ))
-                                }
-                              }
-                              else {
-                                showModal(modalDialog(
-                                  title = "Error",
-                                  "Your model folder doesn't exist, please select folder with models and rerun",
-                                  easyClose = TRUE
-                                ))
-                              }
-                            })
-             })
+observeEvent(input$analyzeDataButton, {
+  message_list <- c("Preparing analyze command","Loading files","Running analyze.R")
+  withProgress(value = 0, {
+    for (i in 1:length(message_list)){
+      incProgress(1/length(message_list), detail = paste(message_list[i]))
+      Sys.sleep(0.25)
+    }
+    if (dir.exists(paste(models_folder))) {
+      filenames <- Sys.glob(file.path(models_folder, "*_model.rds"))
+      if (length(filenames)>0) {
+        # get filter file
+        if (!is.null(input$expressionData)) {
+          if (input$filterFile == 'custom') {
+            expression_file_path <- input$expressionData$datapath
+          }
+          else {
+            if (input$filterFile == 'human') {
+              expression_file_path <- file.path(reference_folder, "hg19_length.txt")
+            }
+            if (input$filterFile == 'mouse') {
+              expression_file_path <- file.path(reference_folder, "mm10_length.txt")
+            }
+          }
+        }
+        else {
+          print("here we are")
+          if (input$filterFile == 'human') {
+            expression_file_path <- file.path(reference_folder, "hg19_length.txt")
+          }
+          if (input$filterFile == 'mouse') {
+            expression_file_path <- file.path(reference_folder, "mm10_length.txt")
+          }
+          if (input$filterFile == 'custom') {
+            showModal(modalDialog(
+              title = "Error",
+              "Please, upload file with expression and/or lengths, or select human or mouse",
+              easyClose = TRUE
+            ))
+          }
+          print(expression_file_path)
+        }
+        # Builds command to run analyze.R and executes it
+        analyze_output <- NULL
+        analyze_running <- TRUE
+        analyze_cmd <- paste("Rscript")
+        args <- paste(analyze_file,
+                      "-i", input$analysisFile$datapath,
+                      "-m", paste(models_folder),
+                      "-o", paste(output_analyze, "/analysis_output", sep=""),
+                      "-p", "MAE")
+        if((!is.null(input$exprFilt))|(!is.null(input$lengthFilt))) { args <- paste(args, "-f", expression_file_path) }
+        if(!is.null(input$lengthFilt)) { args <- paste(args, "-l", input$lengthFilter) }
+        cat(args)
+        analyze_output <- capture.output(tryCatch(
+          system2(analyze_cmd, args), error = function(e) e))
+        filesPredictions <- Sys.glob(file.path(models_folder, "*_predictions.tsv"))
+        #predictTable <- load_data(paste(output_analyze, "/analysis_output/all_predictions.tsv", sep=""))
+        #predictTable <- load_data(paste(output_analyze, "/analysis_output/glmStepAIC.human_predictions.tsv", sep=""))
+        #predictTable %>% dplyr::select(name, grep("_predictions", colnames(predictTable))) -> predictTable
+        #output$predTbl <- renderDataTable(
+        #  predictTable
+        #)
+      }
+      else {
+        showModal(modalDialog(
+          title = "Error",
+          "Your model folder doesn't contain any models (named *_model.rds), please select folder with models and rerun",
+          easyClose = TRUE
+        ))
+      }
+    }
+    else {
+      showModal(modalDialog(
+        title = "Error",
+        "Your model folder doesn't exist, please select folder with models and rerun",
+        easyClose = TRUE
+      ))
+    }
+  })
+})
 

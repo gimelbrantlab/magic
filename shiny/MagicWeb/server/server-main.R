@@ -4,12 +4,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -24,46 +24,31 @@
 # MAIN SERVER
 #######
 
-
-# Gets selected input folder
-observeEvent(
-  ignoreNULL = TRUE,
-  eventExpr = {
-    input$processingDir
-  },
-  handlerExpr = {
-    if (input$processingDir > 0) {
-      temp_dir <- choose.dir(default = readDirectoryInput(session, 'processingDir'))
-      updateDirectoryInput(session, 'processingDir', value = temp_dir)
-    }
-  }
-)
-
 # action buttons between tabs
 observeEvent(
   input$get_started,
-  {updateTabsetPanel(session = session, 
-                     inputId = "main_panel", 
+  {updateTabsetPanel(session = session,
+                     inputId = "main_panel",
                      selected = "process")}
 )
 
 observeEvent(
   input$next_process,
-  {updateTabsetPanel(session = session, 
-                     inputId = "main_panel", 
+  {updateTabsetPanel(session = session,
+                     inputId = "main_panel",
                      selected = "process")}
 )
 
 observeEvent(
   input$next_generate,
-  {updateTabsetPanel(session = session, 
-                     inputId = "main_panel", 
+  {updateTabsetPanel(session = session,
+                     inputId = "main_panel",
                      selected = "generate")}
 )
 
 observeEvent(
   input$next_analyze,
-  {updateTabsetPanel(session = session, 
-                     inputId = "main_panel", 
+  {updateTabsetPanel(session = session,
+                     inputId = "main_panel",
                      selected = "analyze")}
 )

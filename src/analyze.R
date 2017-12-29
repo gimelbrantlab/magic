@@ -8,12 +8,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -31,32 +31,32 @@
 
 # Loads all prediction sets in a given folder into a single dataframe
 join_prediction_sets <- function(df, predictions_folder) {
-  
+
   # List of prediction sets to build up
   df$id <- 1:nrow(df)
   sets <- df
-  
+
   # Loops through all files and reads in all ending with "_predictions.tsv"
   sets_files <- list.files(predictions_folder, pattern = "*_predictions.tsv", recursive = FALSE)
   for (file in sets_files) {
     p_set <- read.csv(file.path(predictions_folder, file), sep = "\t")
-    
+
     # Adds id col to set
     p_set$id <- 1:nrow(p_set)
-    
+
     # Renames cols with model name prepended
     model_name <- strsplit(file, "_")[[1]][1]
     names_to_change <- names(p_set)[names(p_set) != "id"]
-    names(p_set)[names(p_set) != "id"] <- 
+    names(p_set)[names(p_set) != "id"] <-
       paste(model_name, names_to_change, sep = "_")
-    
+
     # Joins sets
     sets <- suppressWarnings(full_join(sets, p_set, by = "id"))
   }
-  
+
   # Removes id column from output
   sets <- sets[,names(p_set) != "id"]
-  
+
   # Explicitly returns list of testing sets
   return(sets)
 }
@@ -64,10 +64,10 @@ join_prediction_sets <- function(df, predictions_folder) {
 # Loads all models in a given folder into a dict, except
 # for those in the list of excluded models
 get_models <- function(input_folder, excluded_models) {
-  
+
   # List of models to build up
   models <- list()
-  
+
   # Loops through all files and reads in all ending with "_model.rds"
   model_files <- list.files(input_folder, pattern = "*_model.rds", recursive = FALSE)
   for (file in model_files) {
@@ -77,19 +77,19 @@ get_models <- function(input_folder, excluded_models) {
       models[[model_name]] = model
     }
   }
-  
+
   # Explicitly returns list of models
   return(models)
 }
 
 # Generates predictions for a single model and logs those to file
-ml_predict_inner <- function(model_name, model, df, 
+ml_predict_inner <- function(model_name, model, df,
                              output_folder, positive_class, filter_file, filter_length) {
-  
+
   # Generates predictions, appends to df and writes to file
   predictions <-  predict(model, df, positive = positive_class)
   df$predictions <- predictions
-  predictions_file <- file.path(output_folder, 
+  predictions_file <- file.path(output_folder,
                                 paste(model_name, "predictions.tsv", sep = "_"))
   if (!is.null(filter_file)) df <- filter_genes(df, filter_file, filter_length)
   write.table(df, predictions_file, sep = "\t", row.names = FALSE,
@@ -97,18 +97,18 @@ ml_predict_inner <- function(model_name, model, df,
 }
 
 # Generates predictions on new data
-ml_predict <- function(df, models_folder, output_folder, 
+ml_predict <- function(df, models_folder, output_folder,
                        excluded_models, positive_class, filter_file, filter_length) {
-  
+
   # Loads models into a dict with model names as keys
   models <- get_models(models_folder, excluded_models)
-  
+
   # Generates predictions on df for all models
   for (model_name in names(models)) {
     ml_predict_inner(model_name, models[[model_name]], df,
                      output_folder, positive_class, filter_file, filter_length)
   }
-  
+
   # Joins all files with appended predictions together
   df <- join_prediction_sets(df, output_folder)
   return(df)
@@ -123,9 +123,9 @@ filter_genes <- function(df, filter_file, filter_length) {
       cat("Filtering by expression and length\n")
       colnames(f_file) <- c("name", "expression", "length")
       df <- merge(df, f_file, by.x="name", by.y="name")
-      df <- df %>% 
-        arrange(desc(expression)) %>% 
-        head(round(nrow(df)/2)+1) %>% 
+      df <- df %>%
+        arrange(desc(expression)) %>%
+        head(round(nrow(df)/2)+1) %>%
       filter(length >= filter_length)
     }
     else {
@@ -133,8 +133,8 @@ filter_genes <- function(df, filter_file, filter_length) {
       cat("Filtering by expression\n")
       colnames(f_file) <- c("name", "expression")
       df <- merge(df, f_file, by.x="name", by.y="name")
-      df <- df %>% 
-        arrange(desc(expression)) %>% 
+      df <- df %>%
+        arrange(desc(expression)) %>%
         head(round(nrow(df)/2)+1)
     }
   }
@@ -148,33 +148,33 @@ filter_genes <- function(df, filter_file, filter_length) {
   else {
     cat("Expression or length columsn in filter file are not found, filtering disabled\n")
   }
-  
+
   return(df)
 }
 
 # Analyzes given dataset
-analyze_main <- function(current_folder, input_file, models_folder, 
-                         output_folder, excluded_models, positive_class, 
+analyze_main <- function(current_folder, input_file, models_folder,
+                         output_folder, excluded_models, positive_class,
 						 filter_file, filter_length, lib) {
-  
+
   # Loads required libraries
   load_analyze_libraries(lib)
-  
+
   # Reads input file into df and removes NA values
   df <- read.csv(input_file, sep = "\t")
   df <- df[complete.cases(df),]
-  
+
   # Reads excluded models string into a list
   excluded_models <- as.list(strsplit(excluded_models, ",")[[1]])
-  
+
   # Generates predictions and appends them to df
-  df <- ml_predict(df, models_folder, output_folder, 
+  df <- ml_predict(df, models_folder, output_folder,
                    excluded_models, positive_class, filter_file, filter_length)
-  
+
   # Writes predictions to file
-  write.table(df, file.path(output_folder, "all_predictions.tsv"), sep = "\t",
-              row.names = FALSE, quote = FALSE)
-  
+  #write.table(df, file.path(output_folder, "all_predictions.tsv"), sep = "\t",
+  #            row.names = FALSE, quote = FALSE)
+
   cat("Analysis complete.\n")
 }
 
@@ -200,21 +200,21 @@ load_initial_libraries(lib)
 
 # Builds option list using optparse
 options = list(
-  make_option(c("-i", "--input_file"), type="character", default=NULL, 
+  make_option(c("-i", "--input_file"), type="character", default=NULL,
               help="file output from process.R, see readme for description"),
-  make_option(c("-m", "--models_folder"), type="character", default=models_folder, 
+  make_option(c("-m", "--models_folder"), type="character", default=models_folder,
               help="contains models output from generate.R"),
-  make_option(c("-o", "--output_folder"), type="character", default="analyze_output", 
+  make_option(c("-o", "--output_folder"), type="character", default="analyze_output",
               help="output folder [default= %default]"),
   make_option(c("-ex", "--excluded_models"), type="character", default="",
               help="list of models to exclude from folder, separated by commas"),
   make_option(c("-p", "--positive_class"), type="character", default="MAE",
               help="name of target feature's positive class [default=%default]"),
-  make_option(c("-f", "--filter"), type="character", default=NULL, 
+  make_option(c("-f", "--filter"), type="character", default=NULL,
               help="file with gene expression values and/or length, see readme for file format"),
-  make_option(c("-l", "--f_length"), type="integer", default=2500, 
+  make_option(c("-l", "--f_length"), type="integer", default=2500,
               help="gene length threshold [default= %default]"),
-  make_option(c("-q", "--quiet"), action="store_true", default=FALSE, 
+  make_option(c("-q", "--quiet"), action="store_true", default=FALSE,
               help="disables console output [default= %default]")
 )
 
@@ -238,11 +238,11 @@ filter_length <- opt$f_length
 
 # Calls main function, disabling output if running in quiet mode
 if (!quiet) {
-  invisible(analyze_main(current_folder, input_file, models_folder, 
-                         output_folder, excluded_models, positive_class, 
+  invisible(analyze_main(current_folder, input_file, models_folder,
+                         output_folder, excluded_models, positive_class,
 						 filter_file, filter_length, lib))
 } else {
-  analyze_main(current_folder, input_file, models_folder, 
-               output_folder, excluded_models, positive_class, 
+  analyze_main(current_folder, input_file, models_folder,
+               output_folder, excluded_models, positive_class,
 			   filter_file, filter_length, lib)
 }

@@ -26,17 +26,45 @@
 # PROCESS SERVER
 ################
 
-### FOR GLOBAL VARIABLES REFERENCE SERVER.R
+# sets input path
 
-### VARIABLES AND DATA
+shinyDirChoose(input, 'processInput', roots = c(home = '~'), filetypes = c('', 'txt','bigWig',"tsv","csv","bw"))
+processInput <- reactive(input$processInput)
+output$processInput <- renderText({parseDirPath(c(home = '~'), processInput())})
+observeEvent(
+   ignoreNULL = TRUE,
+   eventExpr = {
+     input$processInput
+   },
+   handlerExpr = {
+     home <- normalizePath("~")
+     datapath <<- file.path(home, paste(unlist(processInput()$path[-1]), collapse = .Platform$file.sep))
+   }
+)
 
+
+# sets output path
+
+shinyDirChoose(input, 'processOutput', roots = c(home = '~'), filetypes = c('', 'txt','bigWig',"tsv","csv","bw"))
+processOutput <- reactive(input$processOutput)
+output$processOutput <- renderText({parseDirPath(c(home = '~'), processOutput())})
+
+observeEvent(
+  ignoreNULL = TRUE,
+  eventExpr = {
+   input$processOutput
+ },
+ handlerExpr = {
+   home <- normalizePath("~")
+   output_path_process <<- file.path(home, paste(unlist(processOutput()$path[-1]), collapse = .Platform$file.sep))
+ }
+)
 
 ### DATA PROCESSING
 
 # Processes data on button press
 
-observeEvent(input$processDataButton,
-  {
+observeEvent(input$processDataButton, {
   message_list <- c("Preparing process command","Loading files", "Running process.R")
   done = FALSE
   withProgress(value = 0,
@@ -46,74 +74,73 @@ observeEvent(input$processDataButton,
                    Sys.sleep(0.25)
                    done = TRUE
                  }
+                 # Builds command to run process.R and executes it
+                 if ((!is.null(input$fileInput))&(file.exists(paste(datapath, "/", input$fileInput, sep = "")))) {
+                   cat(output_path_process)
+                   process_output <- NULL
+                   process_running <- TRUE
+                   args <- paste(process_file,
+                                 "-i", paste(datapath, "/", input$fileInput, sep = ""),
+                                 "-o", paste(output_path_process),
+                                 "-p", input$promoterLength,
+                                 "-d", input$dropPercent,
+                                 "-r", input$assembly,
+                                 "-e")
+                   if(input$cores > 1) { args <- paste(args, "-s", input$cores) }
+                   if (input$noOverlap == TRUE) { args <- paste(args, "-l") }
+                   if (!"olfactory receptor genes" %in% input$enableFilters) { args <- paste(args, "-f") }
+                   if (!"sex chromosomes" %in% input$enableFilters) { args <- paste(args, "-c") }
+                   if (!"imprinted genes" %in% input$enableFilters) { args <- paste(args, "-m") }
+                   cat("\n", args, "\n\n")
+                   process_output <- capture.output(tryCatch(
+                     { system2("Rscript", args)}, error=function(err){
+                       traceback()
+                     })
+                   )
+                 }
+                 else {
+                   showModal(modalDialog(
+                     title = "Error",
+                     "Input file doesn't exist, please try again",
+                     easyClose = TRUE
+                   ))
+                 }
+               })
 
+###################################################################################################
+###################################################################################################
+############################################ Data plotting ########################################
 
-
-  # Builds command to run process.R and executes it
-  if (!is.null(input$fileInput)) {
-    cat(output_path)
-    process_output <- NULL
-    process_running <- TRUE
-    args <- paste(process_file,
-                  "-i", paste(datapath, "/", input$fileInput, sep = ""),
-                  "-o", paste(output_path),
-                  "-p", input$promoterLength,
-                  "-d", input$dropPercent,
-                  "-r", input$assembly,
-                  "-e")
-    if(input$cores > 1) { args <- paste(args, "-s", input$cores) }
-    if (input$noOverlap == TRUE) { args <- paste(args, "-l") }
-    if (!"olfactory receptor genes" %in% input$enableFilters) { args <- paste(args, "-f") }
-    if (!"sex chromosomes" %in% input$enableFilters) { args <- paste(args, "-c") }
-    if (!"imprinted genes" %in% input$enableFilters) { args <- paste(args, "-m") }
-    cat("\n", args, "\n\n")
-    process_output <- capture.output(tryCatch(
-      { system2("Rscript", args)}, error=function(err){
-        traceback()
-      })
-      )
-
-  }
-
-   })
-
-  ###################################################################################################
-  ###################################################################################################
-
-  ########################## Data plotting #############################
-
-  if (file.exists(paste(output_path, "/joined_scores_percentile.txt", sep = ""))){
-    joined_scores_percentile <- load_data(paste(output_path, "/joined_scores_percentile.txt", sep = ""))
-    joined_scores_norm <- load_data(paste(output_path, "/joined_scores_norm.txt", sep = ""))
-
-
-      output$chipQC_density <- renderPlot ({
-        ggplot(data = melt(joined_scores_norm), mapping = aes(x = value)) + geom_density() + scale_x_log10() + theme_bw() + facet_wrap(~variable, scales = 'free_x')
-      })
-
-      output$chipQC <- renderPlot ({
-        marks <- colnames(joined_scores_percentile[,3:dim(joined_scores_percentile)[2]])
-        marks_comb <- combn(marks, 2)
-        makePlot <- function(x) {
-          ggplot(joined_scores_percentile, aes_string(x=x[1], y=x[2])) + geom_point(size=0.3) + theme_bw()
-        }
-        pltList <- list()
-        pltList <- apply(marks_comb,2,makePlot)
-        grid.arrange(grobs = pltList)
-      })
-
-      output$perc_table <- renderDataTable(
-        joined_scores_percentile
-      )
-
-
-      output$inputDist <- renderPlot({
+  if (file.exists(paste(output_path_process, "/joined_scores_percentile.txt", sep = ""))) {
+    joined_scores_percentile <- load_data(paste(output_path_process, "/joined_scores_percentile.txt", sep = ""))
+    joined_scores_norm <- load_data(paste(output_path_process, "/joined_scores_norm.txt", sep = ""))
+    # Density plot
+    output$chipQC_density <- renderPlot ({
+      ggplot(data = melt(joined_scores_norm), mapping = aes(x = value)) + geom_density() + scale_x_log10() + theme_bw() + facet_wrap(~variable, scales = 'free_x')
+    })
+    # QC plot
+    output$chipQC <- renderPlot ({
+      marks <- colnames(joined_scores_percentile[,3:dim(joined_scores_percentile)[2]])
+      marks_comb <- combn(marks, 2)
+      makePlot <- function(x) {
+        ggplot(joined_scores_percentile, aes_string(x=x[1], y=x[2])) + geom_point(size=0.3) + theme_bw()
+      }
+      pltList <- list()
+      pltList <- apply(marks_comb,2,makePlot)
+      grid.arrange(grobs = pltList)
+    })
+    # Table
+    output$perc_table <- renderDataTable(
+      joined_scores_percentile
+    )
+    # Input density plot
+    output$inputDist <- renderPlot({
       if(input$promoterLength > 0){
         inputFiles <- list.files()
       } else{
         inputFiles <- lapply(Sys.glob("*input*.txt"), read.csv)
       }
-      input_files <- list.files(output_path, pattern = "_input", full.names = TRUE)
+      input_files <- list.files(output_path_process, pattern = "_input", full.names = TRUE)
       input_scores <- lapply(input_files, load_data)
       input_scores <- unique(input_scores)
       plotList <- list()
@@ -130,5 +157,5 @@ observeEvent(input$processDataButton,
       grid.arrange(grobs = plotList)
     })
   }
-  }
+}
 )
