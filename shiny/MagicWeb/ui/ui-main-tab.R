@@ -37,20 +37,12 @@ tabPanel(value = "main_panel",
              br(),
              h4(HTML("<u>Overview</u>")),
              tags$p(HTML(
-              "A large fraction of human and mouse genes is subject to a regulatory mechanism that controls 
-              allele-specific and <b> monoallelic expression (MAE)</b>. MAE detection is challenging; at the same time, 
-              it is highly tissue-specific, and being able to detect it in multiple cell and tissue types is 
-              necessary to understand and map it.  We have previously reported that a specific and sensitive 
-              gene-body <b>chromatin signature</b> can identify MAE genes in a sequence-independent way in 
-              multiple tissue types. Here we present a robust and convenient pipeline for <b>monoallelic gene 
-              inference from chromatin (MaGIC)</b>. It uses histone mark signature to 
-              predict monoallelic versus biallelic gene expression and can be used via command line or 
-              Shiny web application.")),
+              "A large fraction of human and mouse genes is subject to clonally-variable allelic expression imbalance, generally designated as monoallelic gene expression (MAE). MAE is thought to play a role in various biological processes including cancer, haploinsufficiency, variable expressivity of disease, and embryonic development. Direct detection of MAE in primary cells and tissues is challenging but MAE can be accurately inferred using histone methylation data, in a way that does not require polymorphisms. The MaGIC tool allows to perform MAE inference in a user friendly manner through a web application or from the command line.")),
              h4(HTML("<u>The pipeline</u>")),
              tags$p(HTML(
                "Process.R calculates ChIP-seq enrichment per transcript from ChIP-seq and control bigWig files. 
-               Generate.R trains classifiers using ChIP-seq enrichment and true MAE/BAE calls. 
-               Analyze.R uses classifiers to predict MAE/BAE gene status from ChIP-seq data. "
+               Generate.R trains classifiers using ChIP-seq enrichment and true MAE calls. 
+               Analyze.R uses classifiers to predict MAE from ChIP-seq data."
              )),
              tags$img(HTML("<img src = \"images/pipeline_Magic.png\", height = 384, width = 512>")),
              width = 12
