@@ -59,7 +59,7 @@ The output folder will contain a model_output folder containing a summary_models
 
 Finally, call analyze.R, using the joined_scores_percentile.txt (output from process.R) and the default classifiers that are packaged with MaGIC as inputs.
 ```
-Rscript src/analyze.R -i data/joined_scores_percentile.txt -o data/output -m models
+Rscript src/analyze.R -i data/output/joined_scores_percentile.txt -o data/output -m models
 ```
 You can also run analyze.R with your own trained classifers, but be careful to avoid overfitting. 
 
