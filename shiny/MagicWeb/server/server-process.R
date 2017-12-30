@@ -29,8 +29,10 @@
 # sets input path
 
 shinyDirChoose(input, 'processInput', roots = c(home = '~'), filetypes = c('', 'txt','bigWig',"tsv","csv","bw"))
+global <- reactiveValues(datapath = sub("shiny/MagicWeb", "data", getwd()))
 processInput <- reactive(input$processInput)
-output$processInput <- renderText({parseDirPath(c(home = '~'), processInput())})
+output$processInput <- renderText({ global$datapath })
+
 observeEvent(
    ignoreNULL = TRUE,
    eventExpr = {
@@ -38,27 +40,29 @@ observeEvent(
    },
    handlerExpr = {
      home <- normalizePath("~")
-     datapath <<- file.path(home, paste(unlist(processInput()$path[-1]), collapse = .Platform$file.sep))
+     global$datapath <- file.path(home, paste(unlist(processInput()$path[-1]), collapse = .Platform$file.sep))
    }
 )
-
 
 # sets output path
 
 shinyDirChoose(input, 'processOutput', roots = c(home = '~'), filetypes = c('', 'txt','bigWig',"tsv","csv","bw"))
+globalProcessOutput <- reactiveValues(datapath = sub("shiny/MagicWeb", "data/output/", getwd()))
 processOutput <- reactive(input$processOutput)
-output$processOutput <- renderText({parseDirPath(c(home = '~'), processOutput())})
+output$processOutput <- renderText({ globalProcessOutput$datapath })
 
 observeEvent(
   ignoreNULL = TRUE,
   eventExpr = {
-   input$processOutput
- },
- handlerExpr = {
-   home <- normalizePath("~")
-   output_path_process <<- file.path(home, paste(unlist(processOutput()$path[-1]), collapse = .Platform$file.sep))
- }
+    input$processOutput
+  },
+  handlerExpr = {
+    home <- normalizePath("~")
+    globalProcessOutput$datapath <- file.path(home, paste(unlist(processOutput()$path[-1]), collapse = .Platform$file.sep))
+  }
 )
+
+
 
 ### DATA PROCESSING
 
@@ -75,13 +79,13 @@ observeEvent(input$processDataButton, {
                    done = TRUE
                  }
                  # Builds command to run process.R and executes it
-                 if ((!is.null(input$fileInput))&(file.exists(paste(datapath, "/", input$fileInput, sep = "")))) {
-                   cat(output_path_process)
+                 if ((!is.null(input$fileInput))&(file.exists(paste(global$datapath, "/", input$fileInput, sep = "")))) {
+                   cat(globalProcessOutput$datapath)
                    process_output <- NULL
                    process_running <- TRUE
                    args <- paste(process_file,
-                                 "-i", paste(datapath, "/", input$fileInput, sep = ""),
-                                 "-o", paste(output_path_process),
+                                 "-i", paste(global$datapath, "/", input$fileInput, sep = ""),
+                                 "-o", paste(globalProcessOutput$datapath),
                                  "-p", input$promoterLength,
                                  "-d", input$dropPercent,
                                  "-r", input$assembly,
@@ -111,9 +115,9 @@ observeEvent(input$processDataButton, {
 ###################################################################################################
 ############################################ Data plotting ########################################
 
-  if (file.exists(paste(output_path_process, "/joined_scores_percentile.txt", sep = ""))) {
-    joined_scores_percentile <- load_data(paste(output_path_process, "/joined_scores_percentile.txt", sep = ""))
-    joined_scores_norm <- load_data(paste(output_path_process, "/joined_scores_norm.txt", sep = ""))
+  if (file.exists(paste(globalProcessOutput$datapath, "/joined_scores_percentile.txt", sep = ""))) {
+    joined_scores_percentile <- load_data(paste(globalProcessOutput$datapath, "/joined_scores_percentile.txt", sep = ""))
+    joined_scores_norm <- load_data(paste(globalProcessOutput$datapath, "/joined_scores_norm.txt", sep = ""))
     # Density plot
     output$chipQC_density <- renderPlot ({
       ggplot(data = melt(joined_scores_norm), mapping = aes(x = value)) + geom_density() + scale_x_log10() + theme_bw() + facet_wrap(~variable, scales = 'free_x')
@@ -140,7 +144,7 @@ observeEvent(input$processDataButton, {
       } else{
         inputFiles <- lapply(Sys.glob("*input*.txt"), read.csv)
       }
-      input_files <- list.files(output_path_process, pattern = "_input", full.names = TRUE)
+      input_files <- list.files(globalProcessOutput$datapath, pattern = "_input", full.names = TRUE)
       input_scores <- lapply(input_files, load_data)
       input_scores <- unique(input_scores)
       plotList <- list()

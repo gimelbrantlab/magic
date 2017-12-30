@@ -33,13 +33,13 @@
 ###############
 # GENERATE NEW MODEL
 ###############
-output_generate <<- NULL
 model_dir <<- NULL
 
 # sets output path
-shinyDirChoose(input, 'generateOutput', roots = c(home = '~'), filetypes = c('', 'txt','bigWig',"tsv","csv","bw",".rds"))
+shinyDirChoose(input, 'generateOutput', roots = c(home = '~'), filetypes = c('', 'txt','bigWig',"tsv","csv","bw"))
+globalGenerateOutput <- reactiveValues(datapath = sub("shiny/MagicWeb", "data/output/", getwd()))
 generateOutput <- reactive(input$generateOutput)
-output$generateOutput <- renderText({parseDirPath(c(home = '~'), generateOutput())})
+output$generateOutput <- renderText({ globalGenerateOutput$datapath })
 
 observeEvent(
   ignoreNULL = TRUE,
@@ -48,8 +48,7 @@ observeEvent(
   },
   handlerExpr = {
     home <- normalizePath("~")
-    output_generate <<- file.path(home, paste(unlist(generateOutput()$path[-1]), collapse = .Platform$file.sep))
-    print(output_generate)
+    globalGenerateOutput$datapath <- file.path(home, paste(unlist(generateOutput()$path[-1]), collapse = .Platform$file.sep))
   }
 )
 
@@ -94,7 +93,7 @@ observeEvent(input$generateModelsButton, {
       generate_cmd <- paste("Rscript")
       args <- paste(generate_file,
                     "-i", input$trainingFile$datapath,
-                    "-o", paste(output_generate, "/model_output", sep=""),
+                    "-o", paste(globalGenerateOutput$datapath, "/model_output", sep=""),
                     "-m", input$metric,
                     "-s", input$samplingMethod,
                     "-r", input$selectionRule,
@@ -115,7 +114,7 @@ observeEvent(input$generateModelsButton, {
         system2(generate_cmd, args), error = function(e) e))
       cat(generate_cmd, args)
     }
-    modelTable <- load_data(paste(output_generate, "/model_output/summary_models.tsv", sep=""))
+    modelTable <- load_data(paste(globalGenerateOutput$datapath, "/model_output/summary_models.tsv", sep=""))
     output$modelTbl <- renderDataTable(
       modelTable
     )
@@ -125,16 +124,16 @@ observeEvent(input$generateModelsButton, {
       validation <- load_data(input$validationSet$datapath)
       validation[[input$targetFeature]] <- sub(input$positiveClass, "MAE", validation[[input$targetFeature]])
     } else {
-      
+
       # load one of the training sets in the model output file
-      validation_files <- list.files(path = paste(output_generate, "/model_output", sep=""), pattern = "*_testing.tsv")
-      
+      validation_files <- list.files(path = paste(globalGenerateOutput$datapath, "/model_output", sep=""), pattern = "*_testing.tsv")
+
       # just load the first one
-      validation_inner <- load_data(paste(output_generate, "/model_output/", validation_files[1], sep=""))
-      
+      validation_inner <- load_data(paste(globalGenerateOutput$datapath, "/model_output/", validation_files[1], sep=""))
+
       # remove the predictions
       validation <- validation_inner[,-4]
-      
+
       # training_set <- load_data(input$trainingFile$datapath)
       # if (input$tg == "human"){
       #   print("Using human training genes.")
@@ -184,19 +183,19 @@ observeEvent(input$generateModelsButton, {
       #   validation$status <- training_genes$status
       #   validation[[input$targetFeature]] <- sub(input$positiveClass, "MAE", validation[[input$targetFeature]])
       # }
-      # 
+      #
       # cutoff <- createDataPartition(validation$status, p = ((100-input$trainingPercent)/100),
       #                               list = FALSE, times = 1)
       # validation <- validation[-cutoff,]
     }
 
     #### get names of models
-    model_names <- list.files(paste(output_generate, "/model_output", sep=""), pattern = "*_model.rds")
+    model_names <- list.files(paste(globalGenerateOutput$datapath, "/model_output", sep=""), pattern = "*_model.rds")
     model_list <- list()
     # assign models to r environment variables
     for (i in 1:length(model_names)){
       name_string <- as.character(model_names[i])
-      assign(name_string, readRDS(paste(output_generate, "/model_output/", model_names[i], sep = "")))
+      assign(name_string, readRDS(paste(globalGenerateOutput$datapath, "/model_output/", model_names[i], sep = "")))
     }
     # make a list of models
     model_list <- list()
