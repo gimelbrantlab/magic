@@ -29,6 +29,7 @@ The output consists of several parts. File joined_scored_percentile.txt will be 
 ### Step 2. Model generation
 
 The second step is to train a model. If you don't want to generate a new model, you can skip this step and use one of our models at the next step. 
+To train models, please specify the path to joined_scores_percentile.txt generated at the previous step (or, if you just want to run a test case, select joined_scores_percentile_full_dataset.txt from the data folder). You should also specify classes of models you want to train and what dataset of genes with know statuses should be uses for training (select betweem our human or mouse datasets, or specify our own). For additional parameters, please see [documentation](https://github.com/gimelbrantlab/magic/blob/master/documentation.md).
 
 <img src="www/images/Step2.0.png" alt="Step2.0" width="400"/>
 
@@ -36,7 +37,7 @@ The second step is to train a model. If you don't want to generate a new model, 
 
 Trained models are tested with 20% of the data (this percent can be changed) and models' performance is summarized here. 
 
-<img src="www/images/Step2.1.png" alt="Step2.1" width="400"/>
+<img src="www/images/Step2.1.png" alt="Step2.1" width="700"/>
 
 <img src="www/images/Step2.2.png" alt="Step2.2" width="400"/>
 
