@@ -23,7 +23,7 @@
 ########
 # COMMAND LINE
 ########
-tabPanel("Command line usage",
+tabPanel("Tutorial",
          fluidRow(
            column(12,
                   includeMarkdown("Tutorial.md")

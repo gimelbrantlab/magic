@@ -81,7 +81,7 @@ shinyUI(
       source("ui/ui-process-tab.R", local=TRUE)$value,
       source("ui/ui-generate-tab.R", local=TRUE)$value,
       source("ui/ui-analyze-tab.R", local=TRUE)$value,
-      source("ui/ui-tutorial-tab.R", local=TRUE)$value,
+      source("ui/ui-tutorial-tab.R", local=TRUE)$value
     ),
     # activate tooltips, popovers
     use_bs_tooltip(),
