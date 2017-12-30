@@ -25,38 +25,35 @@
 ########
 
 tabPanel(value = "process",
-        title = "Process",
+         title = "Process",
          sidebarLayout(
            sidebarPanel = sidebarPanel(
-              tags$p(HTML("<b>First, set a path to where your data lives</b>")),
-              shinyDirButton("processInput", "Input directory", "Upload"),
-              verbatimTextOutput("processInput", placeholder = TRUE),
-              textInput(
-                'fileInput',
-                label = h5("Text file with names of marks (e.g., 'input.txt'):"),
-                value = "input.txt"
-              ),
-              tags$p(HTML("<b>Select output directory</b>")),
-              shinyDirButton("processOutput", "Output directory", "Upload"),
-              verbatimTextOutput("processOutput", placeholder = TRUE),
-              tags$p(HTML("<br>")),
+             tags$p(HTML("<b>First, set a path to where your data lives</b>")),
+             shinyDirButton("processInput", "Input directory", "Upload"),
+             verbatimTextOutput("processInput", placeholder = TRUE),
+             textInput(
+               'fileInput',
+               label = h5("Text file with names of marks (e.g., 'input.txt'):"),
+               value = "input.txt"
+             ),
+             tags$p(HTML("<b>Select output directory</b>")),
+             shinyDirButton("processOutput", "Output directory", "Upload"),
+             verbatimTextOutput("processOutput", placeholder = TRUE),
+             tags$p(HTML("<br>")),
              selectizeInput('assembly', 'Assembly',
-                               choices = c(assembly, "other"),
-                               selected = "hg19"),
-             conditionalPanel("input.assembly == 'other",
+                            choices = c(assembly, "other"),
+                            selected = "hg19"),
+             conditionalPanel(condition = "input.assembly == 'other'",
                               fileInput("bed",
-                                        label = "If you don't use an assembly above, you can upload a .bed file of your assembly (optional)",
-                                        accept = c(".bed")
-                                        )
-                              ),
+                              label = "If you don't use one of the assemblies listed, please upload a .bed file of your assembly")),
              numericInput("promoterLength", "Select promoter length:", 0, min = 0,
                           step = 100) %>%
-             shinyInput_label_embed(
-               icon("info") %>%
-                 bs_embed_tooltip(title = "If you want to include promoters into analysis, please specify promoter length (greater than 0)")
-             ),
+               shinyInput_label_embed(
+                 icon("info") %>%
+                   bs_embed_tooltip(title = "If you want to include promoters into analysis, please specify promoter length (greater than 0)")
+               ),
              selectizeInput("enableFilters",
-                           "Choose filters (gene groups to remove from analysis)",
+                            "Choose filters (gene groups to remove from analysis)",
                             choices = filtering,
                             multiple=TRUE),
              checkboxInput("noOverlap",
@@ -66,7 +63,7 @@ tabPanel(value = "process",
                          min = 0, max = 0.80, step = 0.01),
              selectizeInput("cores",
                             "Number of cores to run process with:",
-                             choices = c(1:8)
+                            choices = c(1:8)
              ),
              actionButton("processDataButton",
                           "Process data",
@@ -75,66 +72,65 @@ tabPanel(value = "process",
            mainPanel = mainPanel(
              conditionalPanel(
                condition = "input.processDataButton",
-                              tabsetPanel(
-                               id = "processPlots",
-                               tabPanel("Processed Data Table",
-                                        sidebarLayout(
-                                          mainPanel(
-                                                dataTableOutput("perc_table")
-                                          ),
-                                          mainPanel(
-                                            NULL
-                                          )
-                                        )
-                               ),
-                               tabPanel("ChIP QC",
-                                       sidebarLayout(
-                                         mainPanel(
-                                                h3("Density plots for chromatin marks, normalized values:"),
-                                                plotOutput("chipQC_density",
-                                                           height = 500,
-                                                           width = 800,
-                                                           click = "plot1_click",
-                                                           brush = brushOpts(
-                                                             id = "plot1_brush")
-                                                ),
-                                                h3("Scatterplots for chromatin marks, quantiles:"),
-                                                plotOutput("chipQC",
-                                                           height = 600,
-                                                           width = 600,
-                                                           click = "plot2_click",
-                                                           brush = brushOpts(
-                                                             id = "plot2_brush")
-                                                )
-                                         ),
-                                         mainPanel(
-                                           NULL
-                                         )
-                                )
-                               )
-                               ,
-                               tabPanel("Input distribution",
-                                        sidebarLayout(
-                                          mainPanel(
-                                            h3("Density plots for input values, gene body and promoter (if selected):"),
-                                            plotOutput("inputDist",
-                                                       height = 600,
-                                                       width = 900
-                                                       )
-
-                                            ),
-                                          mainPanel(
-                                            NULL
-                                          )
-                                          )
-                                        )
+               tabsetPanel(
+                 id = "processPlots",
+                 tabPanel("Processed Data Table",
+                          sidebarLayout(
+                            mainPanel(
+                              dataTableOutput("perc_table")
+                            ),
+                            mainPanel(
+                              NULL
+                            )
+                          )
+                 ),
+                 tabPanel("ChIP QC",
+                          sidebarLayout(
+                            mainPanel(
+                              h3("Density plots for chromatin marks, normalized values:"),
+                              plotOutput("chipQC_density",
+                                         height = 500,
+                                         width = 800,
+                                         click = "plot1_click",
+                                         brush = brushOpts(
+                                           id = "plot1_brush")
+                              ),
+                              h3("Scatterplots for chromatin marks, quantiles:"),
+                              plotOutput("chipQC",
+                                         height = 600,
+                                         width = 600,
+                                         click = "plot2_click",
+                                         brush = brushOpts(
+                                           id = "plot2_brush")
                               )
+                            ),
+                            mainPanel(
+                              NULL
+                            )
+                          )
+                 )
+                 ,
+                 tabPanel("Input distribution",
+                          sidebarLayout(
+                            mainPanel(
+                              h3("Density plots for input values, gene body and promoter (if selected):"),
+                              plotOutput("inputDist",
+                                         height = 600,
+                                         width = 900
+                              )
+                            ),
+                            mainPanel(
+                              NULL
+                            )
+                          )
+                 )
+               )
              )
 
-             ), # end of conditionalPanel
-             fluid = TRUE
+           ), # end of conditionalPanel
+           fluid = TRUE
 
-      )
+         )
 
 )
 

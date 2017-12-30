@@ -32,7 +32,7 @@ rm -r magic
 
 ## Quick start
 
-The easiest way to test MaGIC is to run the Shiny app (see [Tutorial](https://github.com/gimelbrantlab/magic/blob/master/Tutorial.md) for help).
+The easiest way to test MaGIC is to run the Shiny app (see [Tutorial](https://github.com/gimelbrantlab/magic/blob/master/shiny/MagicWeb/Tutorial.md) for help).
 
 The following commands show you how to run MaGIC from the command line.
 

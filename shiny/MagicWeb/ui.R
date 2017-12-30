@@ -4,12 +4,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -70,27 +70,18 @@ load_shiny_libraries()
 
 
 shinyUI(
-  
+
   tagList(
     # make navbar look cool
     navbarPage(
       title = "", id="main_panel",
-      # good themes: flatly, simplex
       theme = shinytheme("flatly"),
-      
       # source tabPanels
       source("ui/ui-main-tab.R", local=TRUE)$value,
-      # source("ui/ui-input-tab.R", local=TRUE)$value,
       source("ui/ui-process-tab.R", local=TRUE)$value,
       source("ui/ui-generate-tab.R", local=TRUE)$value,
       source("ui/ui-analyze-tab.R", local=TRUE)$value,
-      
-      # Additional information about the program
-      navbarMenu("More",
-                 source("ui/ui-doc-tab.R", local=TRUE)$value,
-                 source("ui/ui-cmd-tab.R", local=TRUE)$value,
-                 source("ui/ui-about-tab.R", local=TRUE)$value
-      )
+      source("ui/ui-tutorial-tab.R", local=TRUE)$value,
     ),
     # activate tooltips, popovers
     use_bs_tooltip(),
