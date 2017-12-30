@@ -1,5 +1,6 @@
 shiny/MagicWeb/rsconnect/
 bin
+shiny/MagicWeb/bin
 .Rprofile
 reference/Nag2015HUMAN
 reference/Nag2015MOUSE

@@ -131,14 +131,13 @@ observeEvent(input$analyzeDataButton, {
           pr_name <- gsub('.{4}$', '', file)
           colnames(p_set)[5] = pr_name
           if (i == 0) {
-            df <- p_set
+            df <- p_set[,c(1,5)]
           }
           else {
-            df <- merge(df, p_set, by.x="name", "name")
+            df <- merge(df, p_set[,c(1,5)], by.x="name", "name")
           }
           i <- i+1
         }
-        df <- df %>% dplyr::select(name, grep("_predictions", colnames(df)))
         output$predTbl <- renderDataTable(
           df
         )
