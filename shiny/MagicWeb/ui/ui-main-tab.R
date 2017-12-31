@@ -35,7 +35,7 @@ tabPanel(value = "main_panel",
                              br(),
                              h4(HTML("<u>Overview</u>")),
                              tags$p(HTML(
-                               "A large fraction of human and mouse genes is subject to clonally-variable allelic expression imbalance, generally designated as monoallelic gene expression (MAE). MAE is thought to play a role in various biological processes including cancer, haploinsufficiency, variable expressivity of disease, and embryonic development. Direct detection of MAE in primary cells and tissues is challenging but MAE can be accurately inferred using histone methylation data, in a way that does not require polymorphisms. The MaGIC tool allows to perform MAE inference in a user friendly manner through a web application or from the command line.")),
+                               "A large fraction of human and mouse genes is subject to clonally-variable allelic expression imbalance, generally designated as monoallelic gene expression (MAE). MAE is thought to play a role in various biological processes including cancer, haploinsufficiency, variable expressivity of disease, and embryonic development. Direct detection of MAE in primary cells and tissues is challenging but MAE can be accurately inferred using histone methylation data in a way that does not require polymorphisms. The MaGIC tool allows MAE inference in a user friendly manner through a web application or from the command line.")),
                              h4(HTML("<u>The pipeline</u>")),
                              tags$p(HTML(
                                "Process.R calculates ChIP-seq enrichment per transcript from ChIP-seq and control bigWig files.
