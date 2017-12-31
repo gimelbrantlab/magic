@@ -1,6 +1,6 @@
 ## Tutorial 
 
-This tutorial will walk you through the steps of using Shiny app
+This tutorial will walk you through the steps of using the Shiny app.
 
 ### Step 1. ChIP-seq data processing
 
