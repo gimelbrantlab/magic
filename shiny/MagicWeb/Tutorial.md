@@ -18,7 +18,7 @@ The output consists of several parts. File joined_scored_percentile.txt will be 
 
 <img src="www/images/Step1.2.png" alt="Step1.1" width="400"/>
 
-*ChIP QC* tab gives you some insight about your data. If you are going to classify genes into monoallelic and biallelic, you would expect that all genes ChIP-seq values distributions would be bimodal or at least close to one. Otherwise, you won't be able to get a meaningful classification. When you make a scatterplot for one chromatin mark versus another you also expect to have two lobes representing two groups of genes. If you don't, maybe you should reconsider if this data is appropiate for the analysis. 
+*ChIP QC* tab provides insight into your ChIP-seq data. If you are going to classify genes into monoallelic and biallelic, it is expected that all genes' ChIP-seq values distributions are bimodal or at least close to bimodal. Otherwise, you won't be able to get a meaningful classification. When you make a scatterplot for one chromatin mark versus another you also expect to have two lobes representing two groups of genes. If you don't, maybe you should reconsider if this data is appropiate for the analysis. 
 
 <img src="www/images/Step1.3.png" alt="Step1.2" width="400"/>
 
