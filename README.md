@@ -9,7 +9,7 @@ Linux/Mac machine with updated R (~3.4.x) and git. Please see the [instructions]
 
 ## MaGIC installation
 
-Installing MaGIC should just be a matter of a few commands. Required R package and [bwtool](https://github.com/CRG-Barcelona/bwtool/wiki) are installed automatically.
+Installing MaGIC should just be a matter of a few commands. Required R packages and [bwtool](https://github.com/CRG-Barcelona/bwtool/wiki) are installed automatically.
 
 To install MaGIC system-wide (i.e. with root/sudo access): 
 ```
