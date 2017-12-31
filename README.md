@@ -48,7 +48,7 @@ You will get joint_scores_percentile.txt in your output folder, and this file wi
 
 *Generate.R*
 
-Generate.R script trains models using output from process.R saved in the joined_scores_percentile.txt file. We also provide a pre-generated joined_scores_percentile_full_dataset.txt file. Run the following command to train ada, SVM and random forest model using 80% percent of these data for training and 20% for testing:
+Generate.R script trains models using output from process.R saved in the joined_scores_percentile.txt file. We also provide a pre-generated joined_scores_percentile_full_dataset.txt file. Run the following command to train ada, SVM, and random forest model using 80% percent of the data for training and 20% for testing:
 
 ```
 Rscript src/generate.R -i data/joined_scores_percentile_full_dataset.txt -o data/classifiers -a "human" -p 80 -l ada,svmPoly,rf -c 5
