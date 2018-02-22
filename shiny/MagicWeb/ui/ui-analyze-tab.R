@@ -57,16 +57,16 @@ tabPanel(value = "analyze",
                    icon("info") %>%
                      bs_embed_tooltip(title = "Set length lower threshold here, if you want to filter out shorter genes")
                  )),
-             checkboxInput("exprFilt", "Filter by expression", FALSE),
+             #checkboxInput("exprFilt", "Filter by expression", FALSE),
              selectInput(
-               "filterFile", "Expression and/or length file",
+               "filterFile", "Length file",
                c("human",
                  "mouse",
                  "custom"),selected='human'),
              conditionalPanel(
                condition = "input.filterFile == 'custom' ",
                fileInput('expressionData',
-                         label = "Upload file with gene expression levels and/or gene lengths") %>%
+                         label = "Upload file with gene lengths") %>%
                  shinyInput_label_embed(
                    icon("info") %>%
                      bs_embed_tooltip(title = "Please see readme for the file format")
