@@ -94,7 +94,6 @@ observeEvent(input$analyzeDataButton, {
           }
         }
         else {
-          print("here we are")
           if (input$filterFile == 'human') {
             expression_file_path <- file.path(reference_folder, "hg19_length.txt")
           }
@@ -104,7 +103,7 @@ observeEvent(input$analyzeDataButton, {
           if (input$filterFile == 'custom') {
             showModal(modalDialog(
               title = "Error",
-              "Please, upload file with expression and/or lengths, or select human or mouse",
+              "Please, upload file with gene lengths, or select human or mouse",
               easyClose = TRUE
             ))
           }
@@ -119,8 +118,8 @@ observeEvent(input$analyzeDataButton, {
                       "-m", paste(globalModelInput$datapath),
                       "-o", paste(globalAnalyzeOutput$datapath, "/analysis_output", sep=""),
                       "-p", "MAE")
-        if((!is.null(input$exprFilt))|(!is.null(input$lengthFilt))) { args <- paste(args, "-f", expression_file_path) }
-        if(!is.null(input$lengthFilt)) { args <- paste(args, "-l", input$lengthFilter) }
+        if ((input$lengthFilt)&(!is.null(input$lengthFilter))) { args <- paste(args, "-f", expression_file_path, "-l", input$lengthFilter) }
+        #if(!is.null(input$lengthFilt)) { args <- paste(args, "-l", input$lengthFilter) }
         cat(args)
         analyze_output <- capture.output(tryCatch(
           system2(analyze_cmd, args), error = function(e) e))
