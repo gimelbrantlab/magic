@@ -9,7 +9,7 @@ Linux/Mac machine with updated R (~3.4.x) and git. Please see the [instructions]
 
 ## MaGIC installation
 
-Installing MaGIC should just be a matter of a few commands. Required R packages and [bwtool](https://github.com/CRG-Barcelona/bwtool/wiki) are installed automatically.
+Installing MaGIC takes only a few commands. Required R packages and [bwtool](https://github.com/CRG-Barcelona/bwtool/wiki) are installed automatically.
 
 To install MaGIC system-wide (i.e. with root/sudo access): 
 ```
@@ -17,7 +17,14 @@ git clone https://github.com/gimelbrantlab/magic.git
 cd magic
 Rscript src/install.R
 ```
-This command will install MaGIC to run from the command line. For visualization purposes, we also developed a Shiny app that can be run with the following command: 
+
+To install MaGIC locally (i.e. on a server without root access to your R installation): 
+```
+git clone https://github.com/gimelbrantlab/magic.git
+cd magic
+Rscript src/install.R libraries
+```
+These commands will enable MaGIC to run from the command line. We also developed a Shiny app that can be run with the following command: 
 
 ```
 R -e "shiny::runApp('shiny/MagicWeb/', launch.browser = T)"
@@ -65,4 +72,4 @@ You can also run analyze.R with your own trained classifers, but be careful to a
 
 ## Contact us
 
-Questions, comments and concerns can be directed to [Alexander Gimelbrant](alexander_gimelbrant@dfci.harvard.edu), [Sébastien Vigneau](Sebastien_Vigneau@dfci.harvard.edu), and [Svetlana Vinogradova](Svetlana_Vinogradova@dfci.harvard.edu). Additional inquiries about how the program works can be directed to [Henry Ward](henry.neil.ward@gmail.com) and [Sachit Saksena](sachitdsaksena@utexas.edu).
+Questions, comments and concerns can be directed to [Alexander Gimelbrant](alexander_gimelbrant@dfci.harvard.edu), [Sébastien Vigneau](Sebastien_Vigneau@dfci.harvard.edu), and [Svetlana Vinogradova](Svetlana_Vinogradova@dfci.harvard.edu). Additional inquiries about how the program works can be directed to [Henry Ward](wardx596@umn.edu) and [Sachit Saksena](sachitdsaksena@utexas.edu).
