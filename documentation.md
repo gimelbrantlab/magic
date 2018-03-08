@@ -39,7 +39,7 @@ As a brief aside, note that while input files are generally necessary to make se
 ```Rscript process.R -i data/input.txt -r "mm9" -p 0```
     
 *Human genome*:
-```Rscript process.R -i data/input.txt -o output -r "hg19 -p 0"```
+```Rscript process.R -i data/input.txt -o output -r "hg19" -p 0```
     
 *Mouse genome with many options*:
 ```Rscript process.R -i data/input.txt -o output -r "mm9" -f -p 2500 -d 0.01 -e -l -m -s 3```
