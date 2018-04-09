@@ -45,7 +45,7 @@ remove_imprinted <- function(counts, imprinted_file) {
 
 # Removes olfactory receptors genes from a counts df
 remove_olfactory <- function(counts) {
-  counts <- counts %>% filter(!(grepl('^Olfr', name)))
+  counts <- counts %>% filter(!(grepl('^Olfr', name))) %>% filter(!(grepl('^OR[0-9]', name))) 
   return(counts)
 }
 
