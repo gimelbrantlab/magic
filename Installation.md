@@ -33,7 +33,7 @@ brew install r
 ```
 ## Install missing R packages
 
-If automatic installation fails, you will need to install missing packages manually. In general, command 
+If automatic installation fails, you will need to install missing packages manually (see the full list [here](https://github.com/gimelbrantlab/magic/blob/master/Dependencies.md)). In general, command 
 ```
 install.packages(package_name, dependencies = T)
 ```
