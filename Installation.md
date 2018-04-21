@@ -31,3 +31,13 @@ And now, install git and R:
 brew install git
 brew install r
 ```
+## Install missing R packages
+
+If alutomatic installation fails, you will need to install missing packages manually. In general, command 
+```
+install.packages(package_name, dependencies = T)
+```
+should work. If you are working with libraries installed in deparate, non-default folder, add the path to this folder:
+```
+install.packages(package_name, dependencies = T, lib = PATH_TO_LIB)
+```
