@@ -5,7 +5,7 @@ chromatin mark enrichment data. It is primarily based on the work of the [Gimelb
 
 ## Requirements
 
-Linux/Mac machine with updated R (~3.4.x) and git. Please see the [instructions](https://github.com/gimelbrantlab/magic/blob/master/Installation.md) if you don't have git or R installed. 
+Linux/Mac machine with updated R (~3.4.x) and git. Please see the [instructions](https://github.com/gimelbrantlab/magic/blob/master/Installation.md) if you don't have git or R installed. There is a number of R packages that need to be installed, please see [dependencies](https://github.com/gimelbrantlab/magic/blob/master/Dependencies.md). During Magic installation, install.R script will try to download and install missing packages. However, if installation some of them fails, you will have to install them [manually](https://github.com/gimelbrantlab/magic/blob/master/Installation.md). 
 
 ## MaGIC installation
 
