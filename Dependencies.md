@@ -1,4 +1,4 @@
-List of dependencies
+<h1>List of dependencies</h1>
 
 shiny\
 markdown\
@@ -31,4 +31,4 @@ plyr\
 reshape2\
 diptest\
 doMC\
-gridExtra\
+gridExtra
