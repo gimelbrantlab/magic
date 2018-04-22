@@ -184,7 +184,12 @@ install_bwtool <- function(bin) {
 
 # Check to see if all packages are installed
 check.packages <- function(pkg){
-  new.pkg <- pkg[!(pkg %in% installed.packages(lib.loc = lib)[, "Package"])]
+  if(!is.na(lib)) {
+    new.pkg <- pkg[!(pkg %in% installed.packages(lib.loc = lib)[, "Package"])]
+  } 
+  else {
+    new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+  }
   if (length(new.pkg))  {
     print("The following packages were not installed, please try to install them manually:")
     print(new.pkg)
