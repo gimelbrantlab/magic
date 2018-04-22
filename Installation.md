@@ -12,8 +12,8 @@ To install R, run:
 sudo echo "deb http://<my.favorite.cran.mirror>/bin/linux/ubuntu <my.ubuntu.version>/" | sudo tee -a /etc/apt/sources.list
 /sources.list
 sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E084DAB9
-sudo update
-sudo apt-get install r-base
+sudo apt update
+sudo apt install r-base
 ```
 
 To install the latest R version on Ubuntu 16.04 from CRAN cloud, the first line should be:
