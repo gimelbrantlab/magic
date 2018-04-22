@@ -56,7 +56,7 @@ get_package <- function(package_name, repos = "http://cran.us.r-project.org",
     print(paste("Warning: package", package_name, "might not have installed correctly"))
     is_warning <- package_name
   }, error = function(e) {
-    print(paste("Error: package", package_name, "did not install correctly"))
+    print(paste("Error: package", package_name, "was not installed correctly, will try again"))
     is_warning <- package_name
   })
   return(is_warning)
@@ -165,40 +165,52 @@ install_generate_libraries <- function(lib = NA) {
 
 # Installs bwtool from source
 install_bwtool <- function(bin) {
-   prev_wd <- getwd()
-   setwd(bin)
-   system2("git", args = c("clone", "https://github.com/CRG-Barcelona/libbeato.git"))
-   system2("git", args = c("clone", "https://github.com/CRG-Barcelona/bwtool.git"))
-   setwd("libbeato/")
-   system2("./configure", args = c("--prefix=$HOME", "CFLAGS=\"-g -O0 -I${HOME}/include\"",
-								   "LDFLAGS=-L${HOME}/lib"))
-   system2("make")
-   system2("make", args = c("install"))
-   setwd("../bwtool/")
-   system2("./configure", args = c("--prefix=$HOME", "CFLAGS=\"-g -O0 -I${HOME}/include\"",
-								   "LDFLAGS=-L${HOME}/lib"))
-   system2("make")
-   system2("make", args = c("install"))
-   setwd(prev_wd)
+  prev_wd <- getwd()
+  setwd(bin)
+  system2("git", args = c("clone", "https://github.com/CRG-Barcelona/libbeato.git"))
+  system2("git", args = c("clone", "https://github.com/CRG-Barcelona/bwtool.git"))
+  setwd("libbeato/")
+  system2("./configure", args = c("--prefix=$HOME", "CFLAGS=\"-g -O0 -I${HOME}/include\"",
+                                  "LDFLAGS=-L${HOME}/lib"))
+  system2("make")
+  system2("make", args = c("install"))
+  setwd("../bwtool/")
+  system2("./configure", args = c("--prefix=$HOME", "CFLAGS=\"-g -O0 -I${HOME}/include\"",
+                                  "LDFLAGS=-L${HOME}/lib"))
+  system2("make")
+  system2("make", args = c("install"))
+  setwd(prev_wd)
+}
+
+# Check to see if all packages are installed
+check.packages <- function(pkg){
+  new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+  if (length(new.pkg))  {
+    print("The following packages were not installed, please try to install them manually:")
+    print(new.pkg)
+  }
+  else {
+    print("All libraries were installed properly!")
+  }
 }
 
 # Installs all required packages to the specified folder and adds folder to known library trees
 magic_install <- function(lib, bin) {
-
+  
   # Installs libraries
   get_package("optparse", lib = lib)
   install_process_libraries(lib)
   install_generate_libraries(lib)
   install_analyze_libraries(lib)
   install_shiny_libraries(lib)
-
+  
   # Adds folder to local Rprofile
   if(!is.na(lib)) {
     f <- file(file.path(getwd(), "install_data.txt"))
     writeLines(lib, f)
     close(f)
   }
-
+  
   # Installs bwtool
   install_bwtool(bin)
   cat("finished installing bwtool\n")
@@ -209,6 +221,10 @@ magic_install <- function(lib, bin) {
     dir.create(shiny_bin)
   }
   file.copy(bin, file.path(shiny_bin, ".."), recursive = TRUE)
+  
+  # Check if everything is installed
+  packages <- c("shiny","markdown","shinythemes","bsplus","GGally","PRROC","shinyFiles","shinyBS","ggplot2","scales","randomForest","kernlab","ddalpha","recipes","caret","lattice","pROC","ada","fastAdaboost","mboost","RSNNS","nnet","optparse","evtree","MASS","dplyr","e1071","plyr","reshape2","diptest","doMC","gridExtra")
+  check.packages(packages)
 }
 
 
@@ -222,14 +238,14 @@ args <- commandArgs(trailingOnly=FALSE)
 current_folder <- dirname(sub("--file=", "", args[grep("--file=", args)]))
 num_args <- 1
 if (!is.na(match("--args", args))) {
-   args <- args[match("--args", args):length(args)]
-   num_args <- length(args)
+  args <- args[match("--args", args):length(args)]
+  num_args <- length(args)
 }
 
 # Gets path to bin folder and creates it if it doesn't exist
 bin_folder <- file.path(current_folder, "..", "bin")
 if (!dir.exists(bin_folder)) {
-   dir.create(bin_folder)
+  dir.create(bin_folder)
 }
 
 # Checks arguments
@@ -246,5 +262,3 @@ if (num_args == 2) {
 
 # Installs all required packages
 magic_install(lib, bin_folder)
-
-
