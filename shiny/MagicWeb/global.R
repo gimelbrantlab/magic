@@ -18,7 +18,7 @@ source("utils.R")
 source("fig2a_script.R")
 
 # Gets custom install directory if used in install.R
-lib <- get_install_dir(".")
+lib <- get_install_dir(paste0(getwd(), "/../../"))
 
 # Loads optparse
 load_initial_libraries(lib)
