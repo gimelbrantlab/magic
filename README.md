@@ -29,6 +29,12 @@ These commands will enable MaGIC to run from the command line. We also developed
 ```
 R -e "shiny::runApp('shiny/MagicWeb/', launch.browser = T)"
 ```
+Alternatively, if MaGIC has been installed locally as instructed above, use the following command instead:
+
+```
+R -e ".libPaths('libraries'); shiny::runApp('./shiny/MagicWeb/', launch.browser = T)"
+```
+
 If you change your mind and want to uninstall MaGIC, you can just delete the whole folder:
 
 ```
