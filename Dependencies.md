@@ -1,36 +1,36 @@
 <h1>List of dependencies</h1>
 
-shiny\
-markdown\
-shinythemes\
-bsplus\
-GGally\
-PRROC\
-shinyFiles\
-shinyBS\
-ggplot2\
-scales\
-randomForest\
-kernlab\
-ddalpha\
-recipes\
-caret\
-lattice\
-pROC\
-ada\
-fastAdaboost\
-mboost\
-RSNNS\
-nnet\
-optparse\
-evtree\
-MASS\
-dplyr\
-e1071\
-plyr\
-reshape2\
-diptest\
-doMC\
-gridExtra\
-foreach\
-iterator
+ada (2.0-5)\
+bsplus (0.1.0)\
+caret (6.0-77)\
+ddalpha (1.3.1)\     
+diptest (0.75-7)\    
+doMC (1.3.4)\
+dplyr (0.7.4)\
+e1071 (1.6-8)\
+evtree (1.0-5)\
+fastAdaboost (1.0.0)\  
+foreach (1.4.3)\
+GGally (1.3.2)\
+ggplot2 (2.2.1)\
+gridExtra (2.3)\
+iterators (1.0.8)\     
+lattice (0.20-35)\   
+markdown (0.8)\
+MASS (7.3-47)\
+mboost (2.8-1)\
+nnet (7.3-12)\
+optparse (1.4.4)\     
+partykit (1.1-1)\   
+plyr (1.8.4)\
+pROC (1.10.0)\
+PRROC (1.3)\
+randomForest (4.6-12)\ 
+recipes (0.1.0)\
+reshape2 (1.4.2)\     
+RSNNS (0.4-9)\
+scales (0.5.0)\
+shiny (1.0.5)\
+shinyBS (0.61)\
+shinyFiles (0.6.2)\   
+shinythemes (1.1.1)\  
