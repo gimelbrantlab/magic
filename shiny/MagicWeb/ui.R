@@ -23,14 +23,27 @@
 
 ######
 ### UI LIBRARIES
-######
+###### 
 
-library(shiny)
-library(markdown)
-library(shinythemes)
-library(GGally)
-library(shinyFiles)
-library(bsplus)
+# Gets custom install directory if used in install.R
+lib <- get_install_dir(paste0(getwd(), "/../../"))
+
+if (is.na(lib)) {
+  library(shiny)
+  library(markdown)
+  library(shinythemes)
+  library(GGally)
+  library(shinyFiles)
+  library(bsplus)
+}else {
+  library(shiny, lib.loc = lib)
+  library(markdown, lib.loc = lib)
+  library(shinythemes, lib.loc = lib)
+  library(GGally, lib.loc = lib)
+  library(shinyFiles, lib.loc = lib)
+  library(bsplus, lib.loc = lib)
+}
+
 
 ######
 ### UI GLOBALS
@@ -57,12 +70,17 @@ positive_classes <- c("MAE", "BAE", "other")
 model_list <- c("ada", "svmPoly", "rf", "nnet", "rpart", "mlpML", "knn", "evtree", "glmStepAIC")
 filtering <- c("olfactory receptor genes", "sex chromosomes", "imprinted genes")
 
-source("utils.R", local=TRUE)
-
-load_process_libraries()
-load_analyze_libraries()
-load_generate_libraries()
-load_shiny_libraries()
+if (!is.na(lib)) {
+  load_process_libraries(lib)
+  load_analyze_libraries(lib)
+  load_generate_libraries(lib)
+  load_shiny_libraries(lib)
+} else {
+  load_process_libraries()
+  load_analyze_libraries()
+  load_generate_libraries()
+  load_shiny_libraries()
+}
 
 ######
 ### UI
