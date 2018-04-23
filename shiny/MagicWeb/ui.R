@@ -28,6 +28,8 @@
 # Gets custom install directory if used in install.R
 lib <- get_install_dir(paste0(getwd(), "/../../"))
 
+if (is.null(lib)) lib <- NA
+
 if (is.na(lib)) {
   library(shiny)
   library(markdown)
