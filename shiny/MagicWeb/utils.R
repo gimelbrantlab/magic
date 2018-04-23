@@ -37,7 +37,6 @@ load_data <- function(training_path){
 
 # load shiny libraries
 load_shiny_libraries <- function(lib.loc = NULL) {
-  suppressMessages(library(methods))
   suppressMessages(library(shiny, lib.loc = lib.loc))
   suppressMessages(library(markdown, lib.loc = lib.loc))
   suppressMessages(library(shinythemes, lib.loc = lib.loc))

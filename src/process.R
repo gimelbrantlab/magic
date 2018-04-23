@@ -566,7 +566,7 @@ models_folder <- file.path(current_folder, "..", "models")
 source(file.path(current_folder, "utils.R"))
 
 # Gets custom install directory if used in install.R
-lib <- get_install_dir(file.path(current_folder, ".."))
+lib <- get_install_dir(paste0(getwd(), "/../../"))
 
 # Loads optparse
 load_initial_libraries(lib)
