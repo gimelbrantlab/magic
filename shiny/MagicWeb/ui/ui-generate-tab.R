@@ -39,7 +39,7 @@ tabPanel(value = "generate",
                                    height = 480,
                                    width = 700
                         )
-
+                        
                )
              )
            ),
@@ -53,7 +53,7 @@ tabPanel(value = "generate",
                        accept = acceptable_file_types) %>%
                shinyInput_label_embed(
                  icon("info") %>%
-                   bs_embed_tooltip(title = "In most cases, it is joined_scores_percentile.txt in your output folder")
+                   bs_embed_tooltip(title = "In most cases, it is joined_scores_percentile.txt in your output folder (for test, please use joined_scores_percentile_full_dataset.txt)")
                ),
              selectizeInput(
                "modelList",

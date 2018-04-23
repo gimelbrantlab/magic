@@ -31,4 +31,6 @@ plyr\
 reshape2\
 diptest\
 doMC\
-gridExtra
+gridExtra\
+foreach\
+iterator

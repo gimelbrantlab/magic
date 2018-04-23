@@ -24,4 +24,4 @@ lib <- get_install_dir(paste0(getwd(), "/../../"))
 load_initial_libraries(lib)
 
 # load shiny libraries from utils.R
-load_shiny_libraries(lib.loc = lib)
+load_shiny_libraries(lib)
