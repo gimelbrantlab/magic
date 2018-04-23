@@ -18,7 +18,7 @@ sudo apt install r-base
 
 To install the latest R version on Ubuntu 16.04 from CRAN cloud, the first line should be:
 ```
-sudo echo "deb http://cloud.r-project.org/bin/linux/ubuntu xenial/" | sudo tee -a /etc/apt
+sudo echo "deb http://cloud.r-project.org/bin/linux/ubuntu xenial/" | sudo tee -a /etc/apt/sources.list
 ```
 ### Mac
 
