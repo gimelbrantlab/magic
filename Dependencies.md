@@ -33,4 +33,4 @@ scales (0.5.0)\
 shiny (1.0.5)\
 shinyBS (0.61)\
 shinyFiles (0.6.2)\
-shinythemes (1.1.1)\
+shinythemes (1.1.1)
