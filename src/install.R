@@ -100,6 +100,8 @@ install_process_libraries <- function(lib = NA) {
   get_package("caret", dependencies = TRUE, lib = lib)
   get_package("lattice", lib = lib)
   get_package("diptest", lib = lib)
+  get_package("foreach", lib = lib)
+  get_package("iterators", lib = lib)
   get_package("doMC", repos = "http://R-Forge.R-project.org", lib = lib)
   get_package("e1071", lib = lib)
   get_package("gridExtra", lib = lib)
@@ -197,7 +199,7 @@ magic_install <- function(lib, bin) {
   file.copy(bin, file.path(shiny_bin, ".."), recursive = TRUE)
   
   # Check if everything is installed
-  packages <- c("shiny","markdown","shinythemes","bsplus","GGally","PRROC","shinyFiles","shinyBS","ggplot2","scales","randomForest","kernlab","ddalpha","recipes","caret","lattice","pROC","ada","fastAdaboost","mboost","RSNNS","nnet","optparse","evtree","MASS","dplyr","e1071","plyr","reshape2","diptest","doMC","gridExtra")
+  packages <- c("shiny","markdown","shinythemes","bsplus","GGally","PRROC","shinyFiles","shinyBS","ggplot2","scales","randomForest","kernlab","ddalpha","recipes","caret","lattice","pROC","ada","fastAdaboost","mboost","RSNNS","nnet","optparse","evtree","MASS","dplyr","e1071","plyr","reshape2","diptest","doMC","gridExtra", "foreach", "iterators")
   check.packages(packages)
 }
 
