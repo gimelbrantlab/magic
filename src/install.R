@@ -181,7 +181,7 @@ magic_install <- function(lib, bin) {
   # Adds folder to local Rprofile
   if(!is.na(lib)) {
     f <- file(file.path(getwd(), "install_data.txt"))
-    writeLines(lib, f)
+    writeLines(paste0(getwd(),"/",lib), f)
     close(f)
   }
   
