@@ -140,7 +140,7 @@ validation <- function(model_name, output_folder, validation_set) {
   # print output
   model_to_valid <- file.path(output_folder, 
                           paste(model_name, "_to_validation.txt", sep = ""))
-  cm <- caret::confusionMatrix(predictions, validation_set[["status"]], positive = "1")
+  cm <- caret::confusionMatrix(as.factor(predictions), as.factor(validation_set[["status"]]), positive = "1")
   capture.output(cm, file = model_to_valid, append = F)
   out <- c(cm$byClass[1:4], cm$byClass[7], cm$overall[2], cm$overall[1], cm$byClass[11])
   return(out)
