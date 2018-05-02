@@ -237,4 +237,14 @@ if (num_args == 2) {
 }
 
 # Installs all required packages
-magic_install(lib, bin_folder)
+if (as.numeric(strsplit(as.character(numeric_version(getRversion())), ".", fixed = TRUE)[[1]][1]) >= 3) {
+  if (as.numeric(strsplit(as.character(numeric_version(getRversion())), ".", fixed = TRUE)[[1]][1]) >= 1) {
+    magic_install(lib, bin_folder)
+  }
+  else {
+    print("Your R version is too low (3.4.1 or higher is needed), please update R and come back")
+  }
+}
+else {
+  print("Your R version is too low (3.4.1 or higher is needed), please update R and come back")
+}
