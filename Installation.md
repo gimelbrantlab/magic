@@ -31,6 +31,11 @@ And now, install git and R:
 brew install git
 brew install r
 ```
+
+To update R: 
+```
+brew install r
+```
 ## Install missing R packages
 
 If automatic installation fails, you will need to install missing packages manually (see the full list [here](https://github.com/gimelbrantlab/magic/blob/master/Dependencies.md)). In general, command 
