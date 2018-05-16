@@ -27,25 +27,13 @@
 
 # Installs a package into the given directory if not installed there
 get_package <- function(package_name, repos = "http://cran.us.r-project.org",
-                        dependencies = NA, lib = NULL) {
+                        version = NULL, dependencies = NA, lib = NULL) {
   if(is.na(lib)) {
     lib = .libPaths()[1]
   }
   if(!is.element(package_name, installed.packages(lib.loc = lib)[,1])) {
     cat(paste("installing", package_name, "\n"))
-    if (is.null(lib)) {
-      if (repos == "") {
-        install.packages(pkgs = package_name, dependencies = dependencies)
-      } else {
-        install.packages(pkgs = package_name, repos = repos)
-      }
-    } else {
-      if (repos == "") {
-        install.packages(pkgs = package_name, dependencies = dependencies, lib = lib)
-      } else {
-        install.packages(pkgs = package_name, repos = repos, lib = lib)
-      }
-    }
+    install.package.version(package_name, dependencies, repos, lib)
   }
 }
 
@@ -169,6 +157,72 @@ check.packages <- function(pkg){
   }
 }
 
+# Install packages
+install.package.version <- function(package, dependencies = NA, repos = "http://cran.us.r-project.org", lib = NULL) {
+  
+  version <- get_version(package)
+  
+  contriburl <- contrib.url(repos)
+  available <- available.packages(contriburl)
+  
+  if (sum(row.names(available) == package) == 1) {
+    current.version <- available[package, 'Version']
+    if (is.null(version) || version == current.version) {
+      install.packages(package, contriburl = contriburl, dependencies = dependencies, repos = repos, lib = lib)
+      return()
+    }
+  }
+  
+  package.path <- paste(package, "/", package, "_", version, ".tar.gz", sep="")
+  package.url <- sprintf("%s/src/contrib/Archive/%s", repos, package.path)
+  local.path <- file.path(tempdir(), basename(package.path))
+  if (download.file(package.url, local.path) != 0) {
+    stop("couldn't download file: ", package.url)
+  }
+  
+  install.packages(local.path, dependencies = dependencies, repos = repos, lib = lib)
+}
+
+# Get correct package versions
+get_version <- function(package) {
+  version <- NA
+  if (package=="ada") { version <- "2.0-5" }
+  if (package=="bsplus") { version <- "0.1.1" }
+  if (package=="caret") { version <- "6.0-79" }
+  if (package=="ddalpha") { version <- "1.3.3" }
+  if (package=="diptest") { version <- "0.75-7" }
+  if (package=="doMC") { version <- "1.3.5" }
+  if (package=="dplyr") { version <- "0.7.4" }
+  if (package=="e1071") { version <- "1.6-8" }
+  if (package=="evtree") { version <- "1.0-6" }
+  if (package=="fastAdaboost") { version <- "1.0.0" }
+  if (package=="foreach") { version <- "1.4.4" }
+  if (package=="GGally") { version <- "1.3.2" }
+  if (package=="ggplot2") { version <- "2.2.1" }
+  if (package=="gridExtra") { version <- "2.3" }
+  if (package=="iterators") { version <- "1.0.9" }
+  if (package=="lattice") { version <- "0.20-35" }
+  if (package=="markdown") { version <- "0.8" }
+  if (package=="MASS") { version <- "7.3-50" }
+  if (package=="mboost") { version <- "2.8-1" }
+  if (package=="nnet") { version <- "7.3-12" }
+  if (package=="optparse") { version <- "1.4.4" }
+  if (package=="partykit") { version <- "1.1-1" }
+  if (package=="plyr") { version <- "1.8.4" }
+  if (package=="pROC") { version <- "1.12.1" }
+  if (package=="PRROC") { version <- "1.3" }
+  if (package=="randomForest") { version <- "4.6-14" }
+  if (package=="recipes") { version <- "0.1.2" }
+  if (package=="reshape2") { version <- "1.4.3" }
+  if (package=="RSNNS") { version <- "0.4-10" }
+  if (package=="scales") { version <- "0.5.0" }
+  if (package=="shiny") { version <- "1.0.5" }
+  if (package=="shinyBS") { version <- "0.61" }
+  if (package=="shinyFiles") { version <- "0.6.2" }
+  if (package=="shinythemes") { version <- "1.1.1" }
+  if (package=="kernlab") { version <- "0.9-26" }
+  return(version)
+}
 
 # Installs all required packages to the specified folder and adds folder to known library trees
 magic_install <- function(lib, bin) {
@@ -238,13 +292,12 @@ if (num_args == 2) {
 
 # Installs all required packages
 if (as.numeric(strsplit(as.character(numeric_version(getRversion())), ".", fixed = TRUE)[[1]][1]) >= 3) {
-  if (as.numeric(strsplit(as.character(numeric_version(getRversion())), ".", fixed = TRUE)[[1]][1]) >= 1) {
+  if (as.numeric(strsplit(as.character(numeric_version(getRversion())), ".", fixed = TRUE)[[1]][2]) >= 4) {
     magic_install(lib, bin_folder)
   }
   else {
-    print("Your R version is too low (3.4.1 or higher is needed), please update R and come back")
+    print("Your R version is too low (3.4.1 or higher is required), please update R and come back")
   }
-}
-else {
-  print("Your R version is too low (3.4.1 or higher is needed), please update R and come back")
+} else {
+  print("Your R version is too low (3.4.1 or higher is required), please update R and come back")
 }
