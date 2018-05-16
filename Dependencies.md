@@ -1,7 +1,7 @@
 <h1>List of dependencies</h1>
 
 ada (2.0-5)\
-bsplus (0.1.0)\
+bsplus (0.1.1)\
 caret (6.0-77)\
 ddalpha (1.3.1)\
 diptest (0.75-7)\
@@ -15,6 +15,7 @@ GGally (1.3.2)\
 ggplot2 (2.2.1)\
 gridExtra (2.3)\
 iterators (1.0.8)\
+kernlab (0.9-26)\
 lattice (0.20-35)\
 markdown (0.8)\
 MASS (7.3-47)\
@@ -27,7 +28,7 @@ pROC (1.10.0)\
 PRROC (1.3)\
 randomForest (4.6-12)\
 recipes (0.1.0)\
-reshape2 (1.4.2)\
+reshape2 (1.4.3)\
 RSNNS (0.4-9)\
 scales (0.5.0)\
 shiny (1.0.5)\
