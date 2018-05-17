@@ -14,7 +14,7 @@ reference_folder <- file.path("reference")
 ######
 
 #source('directoryInput.R')
-source("utils.R")
+source("src/utils.R")
 source("fig2a_script.R")
 
 # Gets custom install directory if used in install.R
