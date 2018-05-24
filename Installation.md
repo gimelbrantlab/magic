@@ -1,3 +1,12 @@
+## Install Docker
+
+Here you can find instructions how to install Docker for Ubuntu:  https://docs.docker.com/install/linux/docker-ce/ubuntu/
+
+Here you can find instructions how to install Docker for Mac: https://docs.docker.com/docker-for-mac/install/#install-and-run-docker-for-mac
+
+Here you can download Docker for Windows: https://store.docker.com/editions/community/docker-ce-desktop-windows
+
+
 ## Install git and R
 
 ### Ubuntu/Debian Linux
