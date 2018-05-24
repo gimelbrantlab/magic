@@ -260,7 +260,7 @@ selection_rule <- opt$selection_rule
 target_feature <- opt$target_feature
 p <- opt$training_percent
 metric <- opt$metric
-training_genes_file <- tolower(opt$training_genes_file)
+training_genes_file <- opt$training_genes_file
 cv <- opt$cross_validation
 validation_file <- opt$validation_file
 quiet <- opt$quiet
