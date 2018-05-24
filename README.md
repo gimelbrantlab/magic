@@ -3,9 +3,30 @@
 This software generates predictions or classifiers for monoallelic gene expression (MAE) from
 chromatin mark enrichment data. It is primarily based on the work of the [Gimelbrant lab](https://gimelbrantlab.dfci.harvard.edu/).
 
+## Docker
+
+In order to make it easier to test and use MaGIC, we have Docker image that you can use. In this case, the only requirement is to have Docker installed. Please see the [instructions](https://github.com/gimelbrantlab/magic/blob/master/Installation.md) if you don't have it installed yet.
+
+First, you'll need to login to Docker (please make sure you are using you login, NOT your email address):
+```
+docker login
+```
+Next, to pull the Docker image run:
+```
+docker pull kintany/shinymagic
+```
+To run a container you will use the following command, don't forget to put your folder instead of `~/Documents/data/` to be able to access it with Docker:
+```
+docker run --rm -v ~/Documents/data/:/srv/data -p 3838:3838 kintany/shinymagic
+```
+This will run the container and you need to open http://0.0.0.0:3838/ in any browser. Enjoy!
+
+
 ## Requirements
 
-Linux/Mac machine with updated R (~3.4.x) and git. Please see the [instructions](https://github.com/gimelbrantlab/magic/blob/master/Installation.md) if you don't have git or R installed. There is a number of R packages that need to be installed, please see [dependencies](https://github.com/gimelbrantlab/magic/blob/master/Dependencies.md). During Magic installation, install.R script will try to download and install missing packages. However, if the installation of some of them fails, you will have to install them [manually](https://github.com/gimelbrantlab/magic/blob/master/Installation.md). 
+If you don't want to use Docker, follow these instructions.
+
+Linux/Mac machine with updated R (3.5.0 or later) and git. Please see the [instructions](https://github.com/gimelbrantlab/magic/blob/master/Installation.md) if you don't have git or R installed. There is a number of R packages that need to be installed, please see [dependencies](https://github.com/gimelbrantlab/magic/blob/master/Dependencies.md). During Magic installation, install.R script will try to download and install missing packages. However, if the installation of some of them fails, you will have to install them [manually](https://github.com/gimelbrantlab/magic/blob/master/Installation.md). 
 
 ## MaGIC installation
 
