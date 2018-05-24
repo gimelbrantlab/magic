@@ -1,11 +1,11 @@
 # MaGIC
 
 This software generates predictions or classifiers for monoallelic gene expression (MAE) from
-chromatin mark enrichment data. It is primarily based on the work of the [Gimelbrant lab](https://gimelbrantlab.dfci.harvard.edu/).
+chromatin mark enrichment data. It is primarily based on the work of the [Gimelbrant lab](https://gimelbrantlab.dfci.harvard.edu/). We have a standalone MaGIC pipeline and also a Shiny app.
 
 ## Docker
 
-In order to make it easier to test and use MaGIC, we have Docker image that you can use. In this case, the only requirement is to have Docker installed. Please see the [instructions](https://github.com/gimelbrantlab/magic/blob/master/Installation.md) if you don't have it installed yet.
+To get started, we suggest to use Docker image with the Shiny app for MaGIC. The only requirement is to have Docker installed. Please see the [instructions](https://github.com/gimelbrantlab/magic/blob/master/Installation.md) if you don't have it installed yet.
 
 First, you'll need to login to Docker (please make sure you are using you login, NOT your email address):
 ```
