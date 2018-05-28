@@ -21,14 +21,15 @@ docker run --rm -v ~/Documents/data/:/srv/data -p 3838:3838 kintany/shinymagic
 ```
 This will run the container and you need to open http://0.0.0.0:3838/ in any browser. Enjoy!
 
+## Direct installation
 
-## Requirements
+### Requirements
 
 If you don't want to use Docker, follow these instructions.
 
 Linux/Mac machine with updated R (3.5.0 or later) and git. Please see the [instructions](https://github.com/gimelbrantlab/magic/blob/master/Installation.md) if you don't have git or R installed. There is a number of R packages that need to be installed, please see [dependencies](https://github.com/gimelbrantlab/magic/blob/master/Dependencies.md). During Magic installation, install.R script will try to download and install missing packages. However, if the installation of some of them fails, you will have to install them [manually](https://github.com/gimelbrantlab/magic/blob/master/Installation.md). 
 
-## MaGIC installation
+### Installation
 
 Installing MaGIC takes only a few commands. Required R packages and [bwtool](https://github.com/CRG-Barcelona/bwtool/wiki) are installed automatically.
 
@@ -64,7 +65,7 @@ rm -r magic
 ```
 
 
-## Quick start
+### Quick start
 
 The easiest way to test MaGIC is to run the Shiny app (see [Tutorial](https://github.com/gimelbrantlab/magic/blob/master/shiny/MagicWeb/Tutorial.md) for help).
 
