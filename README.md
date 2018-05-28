@@ -26,6 +26,14 @@ To be able to analyze your own ChIP-seq data and save the results, you need to m
 ```
 docker run --rm -v ~/Documents/data/:/srv/data -p 3838:3838 kintany/shinymagic
 ```
+To stop the running container you need to get its id with command:
+```
+docker container ls
+```
+and then use this id to stop the container:
+```
+docker stop 30b679c9c448
+```
 
 ## Direct installation
 
