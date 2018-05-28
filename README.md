@@ -15,11 +15,17 @@ Next, to pull the Docker image run:
 ```
 docker pull kintany/shinymagic
 ```
-To run a container you will use the following command, don't forget to put your folder instead of `~/Documents/data/` to be able to access it with Docker:
+To run a container you will use the following command:
+```
+docker run --rm -p 3838:3838 kintany/shinymagic
+```
+This will run the container and you need to open http://0.0.0.0:3838/ in any browser. Enjoy!
+
+To be able to analyze your own ChIP-seq data and save the results, you need to mount a directory with the data: add -v parameter to do this. For example, to mount `~/Documents/data/` you will need to run a container like this:
+
 ```
 docker run --rm -v ~/Documents/data/:/srv/data -p 3838:3838 kintany/shinymagic
 ```
-This will run the container and you need to open http://0.0.0.0:3838/ in any browser. Enjoy!
 
 ## Direct installation
 
