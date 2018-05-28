@@ -33,7 +33,7 @@ sudo echo "deb http://cloud.r-project.org/bin/linux/ubuntu xenial/" | sudo tee -
 
 And the same for Mac users. If you still don't have [brew](https://brew.sh/), please install it, it's what you want:
 ```
-# /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 ```
 And now, install git and R: 
 ```
