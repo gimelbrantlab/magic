@@ -191,7 +191,7 @@ The following command makes allelic bias predictions ("BAE" for bi-allelic expre
 ```Rscript analyze.R -i data/joined_scores_percentile.txt -m models```
     
 *With many options*:
-```Rscript analyze.R -i data/joined_scores_percentile.txt -o output -m models -po "BAE"```
+```Rscript analyze.R -i data/joined_scores_percentile.txt -o output -m models -l 5000 -r -f reference/hg19_expr_GM12878.txt```
     
 ### Arguments
 
@@ -211,12 +211,18 @@ All arguments are also described via "Rscript analyze.R --help"
 
 *-p, --positive_class*:
     name of target feature's positive class [default "MAE"]
+        
+*-r, --remove*:
+    remove low expressed genes
     
 *-f, --filter*:
-    path to file with gene expression values and/or length
+    path to file with gene expression values
     
 *-l, --length*:
     gene length threshold [default "2500"]
+        
+*-s, --species*:
+    specify human or mouse [default "human"]
     
 *-q, --quiet*: 
     disables console output, do not flag if required packages missing [default FALSE]
@@ -224,14 +230,14 @@ All arguments are also described via "Rscript analyze.R --help"
     
 ### Filtering
 
-Ouput file with BAE/MAE classification predictions can be filtered by gene expression and/or length. To do this, user specifies path to file containing information about gene expression (in any units: RPKM, FPKM, CPM, counts, etc.) and/or length. If file contains only expression values, the filtering will be done only by expression. If file contains only gene lengths, the filtering will be done only by length. The format for the file is as follows, with values separated by tabs:
+Ouput file with BAE/MAE classification predictions can be filtered by gene expression and/or length. To do this, user specifies path to file containing information about gene expression (in any units: RPKM, FPKM, CPM, counts, etc.) and/or length threshold. The format for the file is as follows, with values separated by tabs:
 
-| gene 	| expression                      	| length                        	|
-|-----------	|--------------------------------	|-------------------------------------	|
-| A1BG  	| 10 	| 2400 	|
-| A1CF  	| 40 	| 2600 	
+| gene 	| expression                      	|
+|-----------	|--------------------------------	|
+| A1BG  	| 10 	|
+| A1CF  	| 40 	|
 
 All genes are ordered according to their expression (highly expressed genes to low expressed genes), and then botton half of the genes is filtered out. 
-The default length threshold is 2500, can be changed using -l option. 
+The default length threshold is 2500, can be changed using -l option. User can also use -s option to switch between human and mouse lengths filtering.
 
 
