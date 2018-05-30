@@ -83,21 +83,22 @@ get_models <- function(input_folder, excluded_models) {
 
 # Generates predictions for a single model and logs those to file
 ml_predict_inner <- function(model_name, model, df,
-                             output_folder, positive_class, filter_file, filter_length) {
+                             output_folder, positive_class, filter_file, filter_length,
+                             filter_expression, filter_species) {
 
   # Generates predictions, appends to df and writes to file
   predictions <-  predict(model, df, positive = positive_class)
   df$predictions <- predictions
   predictions_file <- file.path(output_folder,
                                 paste(model_name, "predictions.tsv", sep = "_"))
-  if (!is.null(filter_file)) df <- filter_genes(df, filter_file, filter_length)
+  df <- filter_genes(df, filter_file, filter_length, filter_expression, filter_species)
   write.table(df, predictions_file, sep = "\t", row.names = FALSE,
               quote = FALSE)
 }
 
 # Generates predictions on new data
 ml_predict <- function(df, models_folder, output_folder,
-                       excluded_models, positive_class, filter_file, filter_length) {
+                       excluded_models, positive_class, filter_file, filter_length, filter_expression, filter_species) {
 
   # Loads models into a dict with model names as keys
   models <- get_models(models_folder, excluded_models)
@@ -105,7 +106,7 @@ ml_predict <- function(df, models_folder, output_folder,
   # Generates predictions on df for all models
   for (model_name in names(models)) {
     ml_predict_inner(model_name, models[[model_name]], df,
-                     output_folder, positive_class, filter_file, filter_length)
+                     output_folder, positive_class, filter_file, filter_length, filter_expression, filter_species)
   }
 
   # Joins all files with appended predictions together
@@ -114,47 +115,43 @@ ml_predict <- function(df, models_folder, output_folder,
 }
 
 # Filters genes by expression and/or length
-filter_genes <- function(df, filter_file, filter_length) {
-  f_file <- read.csv(filter_file, sep = "\t", header = TRUE)
-  if (("RPKM" %in% colnames(f_file))|("FPKM" %in% colnames(f_file))|("CPM" %in% colnames(f_file))|("expression" %in% colnames(f_file))) {
-    if ("length" %in% colnames(f_file)) {
-      # filter by both
-      cat("Filtering by expression and length\n")
-      colnames(f_file) <- c("name", "expression", "length")
-      df <- merge(df, f_file, by.x="name", by.y="name")
-      df <- df %>%
-        arrange(desc(expression)) %>%
-        head(round(nrow(df)/2)+1) %>%
-      filter(length >= filter_length)
+filter_genes <- function(df, filter_file, filter_length, filter_expression, filter_species) {
+  reference_folder <- file.path(dirname(current_folder), "reference")
+  if (filter_length>0) {
+    # Filtering by length
+    print("Filtering by length")
+    if (filter_species=="human") {
+      df_length <- read.delim(file.path(reference_folder, "hg19_length.txt"))
+      df <- merge(df, df_length, by.x="name", by.y="gene")
+      df <- df %>% dplyr::filter(length >= filter_length)
+    }
+    else if (filter_species=="mouse") {
+      df_length <- read.delim(file.path(reference_folder, "mm10_length.txt"))
+      df <- merge(df, df_length, by.x="name", by.y="gene")
+      df <- df %>% dplyr::filter(length >= filter_length)
     }
     else {
-      # filter by expression
-      cat("Filtering by expression\n")
-      colnames(f_file) <- c("name", "expression")
-      df <- merge(df, f_file, by.x="name", by.y="name")
-      df <- df %>%
-        arrange(desc(expression)) %>%
-        head(round(nrow(df)/2)+1)
+      print("Unknown species, filtering disabled")
     }
   }
-  else if ("length" %in% colnames(f_file)) {
-    # filter by length
-    cat("Filtering by length\n")
-    colnames(f_file) <- c("name", "length")
+  if (filter_expression) {
+    # Filtering by expression
+    print("Filtering by expression")
+    f_file <- read.csv(filter_file, sep = "\t", header = TRUE)
+    if (dim(f_file)[2]>2) { stop("Please provide expression file with only two columns: name and expression value") }
+    colnames(f_file) <- c("name", "expression")
     df <- merge(df, f_file, by.x="name", by.y="name")
-    df <- df %>% filter(length >= filter_length)
+    df <- df %>%
+      arrange(desc(expression)) %>%
+      head(round(nrow(df)/2)+1)
   }
-  else {
-    cat("Expression or length columsn in filter file are not found, filtering disabled\n")
-  }
-
   return(df)
 }
 
 # Analyzes given dataset
 analyze_main <- function(current_folder, input_file, models_folder,
                          output_folder, excluded_models, positive_class,
-						 filter_file, filter_length, lib) {
+						 filter_file, filter_length, filter_expression, filter_species, lib) {
 
   # Loads required libraries
   load_analyze_libraries(lib)
@@ -168,7 +165,8 @@ analyze_main <- function(current_folder, input_file, models_folder,
 
   # Generates predictions and appends them to df
   df <- ml_predict(df, models_folder, output_folder,
-                   excluded_models, positive_class, filter_file, filter_length)
+                   excluded_models, positive_class, filter_file, filter_length, 
+                   filter_expression, filter_species)
 
   # Writes predictions to file
   #write.table(df, file.path(output_folder, "all_predictions.tsv"), sep = "\t",
@@ -209,10 +207,14 @@ options = list(
               help="list of models to exclude from folder, separated by commas"),
   make_option(c("-p", "--positive_class"), type="character", default="MAE",
               help="name of target feature's positive class [default=%default]"),
+  make_option(c("-r", "--expr_filter"), action="store_true", default=FALSE,
+              help="filter by expression [default= %default]"),
   make_option(c("-f", "--filter"), type="character", default=NULL,
-              help="file with gene expression values and/or length, see readme for file format"),
+              help="file with gene expression, see readme for file format"),
   make_option(c("-l", "--f_length"), type="integer", default=2500,
               help="gene length threshold [default= %default]"),
+  make_option(c("-s", "--species"), type="character", default="human",
+              help="human or mouse (used for length filtering) [default= %default]"),
   make_option(c("-q", "--quiet"), action="store_true", default=FALSE,
               help="disables console output [default= %default]")
 )
@@ -222,6 +224,17 @@ opt <- parse_args(OptionParser(option_list = options))
 if (!file.exists(opt$input_file)) { stop("input file does not exist") }
 if (!is.null(opt$filter))
   if(!file.exists(opt$filter)) { stop("file with expression does not exist") }
+if (opt$expr_filter) {
+  if (!is.null(opt$filter)) {
+    if(!file.exists(opt$filter)) { 
+      stop("file with expression does not exist") 
+      }
+  }
+  else { 
+    stop("please provide a file with expression") 
+    }
+}
+if ((opt$species != "human") & (opt$species != "mouse")) { stop("please select a valid species") }
 if (!dir.exists(opt$models_folder)) { stop("models folder does not exist") }
 if (!dir.exists(opt$output_folder)) { dir.create(opt$output_folder, recursive = TRUE) }
 
@@ -234,14 +247,17 @@ positive_class <- opt$positive_class
 quiet <- opt$quiet
 filter_file <- opt$filter
 filter_length <- opt$f_length
+filter_expression <- opt$expr_filter
+filter_species <- opt$species
 
 # Calls main function, disabling output if running in quiet mode
 if (!quiet) {
   invisible(analyze_main(current_folder, input_file, models_folder,
                          output_folder, excluded_models, positive_class,
-						 filter_file, filter_length, lib))
+						 filter_file, filter_length, 
+						 filter_expression, filter_species, lib))
 } else {
   analyze_main(current_folder, input_file, models_folder,
-               output_folder, excluded_models, positive_class,
-			   filter_file, filter_length, lib)
+               output_folder, excluded_models, positive_class, filter_file, filter_length, 
+               filter_expression, filter_species, lib)
 }
