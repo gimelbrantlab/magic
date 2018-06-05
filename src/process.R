@@ -440,7 +440,7 @@ process_main <- function(current_folder, input_file, output_folder,
   
   # Gets reference, output files and scripts based on position in program directory
   reference_folder <- file.path(dirname(current_folder), "reference")
-  bin_folder <- file.path("/usr/bin/")
+  bin_folder <- file.path(dirname(current_folder), "bin")
   if (grepl("hg", refseq_file, fixed=TRUE) | grepl("human", refseq_file, fixed=TRUE)) { 
     imprinted_file <- file.path(reference_folder, "imprinted_genes_human.tsv")
   }
