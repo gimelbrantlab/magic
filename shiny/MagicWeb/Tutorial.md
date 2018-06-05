@@ -50,7 +50,10 @@ The last step is to make predictions. Use joined_scores_percentile.txt file to m
 
 #### Output
 
-The output predictions are saved in the analysis_output folder for you. This tab provides a table representation and allows you to search easily for genes of interest.
+The output predictions are saved in the analysis_output folder for you. Table tab provides a table representation and allows you to search easily for genes of interest.
 
 <img src="www/images/Step3.1.png" alt="Step3.1" width="600"/>
 
+Plot tab contains visual classification of genes into MAE and BAE: please, select the model that was used for prediction to see the classification:
+
+<img src="www/images/Step3.2.png" alt="Step3.2" width="600"/>

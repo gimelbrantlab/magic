@@ -85,7 +85,13 @@ get_models <- function(input_folder, excluded_models) {
 ml_predict_inner <- function(model_name, model, df,
                              output_folder, positive_class, filter_file, filter_length,
                              filter_expression, filter_species) {
-
+  # Check that model has the same features as joined_scores_percentile
+  features_model <- model$coefnames
+  features_df <- colnames(df)
+  for (f in features_model) {
+    if (!(f %in% features_df)) { stop(paste0("Features in the model and joined_scores_percentile are not consistent, please train a new model with your joined_scores_percentile.", 
+                                      "Model's features: ", paste(features_model, collapse=", "))) }
+  }
   # Generates predictions, appends to df and writes to file
   predictions <-  predict(model, df, positive = positive_class)
   df$predictions <- predictions

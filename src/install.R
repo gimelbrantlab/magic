@@ -27,13 +27,25 @@
 
 # Installs a package into the given directory if not installed there
 get_package <- function(package_name, repos = "http://cran.us.r-project.org",
-                        version = NULL, dependencies = NA, lib = NULL) {
+                        dependencies = NA, lib = NULL) {
   if(is.na(lib)) {
     lib = .libPaths()[1]
   }
   if(!is.element(package_name, installed.packages(lib.loc = lib)[,1])) {
     cat(paste("installing", package_name, "\n"))
-    install.package.version(package_name, dependencies, repos, lib)
+    if (is.null(lib)) {
+      if (repos == "") {
+        install.packages(pkgs = package_name, dependencies = dependencies)
+      } else {
+        install.packages(pkgs = package_name, repos = repos)
+      }
+    } else {
+      if (repos == "") {
+        install.packages(pkgs = package_name, dependencies = dependencies, lib = lib)
+      } else {
+        install.packages(pkgs = package_name, repos = repos, lib = lib)
+      }
+    }
   }
 }
 
@@ -56,8 +68,6 @@ install_analyze_libraries <- function(lib = NA) {
   get_package("scales", lib = lib)
   get_package("randomForest", lib = lib)
   get_package("kernlab", lib = lib)
-  get_package("ddalpha", lib = lib)
-  get_package("recipes", lib = lib)
   get_package("caret", lib = lib)
   get_package("lattice", lib = lib)
   get_package("pROC", lib = lib)
@@ -83,13 +93,9 @@ install_process_libraries <- function(lib = NA) {
   get_package("reshape2", lib = lib)
   get_package("kernlab", lib = lib)
   get_package("ggplot2", lib = lib)
-  get_package("ddalpha", lib = lib)
-  get_package("recipes", lib = lib)
   get_package("caret", dependencies = TRUE, lib = lib)
   get_package("lattice", lib = lib)
   get_package("diptest", lib = lib)
-  get_package("foreach", lib = lib)
-  get_package("iterators", lib = lib)
   get_package("doMC", repos = "http://R-Forge.R-project.org", lib = lib)
   get_package("e1071", lib = lib)
   get_package("gridExtra", lib = lib)
@@ -100,8 +106,6 @@ install_process_libraries <- function(lib = NA) {
 install_generate_libraries <- function(lib = NA) {
   get_package("scales", dependencies = TRUE, lib = lib)
   get_package("ggplot2", dependencies = TRUE, lib = lib)
-  get_package("ddalpha", lib = lib)
-  get_package("recipes", lib = lib)
   get_package("caret", dependencies = TRUE, lib = lib)
   get_package("doMC", repos = "http://R-Forge.R-project.org", lib = lib)
   get_package("pROC", lib = lib)
@@ -123,138 +127,43 @@ install_generate_libraries <- function(lib = NA) {
 
 # Installs bwtool from source
 install_bwtool <- function(bin) {
-  prev_wd <- getwd()
-  setwd(bin)
-  system2("git", args = c("clone", "https://github.com/CRG-Barcelona/libbeato.git"))
-  system2("git", args = c("clone", "https://github.com/CRG-Barcelona/bwtool.git"))
-  setwd("libbeato/")
-  system2("./configure", args = c("--prefix=$HOME", "CFLAGS=\"-g -O0 -I${HOME}/include\"",
-                                  "LDFLAGS=-L${HOME}/lib"))
-  system2("make")
-  system2("make", args = c("install"))
-  setwd("../bwtool/")
-  system2("./configure", args = c("--prefix=$HOME", "CFLAGS=\"-g -O0 -I${HOME}/include\"",
-                                  "LDFLAGS=-L${HOME}/lib"))
-  system2("make")
-  system2("make", args = c("install"))
-  setwd(prev_wd)
-}
-
-# Check to see if all packages are installed
-check.packages <- function(pkg){
-  if(!is.na(lib)) {
-    new.pkg <- pkg[!(pkg %in% installed.packages(lib.loc = lib)[, "Package"])]
-  } 
-  else {
-    new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
-  }
-  if (length(new.pkg))  {
-    print("The following packages were not installed, please try to install them manually:")
-    print(new.pkg)
-  }
-  else {
-    print("All libraries were installed properly!")
-  }
-}
-
-# Install packages
-install.package.version <- function(package, dependencies = NA, repos = "http://cran.us.r-project.org", lib = NULL) {
-  
-  version <- get_version(package)
-  
-  contriburl <- contrib.url(repos)
-  available <- available.packages(contriburl)
-  
-  if (sum(row.names(available) == package) == 1) {
-    current.version <- available[package, 'Version']
-    if (is.null(version) || version == current.version) {
-      install.packages(package, contriburl = contriburl, dependencies = dependencies, repos = repos, lib = lib)
-      return()
-    }
-  }
-  
-  package.path <- paste(package, "/", package, "_", version, ".tar.gz", sep="")
-  package.url <- sprintf("%s/src/contrib/Archive/%s", repos, package.path)
-  local.path <- file.path(tempdir(), basename(package.path))
-  if (download.file(package.url, local.path) != 0) {
-    stop("couldn't download file: ", package.url)
-  }
-  
-  install.packages(local.path, dependencies = dependencies, repos = repos, lib = lib)
-}
-
-# Get correct package versions
-get_version <- function(package) {
-  version <- NA
-  if (package=="ada") { version <- "2.0-5" }
-  if (package=="bsplus") { version <- "0.1.1" }
-  if (package=="caret") { version <- "6.0-79" }
-  if (package=="ddalpha") { version <- "1.3.3" }
-  if (package=="diptest") { version <- "0.75-7" }
-  if (package=="doMC") { version <- "1.3.5" }
-  if (package=="dplyr") { version <- "0.7.4" }
-  if (package=="e1071") { version <- "1.6-8" }
-  if (package=="evtree") { version <- "1.0-6" }
-  if (package=="fastAdaboost") { version <- "1.0.0" }
-  if (package=="foreach") { version <- "1.4.4" }
-  if (package=="GGally") { version <- "1.3.2" }
-  if (package=="ggplot2") { version <- "2.2.1" }
-  if (package=="gridExtra") { version <- "2.3" }
-  if (package=="iterators") { version <- "1.0.9" }
-  if (package=="lattice") { version <- "0.20-35" }
-  if (package=="markdown") { version <- "0.8" }
-  if (package=="MASS") { version <- "7.3-50" }
-  if (package=="mboost") { version <- "2.8-1" }
-  if (package=="nnet") { version <- "7.3-12" }
-  if (package=="optparse") { version <- "1.4.4" }
-  if (package=="partykit") { version <- "1.1-1" }
-  if (package=="plyr") { version <- "1.8.4" }
-  if (package=="pROC") { version <- "1.12.1" }
-  if (package=="PRROC") { version <- "1.3" }
-  if (package=="randomForest") { version <- "4.6-14" }
-  if (package=="recipes") { version <- "0.1.2" }
-  if (package=="reshape2") { version <- "1.4.3" }
-  if (package=="RSNNS") { version <- "0.4-10" }
-  if (package=="scales") { version <- "0.5.0" }
-  if (package=="shiny") { version <- "1.0.5" }
-  if (package=="shinyBS") { version <- "0.61" }
-  if (package=="shinyFiles") { version <- "0.6.2" }
-  if (package=="shinythemes") { version <- "1.1.1" }
-  if (package=="kernlab") { version <- "0.9-26" }
-  return(version)
+   prev_wd <- getwd()
+   setwd(bin)
+   system2("git", args = c("clone", "https://github.com/CRG-Barcelona/libbeato.git"))
+   system2("git", args = c("clone", "https://github.com/CRG-Barcelona/bwtool.git"))
+   setwd("libbeato/")
+   system2("./configure", args = c("--prefix=$HOME", "CFLAGS=\"-g -O0 -I${HOME}/include\"",
+								   "LDFLAGS=-L${HOME}/lib"))
+   system2("make")
+   system2("make", args = c("install"))
+   setwd("../bwtool/")
+   system2("./configure", args = c("--prefix=$HOME", "CFLAGS=\"-g -O0 -I${HOME}/include\"",
+								   "LDFLAGS=-L${HOME}/lib"))
+   system2("make")
+   system2("make", args = c("install"))
+   setwd(prev_wd)
 }
 
 # Installs all required packages to the specified folder and adds folder to known library trees
 magic_install <- function(lib, bin) {
-  
+
   # Installs libraries
   get_package("optparse", lib = lib)
   install_process_libraries(lib)
   install_generate_libraries(lib)
   install_analyze_libraries(lib)
   install_shiny_libraries(lib)
-  
+
   # Adds folder to local Rprofile
   if(!is.na(lib)) {
     f <- file(file.path(getwd(), "install_data.txt"))
-    writeLines(paste0(getwd(),"/",lib), f)
+    writeLines(lib, f)
     close(f)
   }
-  
+
   # Installs bwtool
   install_bwtool(bin)
   cat("finished installing bwtool\n")
-  
-  # Copies bwtool folder to Shiny subdirectory
-  shiny_bin <- file.path(bin, "..", "shiny", "MagicWeb", "bin")
-  if (!dir.exists(shiny_bin)) {
-    dir.create(shiny_bin)
-  }
-  file.copy(bin, file.path(shiny_bin, ".."), recursive = TRUE)
-  
-  # Check if everything is installed
-  packages <- c("shiny","markdown","shinythemes","bsplus","GGally","PRROC","shinyFiles","shinyBS","ggplot2","scales","randomForest","kernlab","ddalpha","recipes","caret","lattice","pROC","ada","fastAdaboost","mboost","RSNNS","nnet","optparse","evtree","MASS","dplyr","e1071","plyr","reshape2","diptest","doMC","gridExtra", "foreach", "iterators")
-  check.packages(packages)
 }
 
 
@@ -268,14 +177,14 @@ args <- commandArgs(trailingOnly=FALSE)
 current_folder <- dirname(sub("--file=", "", args[grep("--file=", args)]))
 num_args <- 1
 if (!is.na(match("--args", args))) {
-  args <- args[match("--args", args):length(args)]
-  num_args <- length(args)
+   args <- args[match("--args", args):length(args)]
+   num_args <- length(args)
 }
 
 # Gets path to bin folder and creates it if it doesn't exist
 bin_folder <- file.path(current_folder, "..", "bin")
 if (!dir.exists(bin_folder)) {
-  dir.create(bin_folder)
+   dir.create(bin_folder)
 }
 
 # Checks arguments
@@ -291,13 +200,6 @@ if (num_args == 2) {
 }
 
 # Installs all required packages
-if (as.numeric(strsplit(as.character(numeric_version(getRversion())), ".", fixed = TRUE)[[1]][1]) >= 3) {
-  if (as.numeric(strsplit(as.character(numeric_version(getRversion())), ".", fixed = TRUE)[[1]][2]) >= 5) {
-    magic_install(lib, bin_folder)
-  }
-  else {
-    print("Your R version is too low (3.5.0 or higher is required), please update R and come back")
-  }
-} else {
-  print("Your R version is too low (3.5.0 or higher is required), please update R and come back")
-}
+magic_install(lib, bin_folder)
+
+
