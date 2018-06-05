@@ -33,11 +33,10 @@
 ###############
 # GENERATE NEW MODEL
 ###############
-model_dir <<- NULL
 
 # sets output path
 shinyDirChoose(input, 'generateOutput', roots = c(home = '~'), filetypes = c('', 'txt','bigWig',"tsv","csv","bw"))
-globalGenerateOutput <- reactiveValues(datapath = sub("shiny/MagicWeb", "data/output/", getwd()))
+globalGenerateOutput <- reactiveValues(datapath = getwd())
 generateOutput <- reactive(input$generateOutput)
 output$generateOutput <- renderText({ globalGenerateOutput$datapath })
 
@@ -52,189 +51,190 @@ observeEvent(
   }
 )
 
-# Gets uploaded training file
-getAnalysisFile <- reactive({
-  if(!is.null(input$trainingFile)) {
-    training_file_path <<- input$trainingFile$datapath
-  }
-})
+# Uploads training file
+shinyFileChoose(input, 'trainingFile', roots = c(home = '~'))
+globalTrainingFile <- reactiveValues(datapath = paste0(getwd(), "/data/joined_scores_percentile_GM12878.txt"))
+output$trainingFileText <- renderText({ globalTrainingFile$datapath })
 
-shinyDirChoose(input, 'modelDir', roots = c(home = '~'), filetypes = c('', 'txt','bigWig',"tsv","csv","bw","rds"))
-modelDir <- reactive(input$modelDir)
-output$modelDir <- renderPrint(modelDir())
+observeEvent(input$trainingFile, {
+  inFile <- parseFilePaths(roots=c(home = '~'), input$trainingFile)
+  globalTrainingFile$datapath <- as.character(inFile$datapath)
+}
+)
 
-observeEvent(
-  ignoreNULL = TRUE,
-  eventExpr = {
-    input$modelDir
-  },
-  handlerExpr = {
-    home <- normalizePath("~")
-    model_dir <<- file.path(home, paste(unlist(modelDir()$path[-1]), collapse = .Platform$file.sep))
-  }
+# Uploads optional training genes file
+shinyFileChoose(input, 'tg2', roots = c(home = '~'))
+globalTg2 <- reactiveValues(datapath = NULL)
+output$tg2Text <- renderText({ globalTg2$datapath })
+
+observeEvent(input$tg2, {
+  inFileTg2 <- parseFilePaths(roots=c(home = '~'), input$tg2)
+  globalTg2$datapath <- as.character(inFileTg2$datapath)
+}
+)
+
+# Uploads optional validation set file
+shinyFileChoose(input, 'validationSet', roots = c(home = '~'))
+globalValidationSet <- reactiveValues(datapath = NULL)
+output$validationSetText <- renderText({ globalValidationSet$datapath })
+
+observeEvent(input$validationSet, {
+  inFileVal <- parseFilePaths(roots=c(home = '~'), input$validationSet)
+  globalValidationSet$datapath <- as.character(inFileVal$datapath)
+}
 )
 
 
 # Generates models on button press
 observeEvent(input$generateModelsButton, {
-
+  
   message_list <- c("Preparing generate command","Loading files", "Running generate.R")
-
+  
   withProgress(value = 0, {
     for (i in 1:length(message_list)){
       incProgress(1/length(message_list), detail = paste(message_list[i]))
       Sys.sleep(0.25)
     }
     # Builds command to run generate.R and executes it
-    if ((!is.null(input$trainingFile$datapath)) &&
-        (!is.null(target_feature))) {
-      generate_output <- NULL
-      generate_running <- TRUE
-      generate_cmd <- paste("Rscript")
-      args <- paste(generate_file,
-                    "-i", input$trainingFile$datapath,
-                    "-o", paste(globalGenerateOutput$datapath, "/model_output", sep=""),
-                    "-m", input$metric,
-                    "-s", input$samplingMethod,
-                    "-r", input$selectionRule,
-                    "-t", input$targetFeature,
-                    "-l", paste(unlist(input$modelList), collapse=','),
-                    "-p", input$trainingPercent,
-                    "-c", input$crossValidation
-      )
-      if(!is.null(input$validationSet$datapath)) {
-        args <- paste(args, "-v", input$validationSet$datapath)
+    if (is.null(input$modelList)) {
+      showModal(modalDialog(
+        title = "Error",
+        "Please select at least one model to train",
+        easyClose = TRUE
+      ))
+    }
+    else {
+      if ((is.null(globalTrainingFile$datapath)) | (is.null(target_feature))) {
+        showModal(modalDialog(
+          title = "Error",
+          "Please select input file and target feature and rerun",
+          easyClose = TRUE
+        ))
       }
-      if(!is.null(input$tg2)){
-        args <- paste(args, "-a", input$tg2$datapath)
-      } else {
-        args <- paste(args, "-a", input$tg)
+      else {
+        if ((globalTrainingFile$datapath==paste0(getwd(), "/data/joined_scores_percentile_GM12878.txt"))&(input$tg !="human")) {
+          showModal(modalDialog(
+            title = "Error",
+            "Input file with processed chromatine and file with training genes are inconsistent, did you mean to select human?",
+            easyClose = TRUE
+          ))
+        }
+        else {
+          if ((is.null(globalValidationSet$datapath))&(input$trainingPercent == 100)) {
+            showModal(modalDialog(
+              title = "Warning",
+              "Using 100% of training data for training and no validation file is specified, no summary file will be created",
+              easyClose = TRUE
+            ))
+          }
+          summ_file <- paste(globalGenerateOutput$datapath, "/model_output/summary_models.tsv", sep="")
+          if (file.exists(summ_file)) {
+            file.remove(summ_file)
+          }
+          generate_output <- NULL
+          generate_running <- TRUE
+          generate_cmd <- paste("Rscript")
+          args <- paste(generate_file,
+                        "-i", globalTrainingFile$datapath,
+                        "-o", paste(globalGenerateOutput$datapath, "/model_output", sep=""),
+                        "-m", input$metric,
+                        "-s", input$samplingMethod,
+                        "-r", input$selectionRule,
+                        "-t", input$targetFeature,
+                        "-l", paste(unlist(input$modelList), collapse=','),
+                        "-p", input$trainingPercent,
+                        "-c", input$crossValidation
+          )
+          if(!is.null(globalValidationSet$datapath)) {
+            args <- paste(args, "-v", globalValidationSet$datapath)
+          }
+          if(!is.null(globalTg2$datapath)){
+            args <- paste(args, "-a", globalTg2$datapath)
+          } else {
+            args <- paste(args, "-a", input$tg)
+          }
+          generate_output <- capture.output(tryCatch(
+            system2(generate_cmd, args), error = function(e) e))
+          cat(generate_cmd, args, "\n")
+          # Checking if file is there
+          summ_file <- paste(globalGenerateOutput$datapath, "/model_output/summary_models.tsv", sep="")
+          if (!file.exists(summ_file)) {
+            showModal(modalDialog(
+              title = "Warning",
+              "No summary file was created, please see terminal output for specifics",
+              easyClose = TRUE
+            ))
+            output$modelPlots <- NULL
+            output$modelTbl <- NULL
+          }
+          else {
+            modelTable <- load_data(paste(globalGenerateOutput$datapath, "/model_output/summary_models.tsv", sep=""))
+            output$modelTbl <- renderDataTable(
+              modelTable
+            )
+            ##### Precision Recall Curve ######
+            ##### Get validation set
+            if (!is.null(globalValidationSet$datapath)) {
+              validation <- load_data(globalValidationSet$datapath)
+              validation[[input$targetFeature]] <- sub(input$positiveClass, "MAE", validation[[input$targetFeature]])
+            } else {
+              
+              # load one of the training sets in the model output file
+              validation_files <- list.files(path = paste(globalGenerateOutput$datapath, "/model_output", sep=""), pattern = "*_testing.tsv")
+              
+              # just load the first one
+              validation_inner <- load_data(paste(globalGenerateOutput$datapath, "/model_output/", validation_files[1], sep=""))
+              
+              # remove the prediction
+              validation <- validation_inner %>% dplyr::select(-(prediction))
+            }
+            
+            #### get names of models
+            model_names <- list.files(paste(globalGenerateOutput$datapath, "/model_output", sep=""), pattern = "*_model.rds")
+            model_list <- list()
+            # assign models to r environment variables
+            for (i in 1:length(model_names)){
+              name_string <- as.character(model_names[i])
+              assign(name_string, readRDS(paste(globalGenerateOutput$datapath, "/model_output/", model_names[i], sep = "")))
+            }
+            # make a list of models
+            model_list <- list()
+            for (i in 1:length(model_names)){
+              model_list <- c(model_list, mget(as.character(model_names[i])))
+            }
+            
+            # apply calc_auprc to testing data
+            model_list_pr <- model_list %>% lapply(calc_auprc, data = validation, status = input$targetFeature)
+            model_list_pr %>% lapply(function(the_mod) the_mod$auc.integral)
+            
+            results_list_pr <- list(NA)
+            index <- 1
+            
+            # cycle through outputs of pr.curve abd store in a dataframe
+            for(the_pr in model_list_pr){
+              results_list_pr[[index]] <-
+                data_frame(recall = the_pr$curve[, 1],
+                           precision = the_pr$curve[, 2],
+                           model = names(model_list_pr)[index])
+              index <- index + 1
+            }
+            
+            # bind results into table
+            results_df_pr <- bind_rows(results_list_pr)
+            
+            output$modelPlots <- renderPlot({
+              # create plot
+              ggplot(aes(x = recall, y = precision, group = model),
+                     data = results_df_pr) +
+                geom_line(aes(color = model), size = 1) +
+                #scale_color_manual(values = custom_col) +
+                theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(),
+                      axis.line = element_line(colour = "black"), legend.key=element_blank()) + ylim(0,1)
+            })
+          }
+        }
       }
-      generate_output <- capture.output(tryCatch(
-        system2(generate_cmd, args), error = function(e) e))
-      cat(generate_cmd, args)
     }
-    modelTable <- load_data(paste(globalGenerateOutput$datapath, "/model_output/summary_models.tsv", sep=""))
-    output$modelTbl <- renderDataTable(
-      modelTable
-    )
-    ##### Precision Recall Curve ######
-    ##### Get validation set
-    if (!is.null(input$validationSet$datapath)) {
-      validation <- load_data(input$validationSet$datapath)
-      validation[[input$targetFeature]] <- sub(input$positiveClass, "MAE", validation[[input$targetFeature]])
-    } else {
-
-      # load one of the training sets in the model output file
-      validation_files <- list.files(path = paste(globalGenerateOutput$datapath, "/model_output", sep=""), pattern = "*_testing.tsv")
-
-      # just load the first one
-      validation_inner <- load_data(paste(globalGenerateOutput$datapath, "/model_output/", validation_files[1], sep=""))
-
-      # remove the predictions
-      validation <- validation_inner[,-4]
-
-      # training_set <- load_data(input$trainingFile$datapath)
-      # if (input$tg == "human"){
-      #   print("Using human training genes.")
-      #   # attach ids
-      #   training_set$id <- tolower(paste(training_set$name, training_set$chrom, sep = "_"))
-      #   training_set <- training_set[order(training_set$id),]
-      #   # load training genes, attach ids
-      #   training_genes <- load_data(paste(reference_folder, "/human_tg.tsv", sep=""))
-      #   training_genes$id <- tolower(paste(training_genes$gene, training_genes$chrom, sep = "_"))
-      #   ids_to_keep <- intersect(training_genes$id, training_set$id)
-      #   training_set <- training_set[training_set$id %in% ids_to_keep, ]
-      #   training_genes <- training_genes[training_genes$id %in% ids_to_keep, ]
-      #   # Appends training genes to modified df
-      #   validation <- training_set[order(training_set$id),]
-      #   training_genes <- training_genes[order(training_genes$id),]
-      #   validation$status <- training_genes$status
-      #   validation[["status"]] <- sub(input$positiveClass, "MAE", validation[["status"]])
-      # } else if (input$tg == "mouse"){
-      #   print("Using mouse training genes.")
-      #   # attach ids
-      #   training_set$id <- tolower(paste(training_set$name, training_set$chrom, sep = "_"))
-      #   training_set <- training_set[order(training_set$id),]
-      #   # load training genes, attach ids
-      #   training_genes <- load_data(paste(reference_folder, "/mouse_tg.tsv", sep=""))
-      #   training_genes$id <- tolower(paste(training_genes$gene, training_genes$chrom, sep = "_"))
-      #   ids_to_keep <- intersect(training_genes$id, training_set$id)
-      #   training_set <- training_set[training_set$id %in% ids_to_keep, ]
-      #   training_genes <- training_genes[training_genes$id %in% ids_to_keep, ]
-      #   # Appends training genes to modified df
-      #   validation <- training_set[order(training_set$id),]
-      #   training_genes <- training_genes[order(training_genes$id),]
-      #   validation$status <- training_genes$status
-      #   validation[["status"]] <- sub(input$positiveClass, "MAE", validation[["status"]])
-      # } else if (!is.null(input$tg2$datapath) & is.null(input$validationSet$datapath)){
-      #   print("Using external training dataset.")
-      #   # attach ids
-      #   training_set$id <- tolower(paste(training_set$name, training_set$chrom, sep = "_"))
-      #   training_set <- training_set[order(training_set$id),]
-      #   training_genes <- load_data(input$tg2$datapath)
-      #   training_genes$id <- tolower(paste(training_genes$gene, training_genes$chrom, sep = "_"))
-      #   ids_to_keep <- intersect(training_genes$id, training_set$id)
-      #   training_set <- training_set[training_set$id %in% ids_to_keep, ]
-      #   training_genes <- training_genes[training_genes$id %in% ids_to_keep, ]
-      #   # Appends training genes to modified df
-      #   validation <- training_set[order(training_set$id),]
-      #   training_genes <- training_genes[order(training_genes$id),]
-      #   validation$status <- training_genes$status
-      #   validation[[input$targetFeature]] <- sub(input$positiveClass, "MAE", validation[[input$targetFeature]])
-      # }
-      #
-      # cutoff <- createDataPartition(validation$status, p = ((100-input$trainingPercent)/100),
-      #                               list = FALSE, times = 1)
-      # validation <- validation[-cutoff,]
-    }
-
-    #### get names of models
-    model_names <- list.files(paste(globalGenerateOutput$datapath, "/model_output", sep=""), pattern = "*_model.rds")
-    model_list <- list()
-    # assign models to r environment variables
-    for (i in 1:length(model_names)){
-      name_string <- as.character(model_names[i])
-      assign(name_string, readRDS(paste(globalGenerateOutput$datapath, "/model_output/", model_names[i], sep = "")))
-    }
-    # make a list of models
-    model_list <- list()
-    for (i in 1:length(model_names)){
-      model_list <- c(model_list, mget(as.character(model_names[i])))
-    }
-
-    # apply calc_auprc to testing data
-    model_list_pr <- model_list %>% lapply(calc_auprc, data = validation, status = input$targetFeature)
-    model_list_pr %>% lapply(function(the_mod) the_mod$auc.integral)
-
-    results_list_pr <- list(NA)
-    index <- 1
-
-    # cycle through outputs of pr.curve abd store in a dataframe
-    for(the_pr in model_list_pr){
-      results_list_pr[[index]] <-
-        data_frame(recall = the_pr$curve[, 1],
-                   precision = the_pr$curve[, 2],
-                   model = names(model_list_pr)[index])
-      index <- index + 1
-    }
-
-    # bind results into table
-    results_df_pr <- bind_rows(results_list_pr)
-
-    # my beautiful colors, these are the best colors
-    # custom_col <- c("#00a703", "#0002fe", "#000000")
-
-
-    output$modelPlots <- renderPlot({
-      # create plot
-      ggplot(aes(x = recall, y = precision, group = model),
-             data = results_df_pr) +
-        geom_line(aes(color = model), size = 1) +
-        #scale_color_manual(values = custom_col) +
-        theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(),
-              axis.line = element_line(colour = "black"), legend.key=element_blank()) + ylim(0,1)
-    })
   })
 })
 

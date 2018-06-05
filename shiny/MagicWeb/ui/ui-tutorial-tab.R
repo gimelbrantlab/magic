@@ -23,7 +23,7 @@
 ########
 # COMMAND LINE
 ########
-tabPanel("Tutorial",
+tabPanel("Help",
          fluidRow(
            column(12,
                   includeMarkdown("Tutorial.md")

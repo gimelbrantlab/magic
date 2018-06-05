@@ -24,9 +24,11 @@
 # ANALYZE SERVER
 ################
 
+expression_file_path <- NULL
+
 # sets output path
 shinyDirChoose(input, 'analyzeOutput', roots = c(home = '~'), filetypes = c('', 'txt','bigWig',"tsv","csv","bw"))
-globalAnalyzeOutput <- reactiveValues(datapath = sub("shiny/MagicWeb", "data/output/", getwd()))
+globalAnalyzeOutput <- reactiveValues(datapath = getwd())
 analyzeOutput <- reactive(input$analyzeOutput)
 output$analyzeOutput <- renderText({ globalAnalyzeOutput$datapath })
 
@@ -43,7 +45,7 @@ observeEvent(
 
 # sets models folder path
 shinyDirChoose(input, 'modelFolder', roots = c(home = '~'), filetypes = c('', 'txt','rds'))
-globalModelInput <- reactiveValues(datapath = sub("shiny/MagicWeb", "models", getwd()))
+globalModelInput <- reactiveValues(datapath = paste0(getwd(), "/models/"))
 modelFolder <- reactive(input$modelFolder)
 output$modelFolder <- renderText({ globalModelInput$datapath })
 
@@ -54,19 +56,34 @@ observeEvent(
   },
   handlerExpr = {
     home <- normalizePath("~")
-    globalModelInput$datapath <- file.path(home, paste(unlist(analyzeOutput()$path[-1]), collapse = .Platform$file.sep))
+    globalModelInput$datapath <- file.path(home, paste(unlist(modelFolder()$path[-1]), collapse = .Platform$file.sep))
   }
 )
 
 
 ### DATA ANALYSIS
 
-# Gets uploaded analysis file
-getAnalysisFile <- reactive({
-  if(!is.null(input$analysisFile)) {
-    analysis_file_path <<- input$analysisFile$datapath
-  }
-})
+# Uploads analysis file
+shinyFileChoose(input, 'analysisFile', roots = c(home = '~'))
+globalAnalysisFile <- reactiveValues(datapath = paste0(getwd(), "/data/joined_scores_percentile_GM12878.txt"))
+output$analysisFileText <- renderText({ globalAnalysisFile$datapath })
+
+observeEvent(input$analysisFile, {
+  inFileAn <- parseFilePaths(roots=c(home = '~'), input$analysisFile)
+  globalAnalysisFile$datapath <- as.character(inFileAn$datapath)
+}
+)
+
+# Uploads optional file with length
+shinyFileChoose(input, 'expressionData', roots = c(home = '~'))
+globalExpressionData <- reactiveValues(datapath = NULL)
+output$expressionDataText <- renderText({ globalExpressionData$datapath })
+
+observeEvent(input$expressionData, {
+  inFileEx <- parseFilePaths(roots=c(home = '~'), input$expressionData)
+  globalExpressionData$datapath <- as.character(inFileEx$datapath)
+}
+)
 
 # Analyzes data on button press
 observeEvent(input$analyzeDataButton, {
@@ -79,48 +96,41 @@ observeEvent(input$analyzeDataButton, {
     if (dir.exists(paste(globalModelInput$datapath))) {
       filenames <- Sys.glob(file.path(globalModelInput$datapath, "*_model.rds"))
       if (length(filenames)>0) {
-        # get filter file
-        if (!is.null(input$expressionData)) {
+        if (input$exprFilt) {
           if (input$filterFile == 'custom') {
-            expression_file_path <- input$expressionData$datapath
+            if (!is.null(input$expressionData)) {
+              expression_file_path <- globalExpressionData$datapath
+            }
+            else {
+              showModal(modalDialog(
+                title = "Error",
+                "Please, upload file with gene lengths, or select human or mouse",
+                easyClose = TRUE
+              ))
+            }
           }
           else {
-            if (input$filterFile == 'human') {
-              expression_file_path <- file.path(reference_folder, "hg19_length.txt")
+            if (input$filterFile == 'human (expression in GM12878)') {
+              expression_file_path <- file.path(reference_folder, "hg19_expr_GM12878.txt")
             }
             if (input$filterFile == 'mouse') {
               expression_file_path <- file.path(reference_folder, "mm10_length.txt")
             }
           }
         }
-        else {
-          if (input$filterFile == 'human') {
-            expression_file_path <- file.path(reference_folder, "hg19_length.txt")
-          }
-          if (input$filterFile == 'mouse') {
-            expression_file_path <- file.path(reference_folder, "mm10_length.txt")
-          }
-          if (input$filterFile == 'custom') {
-            showModal(modalDialog(
-              title = "Error",
-              "Please, upload file with gene lengths, or select human or mouse",
-              easyClose = TRUE
-            ))
-          }
-          print(expression_file_path)
-        }
         # Builds command to run analyze.R and executes it
         analyze_output <- NULL
         analyze_running <- TRUE
         analyze_cmd <- paste("Rscript")
         args <- paste(analyze_file,
-                      "-i", input$analysisFile$datapath,
+                      "-i", globalAnalysisFile$datapath,
                       "-m", paste(globalModelInput$datapath),
                       "-o", paste(globalAnalyzeOutput$datapath, "/analysis_output", sep=""),
                       "-p", "MAE")
-        if ((input$lengthFilt)&(!is.null(input$lengthFilter))) { args <- paste(args, "-f", expression_file_path, "-l", input$lengthFilter) }
-        #if(!is.null(input$lengthFilt)) { args <- paste(args, "-l", input$lengthFilter) }
-        cat(args)
+        if ((input$exprFilt)&(!is.null(expression_file_path))) { args <- paste(args, "-r", "-f", expression_file_path) }
+        if ((input$lengthFilt)&(!is.null(input$lengthFilter))) { args <- paste(args, "-l", input$lengthFilter, "-s", input$filterOrg) }
+        if (!input$lengthFilt) { args <- paste(args, "-l", 0) }
+        cat(args, "\n")
         analyze_output <- capture.output(tryCatch(
           system2(analyze_cmd, args), error = function(e) e))
         sets_files <- list.files(paste(globalAnalyzeOutput$datapath, "/analysis_output", sep=""), pattern = "*_predictions.tsv", recursive = FALSE)
@@ -140,6 +150,33 @@ observeEvent(input$analyzeDataButton, {
         output$predTbl <- renderDataTable(
           df
         )
+        # Plotting
+        joined_scores_percentile <- load_data(globalAnalysisFile$datapath)
+        output$analyzePlots <- renderPlot({
+          file_with_pr <- paste0(globalAnalyzeOutput$datapath, "/analysis_output/", input$modelToPlot, "_predictions.tsv")
+          if (file.exists(file_with_pr)) {
+            predd <- read.delim(file_with_pr)
+            marks <- colnames(joined_scores_percentile[,3:dim(joined_scores_percentile)[2]])
+            jj <- merge(joined_scores_percentile, predd[,c("name", "predictions")], by.x="name", by.y="name")
+            marks_comb <- combn(marks, 2)
+            makePlot <- function(x) {
+              ggplot(jj, aes_string(x=x[1], y=x[2], col=factor(jj$predictions))) + 
+                geom_point(size=0.3) + 
+                scale_color_manual(values=c("#FC6621", "#105CFB"), name ="group") +
+                theme_bw()
+            }
+            pltList <- list()
+            pltList <- apply(marks_comb,2,makePlot)
+            grid.arrange(grobs = pltList)  
+          }
+          else {
+            showModal(modalDialog(
+              title = "Error",
+              "Please select existing model",
+              easyClose = TRUE
+            ))
+          }
+        })
       }
       else {
         showModal(modalDialog(

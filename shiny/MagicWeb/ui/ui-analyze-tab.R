@@ -36,18 +36,13 @@ tabPanel(value = "analyze",
              shinyDirButton("analyzeOutput", "Output directory", "Upload"),
              verbatimTextOutput("analyzeOutput", placeholder = TRUE),
              br(),
-             fileInput('analysisFile', 'Upload file with processed chromatin data',
-                       accept = acceptable_file_types
-             ) %>%
-               shinyInput_label_embed(
-                 icon("info") %>%
-                   bs_embed_tooltip(title = "In most cases, it is joined_scores_percentile.txt in your output folder")
-               ),
+             shinyFilesButton('analysisFile', 'Upload file with processed chromatin data', 'In most cases, it is joined_scores_percentile.txt in your output folder', multiple = F),
+             verbatimTextOutput("analysisFileText", placeholder = FALSE),
              textInput("positiveClass", "Positive class:",
                        value = "MAE"),
              # Filtering part
              tags$p(HTML("<b>Filtering</b>")),
-             checkboxInput("lengthFilt", "Filter by length", FALSE),
+             checkboxInput("lengthFilt", "Filter by length", TRUE),
              conditionalPanel(
                condition = "input.lengthFilt",
                numericInput("lengthFilter",
@@ -56,27 +51,41 @@ tabPanel(value = "analyze",
                  shinyInput_label_embed(
                    icon("info") %>%
                      bs_embed_tooltip(title = "Set length lower threshold here, if you want to filter out shorter genes")
-                 )),
-             #checkboxInput("exprFilt", "Filter by expression", FALSE),
+                 ),
+               selectInput(
+                 "filterOrg", "Length",
+                 c("human",
+                   "mouse"), selected='human')
+               ),
+             checkboxInput("exprFilt", "Filter by expression", TRUE),
              selectInput(
-               "filterFile", "Length file",
-               c("human",
+               "filterFile", "Expression file",
+               c("human (expression in GM12878)",
                  "mouse",
                  "custom"),selected='human'),
              conditionalPanel(
                condition = "input.filterFile == 'custom' ",
-               fileInput('expressionData',
-                         label = "Upload file with gene lengths") %>%
-                 shinyInput_label_embed(
-                   icon("info") %>%
-                     bs_embed_tooltip(title = "Please see readme for the file format")
-                 )),
+               shinyFilesButton('expressionData', 'Upload file with genes expression and lengths', 'Please see readme for file format', multiple = F),
+               verbatimTextOutput("expressionDataText", placeholder = FALSE)),
              actionButton("analyzeDataButton", "Analyze data", width = "100%")
            ), mainPanel(
-             tabsetPanel(id = "outputPlot",
-                         tabPanel("Table",
-                                  dataTableOutput("predTbl")
-                         )
+             conditionalPanel(
+               condition = "input.analyzeDataButton",
+               tabsetPanel(id = "outputPlot",
+                           tabPanel("Table",
+                                    dataTableOutput("predTbl")
+                           ),
+                           tabPanel("Plots",
+                                    selectInput(
+                                      "modelToPlot", "Select model",
+                                      model_list, selected='human'),
+                                    plotOutput("analyzePlots",
+                                               height = 480,
+                                               width = 700
+                                    )
+                                    
+                           )
+               )
              )
            )
          )

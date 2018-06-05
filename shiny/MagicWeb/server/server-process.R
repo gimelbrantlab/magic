@@ -29,25 +29,25 @@
 # sets input path
 
 shinyDirChoose(input, 'processInput', roots = c(home = '~'), filetypes = c('', 'txt','bigWig',"tsv","csv","bw"))
-global <- reactiveValues(datapath = sub("shiny/MagicWeb", "data", getwd()))
+global <- reactiveValues(datapath = paste0(getwd(), "/data/"))
 processInput <- reactive(input$processInput)
 output$processInput <- renderText({ global$datapath })
 
 observeEvent(
-   ignoreNULL = TRUE,
-   eventExpr = {
-     input$processInput
-   },
-   handlerExpr = {
-     home <- normalizePath("~")
-     global$datapath <- file.path(home, paste(unlist(processInput()$path[-1]), collapse = .Platform$file.sep))
-   }
+  ignoreNULL = TRUE,
+  eventExpr = {
+    input$processInput
+  },
+  handlerExpr = {
+    home <- normalizePath("~")
+    global$datapath <- file.path(home, paste(unlist(processInput()$path[-1]), collapse = .Platform$file.sep))
+  }
 )
 
 # sets output path
 
 shinyDirChoose(input, 'processOutput', roots = c(home = '~'), filetypes = c('', 'txt','bigWig',"tsv","csv","bw"))
-globalProcessOutput <- reactiveValues(datapath = sub("shiny/MagicWeb", "data/output/", getwd()))
+globalProcessOutput <- reactiveValues(datapath = getwd())
 processOutput <- reactive(input$processOutput)
 output$processOutput <- renderText({ globalProcessOutput$datapath })
 
@@ -79,42 +79,51 @@ observeEvent(input$processDataButton, {
                    done = TRUE
                  }
                  # Builds command to run process.R and executes it
-                 if ((!is.null(input$fileInput))&(file.exists(paste(global$datapath, "/", input$fileInput, sep = "")))) {
-                   cat(globalProcessOutput$datapath)
-                   process_output <- NULL
-                   process_running <- TRUE
-                   args <- paste(process_file,
-                                 "-i", paste(global$datapath, "/", input$fileInput, sep = ""),
-                                 "-o", paste(globalProcessOutput$datapath),
-                                 "-p", input$promoterLength,
-                                 "-d", input$dropPercent,
-                                 "-r", input$assembly,
-                                 "-e")
-                   if(input$cores > 1) { args <- paste(args, "-s", input$cores) }
-                   if (input$noOverlap == TRUE) { args <- paste(args, "-l") }
-                   if (!"olfactory receptor genes" %in% input$enableFilters) { args <- paste(args, "-f") }
-                   if (!"sex chromosomes" %in% input$enableFilters) { args <- paste(args, "-c") }
-                   if (!"imprinted genes" %in% input$enableFilters) { args <- paste(args, "-m") }
-                   cat("\n", args, "\n\n")
-                   process_output <- capture.output(tryCatch(
-                     { system2("Rscript", args)}, error=function(err){
-                       traceback()
-                     })
-                   )
-                 }
-                 else {
+                 if (input$cores > detectCores()) {
                    showModal(modalDialog(
                      title = "Error",
-                     "Input file doesn't exist, please try again",
+                     paste("Please specify fewer or equal cores to your max of ", detectCores(), sep = ""),
                      easyClose = TRUE
                    ))
                  }
+                 else {
+                   if ((!is.null(input$fileInput))&(file.exists(paste(global$datapath, "/", input$fileInput, sep = "")))) {
+                     cat(globalProcessOutput$datapath)
+                     process_output <- NULL
+                     process_running <- TRUE
+                     args <- paste(process_file,
+                                   "-i", paste(global$datapath, "/", input$fileInput, sep = ""),
+                                   "-o", paste(globalProcessOutput$datapath),
+                                   "-p", input$promoterLength,
+                                   "-d", input$dropPercent,
+                                   "-r", input$assembly,
+                                   "-e")
+                     if(input$cores > 1) { args <- paste(args, "-s", input$cores) }
+                     #if (input$noOverlap == TRUE) { args <- paste(args, "-l") }
+                     if (!"olfactory receptor genes" %in% input$enableFilters) { args <- paste(args, "-f") }
+                     if (!"sex chromosomes" %in% input$enableFilters) { args <- paste(args, "-c") }
+                     if (!"imprinted genes" %in% input$enableFilters) { args <- paste(args, "-m") }
+                     cat("\n", args, "\n\n")
+                     process_output <- capture.output(tryCatch(
+                       { system2("Rscript", args)}, error=function(err){
+                         traceback()
+                       })
+                     )
+                   }
+                   else {
+                     showModal(modalDialog(
+                       title = "Error",
+                       "Input file doesn't exist, please try again",
+                       easyClose = TRUE
+                     ))
+                   }
+                 }
                })
-
-###################################################################################################
-###################################################################################################
-############################################ Data plotting ########################################
-
+  
+  ###################################################################################################
+  ###################################################################################################
+  ############################################ Data plotting ########################################
+  
   if (file.exists(paste(globalProcessOutput$datapath, "/joined_scores_percentile.txt", sep = ""))) {
     joined_scores_percentile <- load_data(paste(globalProcessOutput$datapath, "/joined_scores_percentile.txt", sep = ""))
     joined_scores_norm <- load_data(paste(globalProcessOutput$datapath, "/joined_scores_norm.txt", sep = ""))

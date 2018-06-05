@@ -30,7 +30,7 @@ tabPanel(value = "main_panel",
          fluidRow(column(12,
                          sidebarLayout(
                            mainPanel(
-                             h2(HTML("Welcome to MaGIC: <br> <b>M</b>ono<b>a</b>llelic <b>G</b>ene <b>I</b>nference from <b>C</b>hromatin")),
+                             h2(HTML("<b>M</b>ono<b>a</b>llelic <b>G</b>ene <b>I</b>nference from <b>C</b>hromatin")),
                              actionButton("get_started", "Get started"),
                              br(),
                              h4(HTML("<u>Overview</u>")),
@@ -42,7 +42,7 @@ tabPanel(value = "main_panel",
                Generate.R trains classifiers using ChIP-seq enrichment and true MAE calls.
                Analyze.R uses classifiers to predict MAE from ChIP-seq data."
                              )),
-                             tags$img(HTML("<img src = \"images/pipeline_Magic.png\", height = 384, width = 512>")),
+                             tags$img(HTML("<img src = \"images/pipeline_Magic.png\", height = 192, width = 800>")),
                              width = 12
                            ),
                            mainPanel(NULL)

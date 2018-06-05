@@ -27,19 +27,21 @@
 tabPanel(value = "generate",
          title = "Generate",
          sidebarLayout(
-           # mainPanel = mainPanel(NULL),
            mainPanel = mainPanel(
-             tabsetPanel(
-               id = "generatePlots",
-               tabPanel("Summary Table",
-                        dataTableOutput("modelTbl")
-               ),
-               tabPanel("Precision-recall plot",
-                        plotOutput("modelPlots",
-                                   height = 480,
-                                   width = 700
-                        )
-                        
+             conditionalPanel(
+               condition = "input.generateModelsButton",
+               tabsetPanel(
+                 id = "generatePlots",
+                 tabPanel("Summary Table",
+                          dataTableOutput("modelTbl")
+                 ),
+                 tabPanel("Precision-recall plot",
+                          plotOutput("modelPlots",
+                                     height = 480,
+                                     width = 700
+                          )
+                          
+                 )
                )
              )
            ),
@@ -49,12 +51,9 @@ tabPanel(value = "generate",
              shinyDirButton("generateOutput", "Output directory", "Upload"),
              verbatimTextOutput("generateOutput", placeholder = TRUE),
              br(),
-             fileInput('trainingFile', 'Upload file with processed chromatin data',
-                       accept = acceptable_file_types) %>%
-               shinyInput_label_embed(
-                 icon("info") %>%
-                   bs_embed_tooltip(title = "In most cases, it is joined_scores_percentile.txt in your output folder (for test, please use joined_scores_percentile_full_dataset.txt)")
-               ),
+             shinyFilesButton('trainingFile', 'Upload file with processed chromatin data', 'for test, please use joined_scores_percentile_GM12878.txt', multiple = F),
+             verbatimTextOutput("trainingFileText", placeholder = FALSE),
+             br(),
              selectizeInput(
                "modelList",
                "Select models to train",
@@ -76,20 +75,13 @@ tabPanel(value = "generate",
                    bs_embed_tooltip(title = "If you want to train model with our MAE/BAE classification, select human or mouse option")
                ),
              numericInput("trainingPercent",
-                          "Fraction of Data to use for Training:", 80,
+                          "Fraction of data to use for training:", 80,
                           min = 0, max = 100, step = 10),
              # optional parameters
              bsCollapse(id = "collapseExample", open = "Panel",
                         bsCollapsePanel("Optional parameters",
-                                        fileInput(
-                                          inputId = 'tg2',
-                                          label = "Upload file with genes for training",
-                                          accept = acceptable_file_types
-                                        ) %>%
-                                          shinyInput_label_embed(
-                                            icon("info") %>%
-                                              bs_embed_tooltip(title = "If you have your own MAE/BAE classification for training, select this file here, see documentation for the file format")
-                                          ),
+                                        shinyFilesButton('tg2', 'Upload file with genes for training', 'If you have your own MAE/BAE classification for training, select this file here, see documentation for the file format', multiple = F),
+                                        verbatimTextOutput("tg2Text", placeholder = FALSE),
                                         textInput('targetFeature', "Target Feature (the name of the column with class labels, normally 'status')",
                                                   placeholder = 'Enter name of target column',
                                                   value="status"
@@ -117,12 +109,8 @@ tabPanel(value = "generate",
                                           selected=5
                                         ),
                                         h4(HTML("External validation (optional)")),
-                                        fileInput('validationSet', 'Upload an external validation set if you have one:',
-                                                  accept = acceptable_file_types) %>%
-                                          shinyInput_label_embed(
-                                            icon("info") %>%
-                                              bs_embed_tooltip(title = "If you have file for external validation, use it here. Please see documentation for the file format")
-                                          ),
+                                        shinyFilesButton('validationSet', 'Upload an external validation set if you have one', 'If you have file for external validation, use it here. Please see documentation for the file format', multiple = F),
+                                        verbatimTextOutput("validationSetText", placeholder = FALSE),
                                         style = "success")),
              actionButton("generateModelsButton", "Generate models", width = "100%")
            ))
