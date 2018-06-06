@@ -97,7 +97,7 @@ Process.R script takes ChIP-seq files in bigWig format and converts them into no
 Rscript src/process.R -i data/input.txt -o data/output -r "hg19" -p 0 -s 3
 
 ```
-You will get joint_scores_percentile.txt in your output folder. To test other parts of the pipeline, we suggest to use joined_scores_percentile_GM12878.txt file which contains the full dataset:
+You will get joint_scores_percentile.txt in your output folder. To test other parts of the pipeline, we suggest to use joined_scores_percentile_GM12878.txt file which contains the full dataset.
 
 *Generate.R*
 
