@@ -109,7 +109,7 @@ The second way is useful if you do have other testing data. The following call t
 ### Example command line usage
 
 *Minimum*:
-```Rscript src/generate.R -i data/joined_scores_percentile_GM12878.txt```
+```Rscript src/generate.R -i data/joined_scores_percentile_GM12878.txt -a human```
     
 *With many options*:
 ```Rscript src/generate.R -i data/joined_scores_percentile_GM12878.txt -o output -v reference/testing_human_2015.tsv -r best -l ada,svmPoly,rf -p 80 -c 5 -a human```
