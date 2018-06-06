@@ -97,14 +97,14 @@ Process.R script takes ChIP-seq files in bigWig format and converts them into no
 Rscript src/process.R -i data/input.txt -o data/output -r "hg19" -p 0 -s 3
 
 ```
-You will get joint_scores_percentile.txt in your output folder, and this file will be used for further analysis.
+You will get joint_scores_percentile.txt in your output folder. To test other parts of the pipeline, we suggest to use joined_scores_percentile_GM12878.txt file which contains the full dataset:
 
 *Generate.R*
 
-Generate.R script trains models using output from process.R saved in the joined_scores_percentile.txt file. We also provide a pre-generated joined_scores_percentile_full_dataset.txt file. Run the following command to train ada, SVM, and random forest model using 80% percent of the data for training and 20% for testing:
+Generate.R script trains models using output from process.R saved in the joined_scores_percentile.txt file. We also provide a pre-generated joined_scores_percentile_GM12878.txt file. Run the following command to train ada, SVM, and random forest model using 80% percent of the data for training and 20% for testing:
 
 ```
-Rscript src/generate.R -i data/joined_scores_percentile_full_dataset.txt -o data/classifiers -a "human" -p 80 -l ada,svmPoly,rf -c 5
+Rscript src/generate.R -i data/joined_scores_percentile_GM12878.txt -o data/classifiers -a "human" -p 80 -l ada,svmPoly,rf -c 5
 ```
 The output folder will contain a model_output folder containing a summary_models.tsv file describing key metrics of the models' performance. 
 
@@ -112,7 +112,7 @@ The output folder will contain a model_output folder containing a summary_models
 
 Finally, call analyze.R, using the joined_scores_percentile.txt (output from process.R) and the default classifiers that are packaged with MaGIC as inputs.
 ```
-Rscript src/analyze.R -i data/joined_scores_percentile_full_dataset.txt -o data/output -m models
+Rscript src/analyze.R -i data/joined_scores_percentile_GM12878.txt -o data/output -m models
 ```
 You can also run analyze.R with your own trained classifers, but be careful to avoid overfitting. 
 
