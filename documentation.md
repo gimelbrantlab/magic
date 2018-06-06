@@ -1,6 +1,6 @@
 # Overview
 
-There are two main use cases for MaGIC 2.0. 
+There are two main use cases for MaGIC. 
 
 The first case involves processing a bigwig file containing data for any number of chromatin marks (to use our models, please make sure you have h3k27me3 and k3k36me3 marks), and then making allelic bias predictions on that data using pre-existing classifiers:
 
@@ -174,11 +174,11 @@ If no validation file is provided, validation is performed on the testing portio
 
 # analyze.R
 
-Finally, we call analyze.R, using the joined scores file (output from process.R) and the default classifiers that are packaged with MaGIC 2.0 as inputs. 
+Finally, we call analyze.R, using the joined scores file (output from process.R) and the default classifiers that are packaged with MaGIC as inputs. 
 
-The following command makes allelic bias predictions ("BAE" for bi-allelic expression or "MAE" for random mono-allelic expression) on the joined scores file using the default models pre-packaged with MaGIC 2.0 (the models folder is given by -m models), treating BAE as the positive class:
+The following command makes allelic bias predictions ("BAE" for bi-allelic expression or "MAE" for random mono-allelic expression) on the joined scores file using the default models pre-packaged with MaGIC (the models folder is given by -m models):
 
-	Rscript src/analyze.R -i data/joined_scores_percentile.txt -o data -m models -po "BAE"
+	Rscript src/analyze.R -i data/joined_scores_percentile_GM12878.txt -o data -m models
 
 *Input file*: percentiles file output by process.R
 
