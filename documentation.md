@@ -2,7 +2,7 @@
 
 There are two main use cases for MaGIC 2.0. 
 
-The first case involves processing a bigwig file containing data for any number of chromatin marks, and then making allelic bias predictions on that data using pre-existing classifiers:
+The first case involves processing a bigwig file containing data for any number of chromatin marks (to use our models, please make sure you have h3k27me3 and k3k36me3 marks), and then making allelic bias predictions on that data using pre-existing classifiers:
 
 1) Pass bigwig file to process.R
 2) Pass output from step 1 to analyze.R
@@ -34,19 +34,16 @@ As a brief aside, note that while input files are generally necessary to make se
 *Output folder*: contains two tables for normalized scores and percentile ranks of predicted or reference genes. Scores are normalized to either the length of the gene or the baseline enrichment data, if available, and percentile ranks are of the normalized scores. 
 
 ### Example command line usage
-
+    
 *Minimum*:
-```Rscript process.R -i data/input.txt -r "mm9" -p 0```
+```Rscript src/process.R -i data/input.txt -o output -r hg19 -p 0```
     
-*Human genome*:
-```Rscript process.R -i data/input.txt -o output -r "hg19" -p 0```
-    
-*Mouse genome with many options*:
-```Rscript process.R -i data/input.txt -o output -r "mm9" -f -p 2500 -d 0.01 -e -l -m -s 3```
+*With many options*:
+```Rscript src/process.R -i data/input.txt -o output -r hg19 -p 2500 -d 0.05 -r hg19 -e -s 3```
     
 ### Arguments
 
-All arguments are also described via "Rscript process.R --help"
+All arguments are also described via "Rscript src/process.R --help"
 
 *-i, --input_folder*:
     Path to input folder, described earlier
@@ -112,10 +109,12 @@ The second way is useful if you do have other testing data. The following call t
 ### Example command line usage
 
 *Minimum*:
-```Rscript generate.R -i data/joined_scores_percentile.txt```
+```Rscript src/generate.R -i data/joined_scores_percentile_GM12878.txt```
     
 *With many options*:
-```Rscript generate.R -i data/joined_scores_percentile.txt -o output -ta "status" -sa "down" -se "oneSE" -v testing_human_2015.tsv```
+```Rscript src/generate.R -i data/joined_scores_percentile_GM12878.txt -o output -ta status -sa down -se oneSE -v reference/testing_human_2015.tsv -r best -l ada,svmPoly,rf -p 80 -c 5 -a human```
+
+
     
 ### Arguments
 
@@ -188,10 +187,10 @@ The following command makes allelic bias predictions ("BAE" for bi-allelic expre
 ### Example command line usage
 
 *Minimum*:
-```Rscript analyze.R -i data/joined_scores_percentile.txt -m models```
+```Rscript analyze.R -i data/joined_scores_percentile_GM12878.txt -m models```
     
 *With many options*:
-```Rscript analyze.R -i data/joined_scores_percentile.txt -o output -m models -l 5000 -r -f reference/hg19_expr_GM12878.txt```
+```Rscript analyze.R -i data/joined_scores_percentile_GM12878.txt -o output -m models -p MAE -r -f reference/hg19_expr_GM12878.txt -l 2500 -s human```
     
 ### Arguments
 
