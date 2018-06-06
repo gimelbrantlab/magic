@@ -94,13 +94,13 @@ All arguments are also described via "Rscript src/process.R --help"
 Now that we have the joined scores file (output from process.R) and true allelic bias calls (see above), all we have to do to generate classifiers is call generate.R on that file. However, there are two distinct ways of generating classifiers.
 
 
-The first way is useful if you don't have any testing data on hand. The following call to generate.R will generate classifiers based on genes that are subset to those with allelic bias calls in mice (the -a "mouse" argument) that use a randomly-selected 80% of the data for classifier training and the remaining 20% for automated classifier testing.
+The first way is useful if you don't have any testing data on hand. The following call to generate.R will generate classifiers based on genes that are subset to those with allelic bias calls in human (the -a "human" argument) that use a randomly-selected 80% of the data for classifier training and the remaining 20% for automated classifier testing:
 
-	Rscript src/generate.R -i data/joined_scores_percentile.txt -o data/classifiers -a "mouse"
+	Rscript src/generate.R -i data/joined_scores_percentile_GM12878.txt -o data/classifiers -a human
 
-The second way is useful if you do have other testing data. The following call to generate.R will generate classifiers based on genes that are subset to those with allelic bias calls in mice that use all of the data for classifier training.
+The second way is useful if you do have other testing data. The following call to generate.R will generate classifiers based on genes that are subset to those with allelic bias calls in human that use all of the data for classifier training:
 
-	Rscript src/generate.R -i data/joined_scores_percentile.txt -o data/classifiers -a "mouse" -p 100
+	Rscript src/generate.R -i data/joined_scores_percentile_GM12878.txt -o data/classifiers -a human -p 100
 	
 *Input file*: file output by process.R
 
@@ -112,7 +112,7 @@ The second way is useful if you do have other testing data. The following call t
 ```Rscript src/generate.R -i data/joined_scores_percentile_GM12878.txt```
     
 *With many options*:
-```Rscript src/generate.R -i data/joined_scores_percentile_GM12878.txt -o output -ta status -sa down -se oneSE -v reference/testing_human_2015.tsv -r best -l ada,svmPoly,rf -p 80 -c 5 -a human```
+```Rscript src/generate.R -i data/joined_scores_percentile_GM12878.txt -o output -v reference/testing_human_2015.tsv -r best -l ada,svmPoly,rf -p 80 -c 5 -a human```
 
 
     
