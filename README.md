@@ -1,17 +1,19 @@
 # MaGIC
 
-This software generates predictions or classifiers for monoallelic gene expression (MAE) from
+MaGIC is a tool to classify genes into monoallelically expressed (MAE) and biallelically expressed (BAE) using
 chromatin mark enrichment data. It is primarily based on the work of the [Gimelbrant lab](https://gimelbrantlab.dfci.harvard.edu/). We have a standalone MaGIC pipeline and also a Shiny app.
 
 ## Docker
 
 To get started, we suggest to use Docker image with the Shiny app for MaGIC. The only requirement is to have Docker installed. Please see the [instructions](https://github.com/gimelbrantlab/magic/blob/master/Installation.md) if you don't have it installed yet.
 
-First, you'll need to login to Docker (please make sure you are using you login, NOT your email address):
+Now, open a terminal window and invoke the Docker program directly. Checking the version is always a good way to test that a program will run without investing too much effort into finding a command that will work, so let's do:
 ```
-docker login
+docker --version
 ```
-Next, to pull the Docker image run:
+This should return something like "Docker version 18.03.1-ce, build 9ee9f40"
+
+Still in your terminal (it doesn't matter where your working directory is), run the following command to retrieve the MaGIC image from Docker Hub:
 ```
 docker pull kintany/shinymagic
 ```
@@ -19,14 +21,14 @@ To run a container you will use the following command:
 ```
 docker run --rm -p 3838:3838 kintany/shinymagic
 ```
-This will run the container and you need to open http://0.0.0.0:3838/ in any browser. Enjoy!
+This will run the container and you need to open http://0.0.0.0:3838/ in any browser (Windows users should use "http://localhost:3838/" instead). Enjoy!
 
 To be able to analyze your own ChIP-seq data and save the results, you need to mount a directory with the data: add -v parameter to do this. For example, to mount `~/Documents/data/` you will need to run a container like this:
 
 ```
 docker run --rm -v ~/Documents/data/:/srv/data -p 3838:3838 kintany/shinymagic
 ```
-To stop the running container you need to get its id with command:
+To stop the running container you need to get its id with the command:
 ```
 docker container ls
 ```
@@ -34,6 +36,8 @@ and then use this id to stop the container:
 ```
 docker stop 30b679c9c448
 ```
+
+To get a better understanding how to use Shiny app and Magic in general, please go to "Help" tab or check out the [Documentation](https://github.com/gimelbrantlab/magic/blob/master/documentation.md). 
 
 ## Direct installation
 
