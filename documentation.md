@@ -187,10 +187,10 @@ The following command makes allelic bias predictions ("BAE" for bi-allelic expre
 ### Example command line usage
 
 *Minimum*:
-```Rscript analyze.R -i data/joined_scores_percentile_GM12878.txt -m models```
+```Rscript src/analyze.R -i data/joined_scores_percentile_GM12878.txt -m models```
     
 *With many options*:
-```Rscript analyze.R -i data/joined_scores_percentile_GM12878.txt -o output -m models -p MAE -r -f reference/hg19_expr_GM12878.txt -l 2500 -s human```
+```Rscript src/analyze.R -i data/joined_scores_percentile_GM12878.txt -o output -m models -p MAE -r -f reference/hg19_expr_GM12878.txt -l 2500 -s human```
     
 ### Arguments
 
