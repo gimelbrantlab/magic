@@ -1,7 +1,7 @@
 # MaGIC
 
 MaGIC is a tool to classify genes into monoallelically expressed (MAE) and biallelically expressed (BAE) using
-chromatin mark enrichment data. It is primarily based on the work of the [Gimelbrant lab](https://gimelbrantlab.dfci.harvard.edu/). We have a standalone MaGIC pipeline and also a Shiny app.
+chromatin mark enrichment data. It is primarily based on the work of the [Gimelbrant lab](https://gimelbrantlab.med.harvard.edu). We have a standalone MaGIC pipeline and also a Shiny app.
 
 ## Docker
 
