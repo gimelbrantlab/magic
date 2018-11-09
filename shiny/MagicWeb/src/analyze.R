@@ -31,31 +31,31 @@
 
 # Loads all prediction sets in a given folder into a single dataframe
 join_prediction_sets <- function(df, predictions_folder) {
-
+  
   # List of prediction sets to build up
   df$id <- 1:nrow(df)
   sets <- df
-
+  
   # Loops through all files and reads in all ending with "_predictions.tsv"
   sets_files <- list.files(predictions_folder, pattern = "*_predictions.tsv", recursive = FALSE)
   for (file in sets_files) {
     p_set <- read.csv(file.path(predictions_folder, file), sep = "\t")
     # Adds id col to set
     p_set$id <- 1:nrow(p_set)
-
+    
     # Renames cols with model name prepended
     model_name <- strsplit(file, "_")[[1]][1]
     names_to_change <- names(p_set)[names(p_set) != "id"]
     names(p_set)[names(p_set) != "id"] <-
       paste(model_name, names_to_change, sep = "_")
-
+    
     # Joins sets
     sets <- suppressWarnings(full_join(sets, p_set, by = "id"))
   }
-
+  
   # Removes id column from output
   sets <- sets[,names(p_set) != "id"]
-
+  
   # Explicitly returns list of testing sets
   return(sets)
 }
@@ -63,10 +63,10 @@ join_prediction_sets <- function(df, predictions_folder) {
 # Loads all models in a given folder into a dict, except
 # for those in the list of excluded models
 get_models <- function(input_folder, excluded_models) {
-
+  
   # List of models to build up
   models <- list()
-
+  
   # Loops through all files and reads in all ending with "_model.rds"
   model_files <- list.files(input_folder, pattern = "*_model.rds", recursive = FALSE)
   for (file in model_files) {
@@ -76,7 +76,7 @@ get_models <- function(input_folder, excluded_models) {
       models[[model_name]] = model
     }
   }
-
+  
   # Explicitly returns list of models
   return(models)
 }
@@ -90,7 +90,7 @@ ml_predict_inner <- function(model_name, model, df,
   features_df <- colnames(df)
   for (f in features_model) {
     if (!(f %in% features_df)) { stop(paste0("Features in the model and joined_scores_percentile are not consistent, please train a new model with your joined_scores_percentile.", 
-                                      "Model's features: ", paste(features_model, collapse=", "))) }
+                                             "Model's features: ", paste(features_model, collapse=", "))) }
   }
   # Generates predictions, appends to df and writes to file
   predictions <-  predict(model, df, positive = positive_class)
@@ -105,16 +105,16 @@ ml_predict_inner <- function(model_name, model, df,
 # Generates predictions on new data
 ml_predict <- function(df, models_folder, output_folder,
                        excluded_models, positive_class, filter_file, filter_length, filter_expression, filter_species) {
-
+  
   # Loads models into a dict with model names as keys
   models <- get_models(models_folder, excluded_models)
-
+  
   # Generates predictions on df for all models
   for (model_name in names(models)) {
     ml_predict_inner(model_name, models[[model_name]], df,
                      output_folder, positive_class, filter_file, filter_length, filter_expression, filter_species)
   }
-
+  
   # Joins all files with appended predictions together
   df <- join_prediction_sets(df, output_folder)
   return(df)
@@ -157,27 +157,27 @@ filter_genes <- function(df, filter_file, filter_length, filter_expression, filt
 # Analyzes given dataset
 analyze_main <- function(current_folder, input_file, models_folder,
                          output_folder, excluded_models, positive_class,
-						 filter_file, filter_length, filter_expression, filter_species, lib) {
-
+                         filter_file, filter_length, filter_expression, filter_species, lib) {
+  
   # Loads required libraries
   load_analyze_libraries(lib)
-
+  
   # Reads input file into df and removes NA values
   df <- read.csv(input_file, sep = "\t")
   df <- df[complete.cases(df),]
-
+  
   # Reads excluded models string into a list
   excluded_models <- as.list(strsplit(excluded_models, ",")[[1]])
-
+  
   # Generates predictions and appends them to df
   df <- ml_predict(df, models_folder, output_folder,
                    excluded_models, positive_class, filter_file, filter_length, 
                    filter_expression, filter_species)
-
+  
   # Writes predictions to file
   #write.table(df, file.path(output_folder, "all_predictions.tsv"), sep = "\t",
   #            row.names = FALSE, quote = FALSE)
-
+  
   cat("Analysis complete.\n")
 }
 
@@ -234,15 +234,19 @@ if (opt$expr_filter) {
   if (!is.null(opt$filter)) {
     if(!file.exists(opt$filter)) { 
       stop("file with expression does not exist") 
-      }
+    }
   }
   else { 
     stop("please provide a file with expression") 
-    }
+  }
 }
 if ((opt$species != "human") & (opt$species != "mouse")) { stop("please select a valid species") }
 if (!dir.exists(opt$models_folder)) { stop("models folder does not exist") }
-if (!dir.exists(opt$output_folder)) { dir.create(opt$output_folder, recursive = TRUE) }
+if (!dir.exists(opt$output_folder)) { 
+  dir.create(opt$output_folder, recursive = TRUE) 
+} else {
+  do.call(file.remove, list(list.files(opt$output_folder, full.names = TRUE)))
+}
 
 # Extracts variables from args
 input_file <- opt$input_file
@@ -260,8 +264,8 @@ filter_species <- opt$species
 if (!quiet) {
   invisible(analyze_main(current_folder, input_file, models_folder,
                          output_folder, excluded_models, positive_class,
-						 filter_file, filter_length, 
-						 filter_expression, filter_species, lib))
+                         filter_file, filter_length, 
+                         filter_expression, filter_species, lib))
 } else {
   analyze_main(current_folder, input_file, models_folder,
                output_folder, excluded_models, positive_class, filter_file, filter_length, 

@@ -1,0 +1,30 @@
+knn summary
+
+
+[1] "knn time taken: 0.804955005645752"
+k-Nearest Neighbors 
+
+1014 samples
+   2 predictor
+   2 classes: 'BAE', 'MAE' 
+
+No pre-processing
+Resampling: Cross-Validated (5 fold) 
+Summary of sample sizes: 811, 812, 811, 811, 811 
+Resampling results across tuning parameters:
+
+  k  Accuracy   Kappa    
+  5  0.8974638  0.6641456
+  7  0.8984441  0.6669808
+  9  0.8994440  0.6670919
+
+Kappa was used to select the optimal model using the largest value.
+The final value used for the model was k = 9.
+
+
+ Accuracy     Kappa 
+0.9051383 0.7052999 
+sensitivity: 0.764705882352941 
+
+specificity: 0.940594059405941 
+

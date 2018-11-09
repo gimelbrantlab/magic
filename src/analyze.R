@@ -242,7 +242,11 @@ if (opt$expr_filter) {
 }
 if ((opt$species != "human") & (opt$species != "mouse")) { stop("please select a valid species") }
 if (!dir.exists(opt$models_folder)) { stop("models folder does not exist") }
-if (!dir.exists(opt$output_folder)) { dir.create(opt$output_folder, recursive = TRUE) }
+if (!dir.exists(opt$output_folder)) { 
+  dir.create(opt$output_folder, recursive = TRUE) 
+} else {
+  do.call(file.remove, list(list.files(opt$output_folder, full.names = TRUE)))
+}
 
 # Extracts variables from args
 input_file <- opt$input_file

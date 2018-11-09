@@ -1,0 +1,27 @@
+rf summary
+
+
+[1] "rf time taken: 2.71954202651978"
+Random Forest 
+
+1014 samples
+   2 predictor
+   2 classes: 'BAE', 'MAE' 
+
+No pre-processing
+Resampling: Cross-Validated (5 fold) 
+Summary of sample sizes: 811, 812, 811, 811, 811 
+Resampling results:
+
+  Accuracy   Kappa    
+  0.8885773  0.6370395
+
+Tuning parameter 'mtry' was held constant at a value of 2
+
+
+ Accuracy     Kappa 
+0.9169960 0.7402337 
+sensitivity: 0.784313725490196 
+
+specificity: 0.95049504950495 
+

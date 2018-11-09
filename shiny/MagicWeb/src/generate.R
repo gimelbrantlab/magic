@@ -68,6 +68,9 @@ generate_classifiers <- function(scores, output_folder, sampling_method,
   if (!dir.exists(paste0(output_folder, "/best_model/"))) {   
     dir.create(paste0(output_folder, "/best_model/"))
   }
+  else {
+    do.call(file.remove, list(list.files(paste0(output_folder, "/best_model/"), full.names = TRUE)))
+  }
   
   # Subset the data into training and testing
   
@@ -130,7 +133,6 @@ generate_classifiers <- function(scores, output_folder, sampling_method,
     write.table(stats, file=models_stats, quote = F, row.names = F, sep="\t")
     bestModel <- stats[stats$F1==max(stats$F1),"Model"]
     file.copy(paste0(output_folder,"/", bestModel, "_model.rds"), paste0(output_folder,"/best_model/", bestModel, "_model.rds"))
-    cat("Best model is", as.character(bestModel), "!")
   }
 }
 
