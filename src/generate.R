@@ -62,7 +62,12 @@ generate_classifiers <- function(scores, output_folder, sampling_method,
   model_list <- strsplit(model_string, ",") 
   
   # Creates output folder if it doesn't exist
-  if (!dir.exists(output_folder)) { dir.create(output_folder) }
+  if (!dir.exists(output_folder)) { 
+    dir.create(output_folder) 
+  }
+  if (!dir.exists(paste0(output_folder, "/best_model/"))) {   
+    dir.create(paste0(output_folder, "/best_model/"))
+  }
   
   # Subset the data into training and testing
   
@@ -123,6 +128,9 @@ generate_classifiers <- function(scores, output_folder, sampling_method,
     colnames(stats)[1] <- "Model"
     models_stats <- file.path(output_folder, "summary_models.tsv")
     write.table(stats, file=models_stats, quote = F, row.names = F, sep="\t")
+    bestModel <- stats[stats$F1==max(stats$F1),"Model"]
+    file.copy(paste0(output_folder,"/", bestModel, "_model.rds"), paste0(output_folder,"/best_model/", bestModel, "_model.rds"))
+    cat("Best model is", as.character(bestModel), "!")
   }
 }
 
@@ -140,7 +148,7 @@ validation <- function(model_name, output_folder, validation_set) {
   predictions <- sub("MAE", 1, predictions)
   # print output
   model_to_valid <- file.path(output_folder, 
-                          paste(model_name, "_to_validation.txt", sep = ""))
+                              paste(model_name, "_to_validation.txt", sep = ""))
   predictions <- as.factor(predictions)
   validation_set[["status"]] <- as.factor(validation_set[["status"]])
   cm <- caret::confusionMatrix(predictions, validation_set[["status"]], positive = "1")
@@ -154,7 +162,7 @@ generate_main <- function(current_folder, input_file, output_folder,
                           sampling_method, selection_rule, target_feature,
                           training_genes_file, p, metric, 
                           cv, model_string, validation_file,
-						  lib) {
+                          lib) {
   
   # Loads required scripts and libraries
   load_generate_libraries(lib)
@@ -246,7 +254,7 @@ options = list(
   make_option(c("-q", "--quiet"), action="store_true", default=FALSE, 
               help="disables console output [default= %default]"),
   make_option(c("-l", "--model_list"), type="character", default = "glmStepAIC, rf, nnet, rpart, svmPoly,
-                  evtree, knn, ada, mlpML",
+              evtree, knn, ada, mlpML",
               help="list of model algorithms to test, see readme for naming conventions [default= %default]")
 )
 
@@ -275,11 +283,11 @@ if (!quiet) {
                           sampling_method, selection_rule, target_feature,
                           training_genes_file, p, metric, 
                           cv, model_string, validation_file,
-						  lib))
+                          lib))
 } else {
   generate_main(current_folder, input_file, output_folder, 
                 sampling_method, selection_rule, target_feature,
                 training_genes_file, p, metric, 
                 cv, model_string, validation_file,
-				lib)
+                lib)
 }

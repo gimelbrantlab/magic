@@ -47,6 +47,7 @@ install_shiny_libraries <- function(lib = NA) {
   get_package("PRROC", lib = lib)
   get_package("shinyFiles", lib = lib)
   get_package("shinyBS", lib = lib)
+  get_package("DT", lib = lib)
   cat("finished installing shiny libraries\n")
 }
 
@@ -168,10 +169,13 @@ install.package.version <- function(package, dependencies = NA, repos = "http://
   if (sum(row.names(available) == package) == 1) {
     current.version <- available[package, 'Version']
     if (is.null(version) || version == current.version) {
-      install.packages(package, contriburl = contriburl, dependencies = dependencies, repos = repos, lib = lib)
+      #install.packages(package, contriburl = contriburl, dependencies = dependencies, repos = repos, lib = lib)
+      install.packages(package, dependencies = dependencies, repos = repos, lib = lib)
       return()
     }
   }
+  
+  cat("The required version is old, trying archived version...\n")
   
   package.path <- paste(package, "/", package, "_", version, ".tar.gz", sep="")
   package.url <- sprintf("%s/src/contrib/Archive/%s", repos, package.path)
@@ -179,48 +183,48 @@ install.package.version <- function(package, dependencies = NA, repos = "http://
   if (download.file(package.url, local.path) != 0) {
     stop("couldn't download file: ", package.url)
   }
-  
   install.packages(local.path, dependencies = dependencies, repos = repos, lib = lib)
 }
 
 # Get correct package versions
 get_version <- function(package) {
   version <- NA
-  if (package=="ada") { version <- "2.0-5" }
-  if (package=="bsplus") { version <- "0.1.1" }
-  if (package=="caret") { version <- "6.0-79" }
-  if (package=="ddalpha") { version <- "1.3.3" }
-  if (package=="diptest") { version <- "0.75-7" }
-  if (package=="doMC") { version <- "1.3.5" }
-  if (package=="dplyr") { version <- "0.7.4" }
-  if (package=="e1071") { version <- "1.6-8" }
-  if (package=="evtree") { version <- "1.0-6" }
-  if (package=="fastAdaboost") { version <- "1.0.0" }
-  if (package=="foreach") { version <- "1.4.4" }
-  if (package=="GGally") { version <- "1.3.2" }
-  if (package=="ggplot2") { version <- "2.2.1" }
-  if (package=="gridExtra") { version <- "2.3" }
-  if (package=="iterators") { version <- "1.0.9" }
-  if (package=="lattice") { version <- "0.20-35" }
-  if (package=="markdown") { version <- "0.8" }
-  if (package=="MASS") { version <- "7.3-50" }
-  if (package=="mboost") { version <- "2.8-1" }
-  if (package=="nnet") { version <- "7.3-12" }
-  if (package=="optparse") { version <- "1.4.4" }
-  if (package=="partykit") { version <- "1.1-1" }
-  if (package=="plyr") { version <- "1.8.4" }
-  if (package=="pROC") { version <- "1.12.1" }
-  if (package=="PRROC") { version <- "1.3" }
-  if (package=="randomForest") { version <- "4.6-14" }
-  if (package=="recipes") { version <- "0.1.2" }
-  if (package=="reshape2") { version <- "1.4.3" }
-  if (package=="RSNNS") { version <- "0.4-10" }
-  if (package=="scales") { version <- "0.5.0" }
-  if (package=="shiny") { version <- "1.0.5" }
-  if (package=="shinyBS") { version <- "0.61" }
-  if (package=="shinyFiles") { version <- "0.6.2" }
-  if (package=="shinythemes") { version <- "1.1.1" }
-  if (package=="kernlab") { version <- "0.9-26" }
+  if (package== 'ada' ) { version  <- '2.0-5' }
+  if (package== 'bsplus' ) { version  <- '0.1.1' }
+  if (package== 'caret' ) { version  <- '6.0-80' }
+  if (package== 'ddalpha' ) { version  <- '1.3.4' }
+  if (package== 'diptest' ) { version  <- '0.75-7' }
+  if (package== 'doMC' ) { version  <- '1.3.5' }
+  if (package== 'dplyr' ) { version  <- '0.7.7' }
+  if (package== 'e1071' ) { version  <- '1.7-0' }
+  if (package== 'evtree' ) { version  <- '1.0-7' }
+  if (package== 'fastAdaboost' ) { version  <- '1.0.0' }
+  if (package== 'foreach' ) { version  <- '1.4.4' }
+  if (package== 'GGally' ) { version  <- '1.4.0' }
+  if (package== 'ggplot2' ) { version  <- '3.1.0' }
+  if (package== 'gridExtra' ) { version  <- '2.3' }
+  if (package== 'iterators' ) { version  <- '1.0.10' }
+  if (package== 'lattice' ) { version  <- '0.20-38' }
+  if (package== 'markdown' ) { version  <- '0.8' }
+  if (package== 'MASS' ) { version  <- '7.3-51.1' }
+  if (package== 'mboost' ) { version  <- '2.9-1' }
+  if (package== 'nnet' ) { version  <- '7.3-12' }
+  if (package== 'optparse' ) { version  <- '1.6.0' }
+  if (package== 'partykit' ) { version  <- '1.2-2' }
+  if (package== 'plyr' ) { version  <- '1.8.4' }
+  if (package== 'pROC' ) { version  <- '1.13.0' }
+  if (package== 'PRROC' ) { version  <- '1.3.1' }
+  if (package== 'randomForest' ) { version  <- '4.6-14' }
+  if (package== 'recipes' ) { version  <- '0.1.3' }
+  if (package== 'reshape2' ) { version  <- '1.4.3' }
+  if (package== 'RSNNS' ) { version  <- '0.4-11' }
+  if (package== 'scales' ) { version  <- '1.0.0' }
+  if (package== 'shiny' ) { version  <- '1.2.0' }
+  if (package== 'shinyBS' ) { version  <- '0.61' }
+  if (package== 'shinyFiles' ) { version  <- '0.7.1' }
+  if (package== 'shinythemes' ) { version  <- '1.1.2' }
+  if (package== 'kernlab' ) { version  <- '0.9-27' }
+  if (package== 'DT' ) { version  <- '0.5' }
   return(version)
 }
 
@@ -253,7 +257,7 @@ magic_install <- function(lib, bin) {
   file.copy(bin, file.path(shiny_bin, ".."), recursive = TRUE)
   
   # Check if everything is installed
-  packages <- c("shiny","markdown","shinythemes","bsplus","GGally","PRROC","shinyFiles","shinyBS","ggplot2","scales","randomForest","kernlab","ddalpha","recipes","caret","lattice","pROC","ada","fastAdaboost","mboost","RSNNS","nnet","optparse","evtree","MASS","dplyr","e1071","plyr","reshape2","diptest","doMC","gridExtra", "foreach", "iterators")
+  packages <- c("shiny","markdown","shinythemes","bsplus","GGally","PRROC","shinyFiles","shinyBS","ggplot2","scales","randomForest","kernlab","ddalpha","recipes","caret","lattice","pROC","ada","fastAdaboost","mboost","RSNNS","nnet","optparse","evtree","MASS","dplyr","e1071","plyr","reshape2","diptest","doMC","gridExtra", "foreach", "iterators", "DT")
   check.packages(packages)
 }
 

@@ -32,6 +32,7 @@ tabPanel(value = "analyze",
              shinyDirButton("modelFolder", "Model directory", "Upload"),
              #models_folder_def <- file.path(current_folder, "/models")
              verbatimTextOutput("modelFolder"), #placeholder = models_folder_def),
+             checkboxInput("bestMod", "Limit the analysis to the best model only", TRUE),
              tags$p(HTML("<b>Select output directory</b>")),
              shinyDirButton("analyzeOutput", "Output directory", "Upload"),
              verbatimTextOutput("analyzeOutput", placeholder = TRUE),

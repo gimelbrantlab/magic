@@ -44,6 +44,7 @@ load_shiny_libraries <- function(lib.loc = NULL) {
   suppressMessages(library(PRROC, lib.loc = lib.loc))
   suppressMessages(library(shinyFiles, lib.loc = lib.loc))
   suppressMessages(library(shinyBS, lib.loc = lib.loc))
+  suppressMessages(library(DT, lib.loc = lib.loc))
 }
 
 # Loads or installs all required packages for analysis

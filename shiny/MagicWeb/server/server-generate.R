@@ -169,8 +169,13 @@ observeEvent(input$generateModelsButton, {
           }
           else {
             modelTable <- load_data(paste(globalGenerateOutput$datapath, "/model_output/summary_models.tsv", sep=""))
+            #modelTable <- modelTable[order(-modelTable$F1),]
             output$modelTbl <- renderDataTable(
-              modelTable
+              datatable(modelTable) %>% formatStyle(
+                'F1',
+                target = 'row',
+                backgroundColor = styleEqual(max(modelTable$F1), 'green')
+              )
             )
             ##### Precision Recall Curve ######
             ##### Get validation set

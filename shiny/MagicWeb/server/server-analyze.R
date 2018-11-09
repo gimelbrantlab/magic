@@ -124,7 +124,7 @@ observeEvent(input$analyzeDataButton, {
         analyze_cmd <- paste("Rscript")
         args <- paste(analyze_file,
                       "-i", globalAnalysisFile$datapath,
-                      "-m", paste(globalModelInput$datapath),
+                      "-m", ifelse(input$bestMod, paste0(globalModelInput$datapath, "best_model/ "), paste(globalModelInput$datapath)),
                       "-o", paste(globalAnalyzeOutput$datapath, "/analysis_output", sep=""),
                       "-p", "MAE")
         if ((input$exprFilt)&(!is.null(expression_file_path))) { args <- paste(args, "-r", "-f", expression_file_path) }
