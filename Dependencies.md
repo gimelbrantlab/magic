@@ -32,6 +32,6 @@ RSNNS (0.4-11)\
 scales (1.0.0)\
 shiny (1.2.0)\
 shinyBS (0.61)\
-shinyFiles (0.7.1)\
+shinyFiles (0.7.2)\
 shinythemes (1.1.2)\
 kernlab (0.9-27)
