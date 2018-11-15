@@ -221,7 +221,7 @@ get_version <- function(package) {
   if (package== 'scales' ) { version  <- '1.0.0' }
   if (package== 'shiny' ) { version  <- '1.2.0' }
   if (package== 'shinyBS' ) { version  <- '0.61' }
-  if (package== 'shinyFiles' ) { version  <- '0.7.1' }
+  if (package== 'shinyFiles' ) { version  <- '0.7.2' }
   if (package== 'shinythemes' ) { version  <- '1.1.2' }
   if (package== 'kernlab' ) { version  <- '0.9-27' }
   if (package== 'DT' ) { version  <- '0.5' }
