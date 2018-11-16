@@ -39,6 +39,7 @@ observeEvent(
   },
   handlerExpr = {
     home <- normalizePath("~")
+    req(is.list(input$analyzeOutput))
     globalAnalyzeOutput$datapath <- file.path(home, paste(unlist(analyzeOutput()$path[-1]), collapse = .Platform$file.sep))
   }
 )
@@ -56,6 +57,7 @@ observeEvent(
   },
   handlerExpr = {
     home <- normalizePath("~")
+    req(is.list(input$modelFolder))
     globalModelInput$datapath <- file.path(home, paste(unlist(modelFolder()$path[-1]), collapse = .Platform$file.sep))
   }
 )

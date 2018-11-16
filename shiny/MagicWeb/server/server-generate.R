@@ -47,6 +47,7 @@ observeEvent(
   },
   handlerExpr = {
     home <- normalizePath("~")
+    req(is.list(input$generateOutput))
     globalGenerateOutput$datapath <- file.path(home, paste(unlist(generateOutput()$path[-1]), collapse = .Platform$file.sep))
   }
 )
