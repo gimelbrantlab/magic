@@ -15,18 +15,18 @@ This should return something like "Docker version 18.03.1-ce, build 9ee9f40"
 
 Still in your terminal (it doesn't matter where your working directory is), run the following command to retrieve the MaGIC image from Docker Hub:
 ```
-docker pull kintany/shinymagic
+docker pull kintany/shinymagic:current
 ```
 To run a container you will use the following command:
 ```
-docker run --rm -p 3838:3838 kintany/shinymagic
+docker run --rm -p 3838:3838 kintany/shinymagic:current
 ```
 This will run the container and you need to open http://0.0.0.0:3838/ in any browser (Windows users should use "http://localhost:3838/" instead). Enjoy!
 
 To be able to analyze your own ChIP-seq data and save the results, you need to mount a directory with the data: add -v parameter to do this. For example, to mount `~/Documents/data/` you will need to run a container like this:
 
 ```
-docker run --rm -v ~/Documents/data/:/srv/data -p 3838:3838 kintany/shinymagic
+docker run --rm -v ~/Documents/data/:/root/data -p 3838:3838 kintany/shinymagic:current
 ```
 To stop the running container you need to get its id with the command:
 ```
