@@ -32,7 +32,7 @@ tabPanel(value = "analyze",
              shinyDirButton("modelFolder", "Model directory", "Upload"),
              #models_folder_def <- file.path(current_folder, "/models")
              verbatimTextOutput("modelFolder"), #placeholder = models_folder_def),
-             checkboxInput("bestMod", "Limit the analysis to the best model only", TRUE),
+             checkboxInput("bestMod", "Limit the analysis to the best model (based on F1 score)", TRUE),
              tags$p(HTML("<b>Select output directory</b>")),
              shinyDirButton("analyzeOutput", "Output directory", "Upload"),
              verbatimTextOutput("analyzeOutput", placeholder = TRUE),
@@ -79,7 +79,7 @@ tabPanel(value = "analyze",
                            tabPanel("Plots",
                                     selectInput(
                                       "modelToPlot", "Select model",
-                                      model_list, selected='human'),
+                                      model_list, selected='svmPoly'),
                                     plotOutput("analyzePlots",
                                                height = 480,
                                                width = 700
