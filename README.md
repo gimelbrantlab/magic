@@ -2,7 +2,8 @@
 
 MaGIC is a tool to classify genes into monoallelically expressed (MAE) and biallelically expressed (BAE) using
 chromatin mark enrichment data. It is primarily based on the work of the [Gimelbrant lab](https://gimelbrantlab.med.harvard.edu). We have a standalone MaGIC pipeline and also a Shiny app.
-The method is published in [BMC Bioinformatics]https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-019-2679-7
+
+The method is published in [BMC Bioinformatics](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-019-2679-7)
 
 ## Docker
 
@@ -120,6 +121,7 @@ You can also run analyze.R with your own trained classifers, but be careful to a
 ## Citation
 
 Please cite the following paper if using Magic:
+
 Vinogradova S, Saksena SD, Ward HN, Vigneau S, Gimelbrant AA. MaGIC: a machine learning tool set and web application for monoallelic gene inference from chromatin. BMC Bioinformatics. 2019 Feb 28;20(1):106.
 
 ## Contact us
